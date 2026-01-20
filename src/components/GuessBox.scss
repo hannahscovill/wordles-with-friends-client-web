@@ -1,0 +1,28 @@
+.guess-box {
+  width: 62px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 2px solid var(--color-border);
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+.guess-box--wrong {
+  background-color: var(--color-wrong);
+  border-color: var(--color-wrong);
+}
+
+.guess-box--contained {
+  background-color: var(--color-contained);
+  border-color: var(--color-contained);
+}
+
+.guess-box--correct {
+  background-color: var(--color-correct);
+  border-color: var(--color-correct);
+}

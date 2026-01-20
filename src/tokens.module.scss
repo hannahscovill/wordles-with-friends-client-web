@@ -1,0 +1,35 @@
+// Design tokens - SCSS is the source of truth
+// These values are exported to TypeScript via :export
+
+// Game state colors
+$color-correct: #538d4e;
+$color-contained: #b59f3b;
+$color-wrong: #3a3a3c;
+
+// UI colors
+$color-background: #121213;
+$color-border: #3a3a3c;
+$color-key-unused: #818384;
+$color-text: #ffffff;
+
+// Export to JavaScript/TypeScript
+:export {
+  colorCorrect: $color-correct;
+  colorContained: $color-contained;
+  colorWrong: $color-wrong;
+  colorBackground: $color-background;
+  colorBorder: $color-border;
+  colorKeyUnused: $color-key-unused;
+  colorText: $color-text;
+}
+
+// CSS custom properties for runtime use
+:root {
+  --color-correct: #{$color-correct};
+  --color-contained: #{$color-contained};
+  --color-wrong: #{$color-wrong};
+  --color-background: #{$color-background};
+  --color-border: #{$color-border};
+  --color-key-unused: #{$color-key-unused};
+  --color-text: #{$color-text};
+}

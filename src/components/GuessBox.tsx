@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import './GuessBox.css';
+import './GuessBox.scss';
 
 export interface GuessBoxProps {
   /** The letter to display */

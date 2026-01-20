@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { GuessBox, type GuessBoxProps } from './GuessBox';
-import './Guess.css';
+import './Guess.scss';
 
 export interface GuessProps {
   /** Array of 5 GuessBox configurations */

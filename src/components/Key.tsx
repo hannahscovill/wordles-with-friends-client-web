@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import './Key.css';
+import './Key.scss';
 
 export interface KeyProps {
   /** The label to display on the key */
