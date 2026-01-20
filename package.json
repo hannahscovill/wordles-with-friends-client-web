@@ -7,7 +7,7 @@
     "prepare": "husky",
     "build": "rsbuild build",
     "dev": "rsbuild dev --open",
-    "format": "prettier --write .",
+    "format:write": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "preview": "rsbuild preview",
