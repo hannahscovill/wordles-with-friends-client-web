@@ -15,17 +15,13 @@ You are an expert in JavaScript, Rsbuild, and web application development. You w
 
 - Rstest: https://rstest.rs/llms.txt
 
-## Tools
+## Task Completion Requirements
 
-### Rstest
+You are not finished with your task until these commands have no errors:
 
-- Run `npm run test` to run tests
-- Run `npm run test:watch` to run tests in watch mode
-
-### ESLint
-
-- Run `npm run lint` to lint your code
-
-### Prettier
-
-- Run `npm run format` to format your code
+```bash
+npm run lint
+npm run typecheck
+npm run format:check
+npm test
+```

@@ -12,6 +12,12 @@ $color-border: #3a3a3c;
 $color-key-unused: #818384;
 $color-text: #ffffff;
 
+// Button colors
+$color-button-shadow: #949c8f;
+
+// Background colors
+$background: #e8e9de;
+
 // Export to JavaScript/TypeScript
 :export {
   colorCorrect: $color-correct;
@@ -21,6 +27,8 @@ $color-text: #ffffff;
   colorBorder: $color-border;
   colorKeyUnused: $color-key-unused;
   colorText: $color-text;
+  colorButtonShadow: $color-button-shadow;
+  background: $background;
 }
 
 // CSS custom properties for runtime use
@@ -32,4 +40,6 @@ $color-text: #ffffff;
   --color-border: #{$color-border};
   --color-key-unused: #{$color-key-unused};
   --color-text: #{$color-text};
+  --color-button-shadow: #{$color-button-shadow};
+  --background: #{$background};
 }
