@@ -1,36 +1,15 @@
-import type { ReactElement } from 'react';
 import {
-  createRootRoute,
-  Outlet,
-  type RootRoute,
+  createRootRouteWithContext,
+  type AnyRootRoute,
 } from '@tanstack/react-router';
-import { useAuth0 } from '@auth0/auth0-react';
-import { AppHeader } from '../components/AppHeader';
-import '../App.scss';
+import type { Auth0ContextInterface } from '@auth0/auth0-react';
+import { Layout } from '../components/Layout';
 
-// eslint-disable-next-line react-refresh/only-export-components
-const RootComponent = (): ReactElement => {
-  const { isLoading, error } = useAuth0();
+export interface RouterContext {
+  auth: Auth0ContextInterface;
+}
 
-  let content: ReactElement;
-  if (isLoading) {
-    content = <p className="app__greeting">Loading...</p>;
-  } else if (error) {
-    content = (
-      <p className="app__greeting">Something went wrong: {error.message}</p>
-    );
-  } else {
-    content = <Outlet />;
-  }
-
-  return (
-    <div className="app">
-      <AppHeader />
-      <main className="app__content">{content}</main>
-    </div>
-  );
-};
-
-export const rootRoute: RootRoute = createRootRoute({
-  component: RootComponent,
-});
+export const rootRoute: AnyRootRoute =
+  createRootRouteWithContext<RouterContext>()({
+    component: Layout,
+  });
