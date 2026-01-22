@@ -1,9 +1,7 @@
 import { useEffect, type ReactElement, type ReactNode } from 'react';
 import { useAuth0, type Auth0ContextInterface } from '@auth0/auth0-react';
 import { router } from './router';
-
-const ACCESS_TOKEN_KEY: string = 'access_token';
-const ID_TOKEN_KEY: string = 'id_token';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -18,6 +16,9 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
     getIdTokenClaims,
   } = auth;
 
+  const [, setAccessToken] = useLocalStorage<string>('access_token');
+  const [, setIdToken] = useLocalStorage<string>('id_token');
+
   useEffect(() => {
     router.update({ context: { auth } });
   }, [auth]);
@@ -27,8 +28,8 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
       if (isLoading) return;
 
       if (!isAuthenticated) {
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(ID_TOKEN_KEY);
+        setAccessToken(null);
+        setIdToken(null);
         return;
       }
 
@@ -39,21 +40,28 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
         ]);
 
         if (accessToken) {
-          localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+          setAccessToken(accessToken);
         }
 
         if (idTokenClaims?.__raw) {
-          localStorage.setItem(ID_TOKEN_KEY, idTokenClaims.__raw);
+          setIdToken(idTokenClaims.__raw);
         }
       } catch (error) {
         console.error('Failed to store auth tokens:', error);
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(ID_TOKEN_KEY);
+        setAccessToken(null);
+        setIdToken(null);
       }
     };
 
     storeTokens();
-  }, [isAuthenticated, isLoading, getAccessTokenSilently, getIdTokenClaims]);
+  }, [
+    isAuthenticated,
+    isLoading,
+    getAccessTokenSilently,
+    getIdTokenClaims,
+    setAccessToken,
+    setIdToken,
+  ]);
 
   return <>{children}</>;
 };
