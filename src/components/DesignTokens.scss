@@ -1,0 +1,62 @@
+.design-tokens {
+  padding: 24px;
+  color: var(--color-text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.design-tokens__section {
+  margin-bottom: 32px;
+}
+
+.design-tokens__heading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--color-text);
+}
+
+.design-tokens__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.color-swatch {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #1a1a1b;
+  border: 1px solid var(--color-border);
+}
+
+.color-swatch__preview {
+  height: 80px;
+  width: 100%;
+}
+
+.color-swatch__info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.color-swatch__name {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.color-swatch__token {
+  font-size: 0.75rem;
+  color: #888;
+  background: none;
+  padding: 0;
+}
+
+.color-swatch__value {
+  font-size: 0.75rem;
+  color: #666;
+  font-family: monospace;
+}

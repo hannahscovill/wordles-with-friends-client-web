@@ -1,0 +1,55 @@
+.key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 58px;
+  padding: 0 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-text);
+  background-color: var(--color-key-unused);
+  transition: background-color 0.1s ease;
+}
+
+.key:hover {
+  opacity: 0.9;
+}
+
+.key:active {
+  transform: scale(0.95);
+}
+
+/* Alphabet keys */
+.key--alphabet {
+  min-width: 43px;
+  font-size: 0.875rem;
+}
+
+.key--alphabet.key--wide {
+  min-width: 65px;
+}
+
+/* Special keys (Enter/Back) */
+.key--special {
+  min-width: 65px;
+  font-size: 0.75rem;
+}
+
+.key--special.key--wide {
+  min-width: 85px;
+}
+
+.key--wrong {
+  background-color: var(--color-wrong);
+}
+
+.key--contained {
+  background-color: var(--color-contained);
+}
+
+.key--correct {
+  background-color: var(--color-correct);
+}

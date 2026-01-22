@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import './App.css';
+import './App.scss';
 
 const App = (): ReactElement => {
   return (
