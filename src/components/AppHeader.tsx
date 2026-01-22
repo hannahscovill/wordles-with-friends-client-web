@@ -5,7 +5,6 @@ import {
   useNavigate,
   type UseNavigateResult,
 } from '@tanstack/react-router';
-import { Button } from './Button';
 import './AppHeader.scss';
 
 export interface AppHeaderProps {
@@ -16,7 +15,7 @@ export interface AppHeaderProps {
 export const AppHeader = ({
   title = 'Wordles with Friends',
 }: AppHeaderProps): ReactElement => {
-  const { isAuthenticated, user, loginWithRedirect, logout } = useAuth0();
+  const { isAuthenticated, user, loginWithRedirect } = useAuth0();
   const navigate: UseNavigateResult<string> = useNavigate();
 
   const avatarSrc: string =
@@ -29,20 +28,6 @@ export const AppHeader = ({
         <Link to="/">{title}</Link>
       </h1>
       <div className="app-header__actions">
-        {isAuthenticated ? (
-          <Button
-            size="s"
-            onClick={() =>
-              logout({ logoutParams: { returnTo: window.location.origin } })
-            }
-          >
-            Sign Out
-          </Button>
-        ) : (
-          <Button size="s" onClick={() => loginWithRedirect()}>
-            Sign In
-          </Button>
-        )}
         <button
           type="button"
           className="app-header__avatar"

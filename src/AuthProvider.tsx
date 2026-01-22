@@ -8,8 +8,6 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
   const auth: Auth0ContextInterface = useAuth0();
-
   router.update({ context: { auth } });
-
   return <>{children}</>;
 };
