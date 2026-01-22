@@ -6,6 +6,8 @@ declare const tokens: {
   colorBorder: string;
   colorKeyUnused: string;
   colorText: string;
+  colorButtonShadow: string;
+  background: string;
 };
 
 export default tokens;

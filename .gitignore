@@ -17,3 +17,4 @@ dist/
 
 *storybook.log
 storybook-static
+.env

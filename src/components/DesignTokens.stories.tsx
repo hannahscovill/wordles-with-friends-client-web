@@ -51,6 +51,22 @@ const DesignTokens = (): ReactElement => {
     { name: 'Text', token: '--color-text', value: tokens.colorText },
   ];
 
+  const buttonColors: ColorSwatchProps[] = [
+    {
+      name: 'Button Shadow',
+      token: '--color-button-shadow',
+      value: tokens.colorButtonShadow,
+    },
+  ];
+
+  const backgroundColors: ColorSwatchProps[] = [
+    {
+      name: 'Background',
+      token: '--background',
+      value: tokens.background,
+    },
+  ];
+
   return (
     <div className="design-tokens">
       <section className="design-tokens__section">
@@ -66,6 +82,24 @@ const DesignTokens = (): ReactElement => {
         <h2 className="design-tokens__heading">UI Colors</h2>
         <div className="design-tokens__grid">
           {uiColors.map((color) => (
+            <ColorSwatch key={color.token} {...color} />
+          ))}
+        </div>
+      </section>
+
+      <section className="design-tokens__section">
+        <h2 className="design-tokens__heading">Button Colors</h2>
+        <div className="design-tokens__grid">
+          {buttonColors.map((color) => (
+            <ColorSwatch key={color.token} {...color} />
+          ))}
+        </div>
+      </section>
+
+      <section className="design-tokens__section">
+        <h2 className="design-tokens__heading">Background Colors</h2>
+        <div className="design-tokens__grid">
+          {backgroundColors.map((color) => (
             <ColorSwatch key={color.token} {...color} />
           ))}
         </div>
