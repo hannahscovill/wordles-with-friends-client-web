@@ -3,6 +3,11 @@ import { useAuth0, type Auth0ContextInterface } from '@auth0/auth0-react';
 import { router } from './router';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
+interface AuthTokens {
+  access_token: string;
+  id_token: string;
+}
+
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -16,8 +21,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
     getIdTokenClaims,
   } = auth;
 
-  const [, setAccessToken] = useLocalStorage<string>('access_token');
-  const [, setIdToken] = useLocalStorage<string>('id_token');
+  const [, setAuthTokens] = useLocalStorage<AuthTokens>('auth_tokens');
 
   useEffect(() => {
     router.update({ context: { auth } });
@@ -28,8 +32,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
       if (isLoading) return;
 
       if (!isAuthenticated) {
-        setAccessToken(null);
-        setIdToken(null);
+        setAuthTokens(null);
         return;
       }
 
@@ -39,17 +42,13 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
           getIdTokenClaims(),
         ]);
 
-        if (accessToken) {
-          setAccessToken(accessToken);
-        }
-
-        if (idTokenClaims?.__raw) {
-          setIdToken(idTokenClaims.__raw);
-        }
+        setAuthTokens({
+          access_token: accessToken ?? '',
+          id_token: idTokenClaims?.__raw ?? '',
+        });
       } catch (error) {
         console.error('Failed to store auth tokens:', error);
-        setAccessToken(null);
-        setIdToken(null);
+        setAuthTokens(null);
       }
     };
 
@@ -59,8 +58,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
     isLoading,
     getAccessTokenSilently,
     getIdTokenClaims,
-    setAccessToken,
-    setIdToken,
+    setAuthTokens,
   ]);
 
   return <>{children}</>;
