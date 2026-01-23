@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
-import './GuessBox.scss';
+import './GuessLetter.scss';
 
-export interface GuessBoxProps {
+export interface GuessLetterProps {
   /** The letter to display */
   letter: string;
   /** Whether the letter is contained in the answer (but not in correct position) */
@@ -10,20 +10,20 @@ export interface GuessBoxProps {
   correct_letter_and_position: boolean;
 }
 
-export const GuessBox = ({
+export const GuessLetter = ({
   letter,
   letter_contained_in_answer,
   correct_letter_and_position,
-}: GuessBoxProps): ReactElement => {
+}: GuessLetterProps): ReactElement => {
   let stateClass: string = '';
 
   if (correct_letter_and_position) {
-    stateClass = 'guess-box--correct';
+    stateClass = 'guess-letter--correct';
   } else if (letter_contained_in_answer) {
-    stateClass = 'guess-box--contained';
+    stateClass = 'guess-letter--contained';
   } else if (letter) {
-    stateClass = 'guess-box--wrong';
+    stateClass = 'guess-letter--wrong';
   }
 
-  return <div className={`guess-box ${stateClass}`.trim()}>{letter}</div>;
+  return <div className={`guess-letter ${stateClass}`.trim()}>{letter}</div>;
 };

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import { GameBoard } from './GameBoard';
-import { type GuessProps } from './Guess';
+import { type GuessWordProps } from './GuessWord';
 
 const meta: Meta<typeof GameBoard> = {
   title: 'Game/GameBoard',
@@ -15,7 +15,7 @@ const meta: Meta<typeof GameBoard> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const emptyGuess: GuessProps = {
+const emptyGuess: GuessWordProps = {
   boxes: [
     {
       letter: '',

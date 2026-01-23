@@ -5,6 +5,7 @@ declare const tokens: {
   colorBackground: string;
   colorBorder: string;
   colorKeyUnused: string;
+  colorTextGame: string;
   colorText: string;
   colorButtonShadow: string;
   colorBackground: string;
