@@ -2,9 +2,9 @@ import type { ReactElement } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 
 export const ProfilePage = (): ReactElement => {
-  const { user } = useAuth0();
+  const { user, isLoading } = useAuth0();
 
-  if (!user) {
+  if (isLoading || !user) {
     return <p className="app__greeting">Loading profile...</p>;
   }
 

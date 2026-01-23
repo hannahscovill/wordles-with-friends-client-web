@@ -6,6 +6,9 @@ export const profileRoute: AnyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile',
   beforeLoad: ({ context }: { context: RouterContext }) => {
+    if (context.auth.isLoading) {
+      return;
+    }
     if (!context.auth.isAuthenticated) {
       throw redirect({ to: '/' });
     }
