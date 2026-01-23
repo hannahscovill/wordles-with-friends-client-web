@@ -1,4 +1,4 @@
-.guess-box {
+.guess-letter {
   width: 62px;
   height: 62px;
   display: flex;
@@ -8,21 +8,21 @@
   font-weight: bold;
   text-transform: uppercase;
   border: 2px solid var(--color-border);
-  color: var(--color-text);
+  color: var(--color-text-game);
   background-color: var(--color-background);
 }
 
-.guess-box--wrong {
+.guess-letter--wrong {
   background-color: var(--color-wrong);
   border-color: var(--color-wrong);
 }
 
-.guess-box--contained {
+.guess-letter--contained {
   background-color: var(--color-contained);
   border-color: var(--color-contained);
 }
 
-.guess-box--correct {
+.guess-letter--correct {
   background-color: var(--color-correct);
   border-color: var(--color-correct);
 }

@@ -5,16 +5,11 @@ const preview: Preview = {
   parameters: {
     layout: 'centered',
     backgrounds: {
-      // default: 'default-app',
-      values: [
-        { name: 'default-app', value: '#e8e9de' },
-        { name: 'white', value: '#ffffff' },
-        { name: 'dark', value: '#121213' },
-      ],
-    },
-    initialGlobals: {
-      // 👇 Set the initial background color
-      backgrounds: { value: 'default-app' },
+      options: {
+        'default-app': { name: 'Default App', value: '#e8e9de' },
+        white: { name: 'White', value: '#ffffff' },
+        dark: { name: 'Dark', value: '#121213' },
+      },
     },
     controls: {
       matchers: {
@@ -22,6 +17,9 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+  },
+  initialGlobals: {
+    backgrounds: { value: 'default-app' },
   },
 };
 

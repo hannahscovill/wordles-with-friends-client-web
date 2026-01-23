@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Guess } from './Guess';
+import { GuessWord } from './GuessWord';
 
-const meta: Meta<typeof Guess> = {
-  title: 'Game/Guess',
-  component: Guess,
+const meta: Meta<typeof GuessWord> = {
+  title: 'Game/GuessWord',
+  component: GuessWord,
   parameters: {
     layout: 'centered',
   },
