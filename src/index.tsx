@@ -1,9 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Auth0Provider } from '@auth0/auth0-react';
+import {
+  Auth0Provider,
+  useAuth0,
+  type Auth0ContextInterface,
+} from '@auth0/auth0-react';
 import { RouterProvider } from '@tanstack/react-router';
 import { router } from './router';
 import { AuthProvider } from './AuthProvider';
+
+export function App(): React.ReactElement {
+  const auth: Auth0ContextInterface = useAuth0();
+  return <RouterProvider router={router} context={{ auth }} />;
+}
 
 const domain: string | undefined = import.meta.env.PUBLIC_AUTH0_DOMAIN;
 const clientId: string | undefined = import.meta.env.PUBLIC_AUTH0_CLIENT_ID;
@@ -34,7 +43,7 @@ if (rootEl) {
         }}
       >
         <AuthProvider>
-          <RouterProvider router={router} />
+          <App />
         </AuthProvider>
       </Auth0Provider>
     </React.StrictMode>,

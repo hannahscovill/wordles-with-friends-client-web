@@ -63,7 +63,7 @@ const DesignTokens = (): ReactElement => {
     {
       name: 'Background',
       token: '--background',
-      value: tokens.background,
+      value: tokens.colorBackground,
     },
   ];
 
