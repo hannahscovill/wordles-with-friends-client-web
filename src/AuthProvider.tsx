@@ -1,6 +1,5 @@
 import { useEffect, type ReactElement, type ReactNode } from 'react';
 import { useAuth0, type Auth0ContextInterface } from '@auth0/auth0-react';
-import { router } from './router';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 interface AuthTokens {
@@ -22,10 +21,6 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
   } = auth;
 
   const [, setAuthTokens] = useLocalStorage<AuthTokens>('auth_tokens');
-
-  useEffect(() => {
-    router.update({ context: { auth } });
-  }, [auth]);
 
   useEffect(() => {
     const storeTokens = async (): Promise<void> => {

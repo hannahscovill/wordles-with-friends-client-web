@@ -7,7 +7,7 @@ declare const tokens: {
   colorKeyUnused: string;
   colorText: string;
   colorButtonShadow: string;
-  background: string;
+  colorBackground: string;
 };
 
 export default tokens;

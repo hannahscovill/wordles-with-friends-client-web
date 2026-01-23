@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { Outlet } from '@tanstack/react-router';
 import { AppHeader } from './AppHeader';
-import '../App.scss';
+import './Layout.scss';
 
 export const Layout = (): ReactElement => (
   <div className="app">
