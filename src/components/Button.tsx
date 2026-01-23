@@ -1,23 +1,26 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactElement, ReactNode, ButtonHTMLAttributes } from 'react';
 import './Button.scss';
 
 export type ButtonSize = 's' | 'm' | 'l';
 
-export interface ButtonProps {
-  /** The content to display inside the button */
-  children: ReactNode;
+export interface ButtonProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'className'
+> {
+  /** The content to display inside the button (ignored if imageUrl is provided) */
+  children?: ReactNode;
   /** Size of the button */
   size?: ButtonSize;
   /** URL for link buttons - renders as an anchor tag when provided */
   href?: string;
   /** Opens link in new tab (only applies when href is provided) */
   openInNewTab?: boolean;
-  /** Click handler (only applies when href is not provided) */
-  onClick?: () => void;
   /** Additional CSS class name */
   className?: string;
-  /** Disabled state */
-  disabled?: boolean;
+  /** URL for the image to display (renders image instead of children) */
+  imageUrl?: string;
+  /** Alt text for the image (required when imageUrl is provided) */
+  imageAlt?: string;
 }
 
 export const Button = ({
@@ -28,16 +31,39 @@ export const Button = ({
   onClick,
   className = '',
   disabled = false,
+  imageUrl,
+  imageAlt,
+  ...rest
 }: ButtonProps): ReactElement => {
   const baseClass: string = 'button';
-  const combinedClassName: string =
-    `${baseClass} ${baseClass}--${size} ${disabled ? `${baseClass}--disabled` : ''} ${className}`.trim();
+  const isImageButton: boolean = Boolean(imageUrl);
+  const combinedClassName: string = [
+    baseClass,
+    `${baseClass}--${size}`,
+    disabled ? `${baseClass}--disabled` : '',
+    isImageButton ? `${baseClass}--image` : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const content: ReactElement = (
     <>
       <span className="button__shadow" aria-hidden="true" />
-      <span className="button__background" aria-hidden="true" />
-      <span className="button__label">{children}</span>
+      {!isImageButton && (
+        <span className="button__background" aria-hidden="true" />
+      )}
+      <span className="button__label">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={imageAlt ?? 'Button image'}
+            className="button__image"
+          />
+        ) : (
+          children
+        )}
+      </span>
     </>
   );
 
@@ -60,6 +86,7 @@ export const Button = ({
       onClick={onClick}
       disabled={disabled}
       className={combinedClassName}
+      {...rest}
     >
       {content}
     </button>

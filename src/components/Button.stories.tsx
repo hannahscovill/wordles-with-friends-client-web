@@ -4,9 +4,6 @@ import { Button } from './Button';
 const meta: Meta<typeof Button> = {
   title: 'Components/Button',
   component: Button,
-  parameters: {
-    layout: 'centered',
-  },
   argTypes: {
     onClick: { action: 'clicked' },
   },
@@ -54,5 +51,37 @@ export const Large: Story = {
   args: {
     children: 'Large',
     size: 'l',
+  },
+};
+
+export const ImageSmall: Story = {
+  args: {
+    imageUrl: 'https://www.gravatar.com/avatar/?d=mp',
+    imageAlt: 'User avatar',
+    size: 's',
+  },
+};
+
+export const ImageMedium: Story = {
+  args: {
+    imageUrl: 'https://www.gravatar.com/avatar/?d=mp',
+    imageAlt: 'User avatar',
+    size: 'm',
+  },
+};
+
+export const ImageLarge: Story = {
+  args: {
+    imageUrl: 'https://www.gravatar.com/avatar/?d=mp',
+    imageAlt: 'User avatar',
+    size: 'l',
+  },
+};
+
+export const ImageDisabled: Story = {
+  args: {
+    imageUrl: 'https://www.gravatar.com/avatar/?d=mp',
+    imageAlt: 'User avatar',
+    disabled: true,
   },
 };

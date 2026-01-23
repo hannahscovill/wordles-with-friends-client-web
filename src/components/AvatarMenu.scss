@@ -1,57 +1,8 @@
 .avatar-menu {
   position: relative;
 
-  &__trigger {
-    position: relative;
-    display: block;
-    width: 40px;
-    height: 40px;
-    padding: 2px;
-    border: none;
-    background: #fff;
-    cursor: pointer;
-    transform: translate(-0.375rem, -0.375rem);
-    transition: transform 200ms ease;
-
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      transform: translate(0.375rem, 0.375rem);
-      background-color: var(--color-button-shadow);
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      z-index: 2;
-      border: 4px solid #000;
-      pointer-events: none;
-    }
-
-    img {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    &:hover {
-      transform: translate(-0.5rem, -0.5rem);
-    }
-
-    &:active {
-      transform: translate(-0.125rem, -0.125rem);
-    }
-
-    &:focus {
-      outline: 2px solid #000;
-      outline-offset: 2px;
-    }
+  &__trigger.button {
+    margin: 0;
   }
 
   &__popover {

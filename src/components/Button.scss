@@ -153,4 +153,37 @@
       }
     }
   }
+
+  // Image variant
+  &--image {
+    min-width: unset;
+    width: 4rem;
+
+    .button__label {
+      padding: 2px;
+    }
+
+    &.button--s {
+      width: 2.5rem;
+
+      .button__label {
+        padding: 1px;
+      }
+    }
+
+    &.button--l {
+      width: 5rem;
+
+      .button__label {
+        padding: 3px;
+      }
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 }
