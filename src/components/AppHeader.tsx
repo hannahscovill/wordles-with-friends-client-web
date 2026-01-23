@@ -5,6 +5,7 @@ import {
   useNavigate,
   type UseNavigateResult,
 } from '@tanstack/react-router';
+import { AvatarMenu } from './AvatarMenu';
 import './AppHeader.scss';
 
 export interface AppHeaderProps {
@@ -15,7 +16,7 @@ export interface AppHeaderProps {
 export const AppHeader = ({
   title = 'Wordles with Friends',
 }: AppHeaderProps): ReactElement => {
-  const { isAuthenticated, user, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, user, loginWithRedirect, logout } = useAuth0();
   const navigate: UseNavigateResult<string> = useNavigate();
 
   const avatarSrc: string =
@@ -28,16 +29,25 @@ export const AppHeader = ({
         <Link to="/">{title}</Link>
       </h1>
       <div className="app-header__actions">
-        <button
-          type="button"
-          className="app-header__avatar"
-          aria-label={isAuthenticated ? 'View profile' : 'Sign in'}
-          onClick={() =>
-            isAuthenticated ? navigate({ to: '/profile' }) : loginWithRedirect()
-          }
-        >
-          <img src={avatarSrc} alt={avatarAlt} />
-        </button>
+        {isAuthenticated ? (
+          <AvatarMenu
+            avatarSrc={avatarSrc}
+            avatarAlt={avatarAlt}
+            onProfileClick={() => navigate({ to: '/profile' })}
+            onLogOutClick={() =>
+              logout({ logoutParams: { returnTo: window.location.origin } })
+            }
+          />
+        ) : (
+          <button
+            type="button"
+            className="app-header__avatar"
+            aria-label="Sign in"
+            onClick={() => loginWithRedirect()}
+          >
+            <img src={avatarSrc} alt={avatarAlt} />
+          </button>
+        )}
       </div>
     </header>
   );
