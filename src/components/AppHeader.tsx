@@ -6,6 +6,7 @@ import {
   type UseNavigateResult,
 } from '@tanstack/react-router';
 import { AvatarMenu } from './AvatarMenu';
+import { Button } from './Button';
 import './AppHeader.scss';
 
 export interface AppHeaderProps {
@@ -39,14 +40,14 @@ export const AppHeader = ({
             }
           />
         ) : (
-          <button
-            type="button"
+          <Button
             className="app-header__avatar"
+            size="s"
+            imageUrl={avatarSrc}
+            imageAlt={avatarAlt}
             aria-label="Sign in"
             onClick={() => loginWithRedirect()}
-          >
-            <img src={avatarSrc} alt={avatarAlt} />
-          </button>
+          />
         )}
       </div>
     </header>

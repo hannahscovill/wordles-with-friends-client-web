@@ -5,6 +5,7 @@ import {
   type ReactElement,
   type RefObject,
 } from 'react';
+import { Button } from './Button';
 import './AvatarMenu.scss';
 
 export interface AvatarMenuProps {
@@ -97,16 +98,16 @@ export const AvatarMenu = ({
 
   return (
     <div className="avatar-menu" ref={containerRef}>
-      <button
-        type="button"
+      <Button
         className="avatar-menu__trigger"
+        size="s"
+        imageUrl={avatarSrc}
+        imageAlt={avatarAlt}
         aria-label="Open user menu"
         aria-expanded={isOpen}
         aria-haspopup="menu"
         onClick={() => setIsOpen(!isOpen)}
-      >
-        <img src={avatarSrc} alt={avatarAlt} />
-      </button>
+      />
       {isOpen && (
         <ul
           className="avatar-menu__popover"
