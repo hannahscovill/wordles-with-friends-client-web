@@ -36,7 +36,12 @@ export const Keyboard = ({
       {KEYBOARD_ROWS.map((row, rowIndex) => (
         <div key={rowIndex} className="keyboard__row">
           {rowIndex === 2 && (
-            <Key label="Enter" keyCategory="special" wide onClick={onEnter} />
+            <Key
+              label="Delete"
+              keyCategory="special"
+              wide
+              onClick={onBackspace}
+            />
           )}
           {row.map((letter) => (
             <Key
@@ -47,12 +52,7 @@ export const Keyboard = ({
             />
           ))}
           {rowIndex === 2 && (
-            <Key
-              label="Back"
-              keyCategory="special"
-              wide
-              onClick={onBackspace}
-            />
+            <Key label="Enter" keyCategory="enter" wide onClick={onEnter} />
           )}
         </div>
       ))}
