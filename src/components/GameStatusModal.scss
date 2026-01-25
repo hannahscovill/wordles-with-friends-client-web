@@ -1,0 +1,27 @@
+.game-status-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 32px;
+    background: #fff;
+    border: 4px solid #000;
+  }
+
+  &__message {
+    margin: 0;
+    color: #000;
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-align: center;
+  }
+}
