@@ -16,6 +16,17 @@
     list-style: none;
     background: #fff;
     border: 4px solid #000;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 150ms ease,
+      visibility 150ms ease;
+  }
+
+  &:hover &__popover,
+  &:focus-within &__popover {
+    opacity: 1;
+    visibility: visible;
   }
 
   &__item {

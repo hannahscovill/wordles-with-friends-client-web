@@ -8,6 +8,7 @@ const meta: Meta<typeof AvatarMenu> = {
     layout: 'centered',
   },
   argTypes: {
+    onLogInClick: { action: 'log in clicked' },
     onProfileClick: { action: 'profile clicked' },
     onLogOutClick: { action: 'log out clicked' },
   },
@@ -16,16 +17,18 @@ const meta: Meta<typeof AvatarMenu> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
+export const LoggedOut: Story = {
   args: {
     avatarSrc: 'https://www.gravatar.com/avatar/?d=mp',
     avatarAlt: 'User avatar',
+    isLoggedIn: false,
   },
 };
 
-export const WithCustomAvatar: Story = {
+export const LoggedIn: Story = {
   args: {
     avatarSrc: 'https://i.pravatar.cc/150?img=3',
     avatarAlt: 'Jane Doe',
+    isLoggedIn: true,
   },
 };
