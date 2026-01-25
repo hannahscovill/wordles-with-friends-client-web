@@ -1,17 +1,40 @@
 import type { ReactElement } from 'react';
 import { GameBoard } from '../components/GameBoard';
-import type { GameBoardProps } from '../components/GameBoard';
+import { GameStatusModal } from '../components/GameStatusModal';
 import { Keyboard } from '../components/Keyboard';
-import gradedGame from '../gradedGame.json';
+import { useGame } from '../hooks/useGame';
 import './HomePage.scss';
 
-const guesses: GameBoardProps['guesses'] = gradedGame.moves.map((move) => ({
-  boxes: move as GameBoardProps['guesses'][number]['boxes'],
-}));
+export const HomePage = (): ReactElement => {
+  const {
+    guesses,
+    keyStates,
+    status,
+    answer,
+    gameNumber,
+    onKeyPress,
+    onEnter,
+    onBackspace,
+    onNewGame,
+  } = useGame();
 
-export const HomePage = (): ReactElement => (
-  <div className="home-page">
-    <GameBoard guesses={guesses} />
-    <Keyboard />
-  </div>
-);
+  return (
+    <div className="home-page">
+      {status !== 'playing' && (
+        <GameStatusModal
+          won={status === 'won'}
+          answer={answer}
+          nextGameNumber={gameNumber + 1}
+          onPlayAgain={onNewGame}
+        />
+      )}
+      <GameBoard guesses={guesses} />
+      <Keyboard
+        keyStates={keyStates}
+        onKeyPress={onKeyPress}
+        onEnter={onEnter}
+        onBackspace={onBackspace}
+      />
+    </div>
+  );
+};

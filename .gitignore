@@ -18,3 +18,4 @@ dist/
 *storybook.log
 storybook-static
 .env
+.playwright-mcp
