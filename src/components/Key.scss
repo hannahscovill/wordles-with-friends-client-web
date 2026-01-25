@@ -32,13 +32,24 @@
   min-width: 65px;
 }
 
-/* Special keys (Enter/Back) */
+/* Special keys (Delete) */
 .key--special {
   min-width: 65px;
   font-size: 0.75rem;
 }
 
 .key--special.key--wide {
+  min-width: 85px;
+}
+
+/* Enter key */
+.key--enter {
+  min-width: 65px;
+  font-size: 0.75rem;
+  background-color: var(--color-button-shadow);
+}
+
+.key--enter.key--wide {
   min-width: 85px;
 }
 

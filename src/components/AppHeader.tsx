@@ -6,7 +6,6 @@ import {
   type UseNavigateResult,
 } from '@tanstack/react-router';
 import { AvatarMenu } from './AvatarMenu';
-import { Button } from './Button';
 import './AppHeader.scss';
 
 export interface AppHeaderProps {
@@ -30,25 +29,16 @@ export const AppHeader = ({
         <Link to="/">{title}</Link>
       </h1>
       <div className="app-header__actions">
-        {isAuthenticated ? (
-          <AvatarMenu
-            avatarSrc={avatarSrc}
-            avatarAlt={avatarAlt}
-            onProfileClick={() => navigate({ to: '/profile' })}
-            onLogOutClick={() =>
-              logout({ logoutParams: { returnTo: window.location.origin } })
-            }
-          />
-        ) : (
-          <Button
-            className="app-header__avatar"
-            size="s"
-            imageUrl={avatarSrc}
-            imageAlt={avatarAlt}
-            aria-label="Sign in"
-            onClick={() => loginWithRedirect()}
-          />
-        )}
+        <AvatarMenu
+          avatarSrc={avatarSrc}
+          avatarAlt={avatarAlt}
+          isLoggedIn={isAuthenticated}
+          onLogInClick={() => loginWithRedirect()}
+          onProfileClick={() => navigate({ to: '/profile' })}
+          onLogOutClick={() =>
+            logout({ logoutParams: { returnTo: window.location.origin } })
+          }
+        />
       </div>
     </header>
   );

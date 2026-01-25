@@ -5,7 +5,7 @@ export interface KeyProps {
   /** The label to display on the key */
   label: string;
   /** The category of key */
-  keyCategory?: 'alphabet' | 'special';
+  keyCategory?: 'alphabet' | 'special' | 'enter';
   /** The state of the key based on previous guesses */
   state?: 'unused' | 'wrong' | 'contained' | 'correct';
   /** Whether this is a wide key */

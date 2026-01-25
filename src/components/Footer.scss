@@ -1,0 +1,42 @@
+@use '../tokens.module.scss' as tokens;
+
+.footer {
+  background-color: var(--color-button-shadow);
+  position: relative;
+  margin-top: 4rem;
+  padding: 2rem 0;
+
+  &__line {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    max-width: 1600px;
+    height: 0;
+    border: none;
+    border-top: 4px solid var(--color-text);
+    margin: 0.5rem 0;
+  }
+
+  &__content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  &__icon-link {
+    color: var(--color-text);
+    transition: opacity 0.2s ease;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+}

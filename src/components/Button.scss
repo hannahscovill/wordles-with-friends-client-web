@@ -13,25 +13,31 @@
   cursor: pointer;
   text-decoration: none;
   color: inherit;
+  outline: none;
 
-  &__shadow {
+  // Background swatch (sage/green, behind everything)
+  &__background {
     position: absolute;
     inset: 0;
     z-index: 1;
     transform: translate(0.5rem, 0.5rem);
     background-color: var(--color-button-shadow);
+    pointer-events: none;
   }
 
-  &__background {
+  // Primary swatch (white, main visible layer)
+  &__primary {
     position: absolute;
     inset: 0;
     z-index: 2;
     transform: translate(-0.5rem, -0.5rem);
     background-color: #fff;
     transition: transform 200ms ease;
+    pointer-events: none;
   }
 
-  &__label {
+  // Frame (black bordered box with content)
+  &__frame {
     position: relative;
     z-index: 3;
     display: flex;
@@ -40,26 +46,28 @@
     width: 100%;
     height: 100%;
     border: 5px solid #000;
+    background-color: transparent;
+    font-size: 1rem;
     font-weight: 700;
     transition: transform 200ms ease;
   }
 
   &:hover:not(.button--disabled) {
-    .button__background {
+    .button__primary {
       transform: translate(-0.75rem, -0.75rem);
     }
 
-    .button__label {
+    .button__frame {
       transform: translate(-0.25rem, -0.25rem);
     }
   }
 
   &:active:not(.button--disabled) {
-    .button__background {
+    .button__primary {
       transform: translate(-0.25rem, -0.25rem);
     }
 
-    .button__label {
+    .button__frame {
       transform: translate(0.25rem, 0.25rem);
     }
   }
@@ -67,6 +75,13 @@
   &--disabled {
     cursor: not-allowed;
     opacity: 0.5;
+  }
+
+  // Variant for use on light/white backgrounds (e.g., modals)
+  &--onLight {
+    .button__primary {
+      background-color: var(--background);
+    }
   }
 
   // Size variants
@@ -77,41 +92,37 @@
     margin: 0.5rem;
     font-size: 0.875rem;
 
-    .button__label {
+    .button__frame {
       border-width: 3px;
     }
 
-    .button__shadow {
+    .button__background {
       transform: translate(0.375rem, 0.375rem);
     }
 
-    .button__background {
+    .button__primary {
       transform: translate(-0.375rem, -0.375rem);
     }
 
     &:hover:not(.button--disabled) {
-      .button__background {
+      .button__primary {
         transform: translate(-0.5rem, -0.5rem);
       }
 
-      .button__label {
+      .button__frame {
         transform: translate(-0.125rem, -0.125rem);
       }
     }
 
     &:active:not(.button--disabled) {
-      .button__background {
+      .button__primary {
         transform: translate(-0.125rem, -0.125rem);
       }
 
-      .button__label {
+      .button__frame {
         transform: translate(0.125rem, 0.125rem);
       }
     }
-  }
-
-  &--m {
-    // Default size, values already set in base class
   }
 
   &--l {
@@ -121,34 +132,34 @@
     margin: 1.25rem;
     font-size: 1.25rem;
 
-    .button__label {
+    .button__frame {
       border-width: 6px;
     }
 
-    .button__shadow {
+    .button__background {
       transform: translate(0.625rem, 0.625rem);
     }
 
-    .button__background {
+    .button__primary {
       transform: translate(-0.625rem, -0.625rem);
     }
 
     &:hover:not(.button--disabled) {
-      .button__background {
+      .button__primary {
         transform: translate(-0.875rem, -0.875rem);
       }
 
-      .button__label {
+      .button__frame {
         transform: translate(-0.375rem, -0.375rem);
       }
     }
 
     &:active:not(.button--disabled) {
-      .button__background {
+      .button__primary {
         transform: translate(-0.375rem, -0.375rem);
       }
 
-      .button__label {
+      .button__frame {
         transform: translate(0.375rem, 0.375rem);
       }
     }
@@ -160,17 +171,17 @@
     width: 4rem;
     height: 4rem;
 
-    .button__label {
+    .button__frame {
       padding: 0;
       overflow: hidden;
       background: #fff;
     }
 
-    &:hover:not(.button--disabled) .button__label {
+    &:hover:not(.button--disabled) .button__frame {
       transform: translate(-0.25rem, -0.25rem);
     }
 
-    &:active:not(.button--disabled) .button__label {
+    &:active:not(.button--disabled) .button__frame {
       transform: translate(0.25rem, 0.25rem);
     }
 
@@ -178,11 +189,11 @@
       width: 2.5rem;
       height: 2.5rem;
 
-      &:hover:not(.button--disabled) .button__label {
+      &:hover:not(.button--disabled) .button__frame {
         transform: translate(-0.125rem, -0.125rem);
       }
 
-      &:active:not(.button--disabled) .button__label {
+      &:active:not(.button--disabled) .button__frame {
         transform: translate(0.125rem, 0.125rem);
       }
     }
@@ -191,11 +202,11 @@
       width: 5rem;
       height: 5rem;
 
-      &:hover:not(.button--disabled) .button__label {
+      &:hover:not(.button--disabled) .button__frame {
         transform: translate(-0.375rem, -0.375rem);
       }
 
-      &:active:not(.button--disabled) .button__label {
+      &:active:not(.button--disabled) .button__frame {
         transform: translate(0.375rem, 0.375rem);
       }
     }

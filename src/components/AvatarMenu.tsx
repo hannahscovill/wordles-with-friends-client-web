@@ -1,11 +1,5 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  type ReactElement,
-  type RefObject,
-} from 'react';
-import { Button } from './Button';
+import { useRef, type ReactElement, type RefObject } from 'react';
+import { Popover } from './Popover';
 import './AvatarMenu.scss';
 
 export interface AvatarMenuProps {
@@ -13,6 +7,10 @@ export interface AvatarMenuProps {
   avatarSrc: string;
   /** Alt text for the avatar image */
   avatarAlt?: string;
+  /** Whether the user is logged in */
+  isLoggedIn?: boolean;
+  /** Handler for log in option click */
+  onLogInClick?: () => void;
   /** Handler for profile option click */
   onProfileClick?: () => void;
   /** Handler for log out option click */
@@ -22,49 +20,13 @@ export interface AvatarMenuProps {
 export const AvatarMenu = ({
   avatarSrc,
   avatarAlt = 'User avatar',
+  isLoggedIn = false,
+  onLogInClick,
   onProfileClick,
   onLogOutClick,
 }: AvatarMenuProps): ReactElement => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const containerRef: RefObject<HTMLDivElement | null> =
-    useRef<HTMLDivElement>(null);
   const menuRef: RefObject<HTMLUListElement | null> =
     useRef<HTMLUListElement>(null);
-
-  useEffect((): (() => void) => {
-    const handleClickOutside = (event: MouseEvent): void => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
-    }
-
-    return (): void => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen]);
-
-  useEffect((): void => {
-    if (isOpen && menuRef.current) {
-      const firstItem: HTMLButtonElement | null =
-        menuRef.current.querySelector<HTMLButtonElement>('.avatar-menu__item');
-      firstItem?.focus();
-    }
-  }, [isOpen]);
 
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLUListElement>,
@@ -91,52 +53,61 @@ export const AvatarMenu = ({
     }
   };
 
-  const handleItemClick = (handler?: () => void): void => {
-    setIsOpen(false);
-    handler?.();
-  };
+  const trigger: ReactElement = (
+    <button
+      type="button"
+      className="avatar-menu__trigger"
+      aria-label="User menu"
+      aria-haspopup="menu"
+    >
+      <img src={avatarSrc} alt={avatarAlt} className="avatar-menu__image" />
+    </button>
+  );
 
   return (
-    <div className="avatar-menu" ref={containerRef}>
-      <Button
-        className="avatar-menu__trigger"
-        size="s"
-        imageUrl={avatarSrc}
-        imageAlt={avatarAlt}
-        aria-label="Open user menu"
-        aria-expanded={isOpen}
-        aria-haspopup="menu"
-        onClick={() => setIsOpen(!isOpen)}
-      />
-      {isOpen && (
-        <ul
-          className="avatar-menu__popover"
-          role="menu"
-          ref={menuRef}
-          onKeyDown={handleKeyDown}
-        >
+    <Popover trigger={trigger}>
+      <ul
+        className="avatar-menu__list"
+        role="menu"
+        ref={menuRef}
+        onKeyDown={handleKeyDown}
+      >
+        {isLoggedIn ? (
+          <>
+            <li role="none">
+              <button
+                type="button"
+                className="avatar-menu__item"
+                role="menuitem"
+                onClick={onProfileClick}
+              >
+                Profile
+              </button>
+            </li>
+            <li role="none">
+              <button
+                type="button"
+                className="avatar-menu__item"
+                role="menuitem"
+                onClick={onLogOutClick}
+              >
+                Log out
+              </button>
+            </li>
+          </>
+        ) : (
           <li role="none">
             <button
               type="button"
               className="avatar-menu__item"
               role="menuitem"
-              onClick={() => handleItemClick(onProfileClick)}
+              onClick={onLogInClick}
             >
-              Profile
+              Log in
             </button>
           </li>
-          <li role="none">
-            <button
-              type="button"
-              className="avatar-menu__item"
-              role="menuitem"
-              onClick={() => handleItemClick(onLogOutClick)}
-            >
-              Log out
-            </button>
-          </li>
-        </ul>
-      )}
-    </div>
+        )}
+      </ul>
+    </Popover>
   );
 };

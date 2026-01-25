@@ -2,6 +2,7 @@ import type { ReactElement, ReactNode, ButtonHTMLAttributes } from 'react';
 import './Button.scss';
 
 export type ButtonSize = 's' | 'm' | 'l';
+export type ButtonVariant = 'default' | 'onLight';
 
 export interface ButtonProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -11,6 +12,8 @@ export interface ButtonProps extends Omit<
   children?: ReactNode;
   /** Size of the button */
   size?: ButtonSize;
+  /** Visual variant - use 'onLight' for buttons on light/white backgrounds like modals */
+  variant?: ButtonVariant;
   /** URL for link buttons - renders as an anchor tag when provided */
   href?: string;
   /** Opens link in new tab (only applies when href is provided) */
@@ -26,6 +29,7 @@ export interface ButtonProps extends Omit<
 export const Button = ({
   children,
   size = 'm',
+  variant = 'default',
   href,
   openInNewTab = false,
   onClick,
@@ -40,6 +44,7 @@ export const Button = ({
   const combinedClassName: string = [
     baseClass,
     `${baseClass}--${size}`,
+    variant !== 'default' ? `${baseClass}--${variant}` : '',
     disabled ? `${baseClass}--disabled` : '',
     isImageButton ? `${baseClass}--image` : '',
     className,
@@ -49,11 +54,11 @@ export const Button = ({
 
   const content: ReactElement = (
     <>
-      <span className="button__shadow" aria-hidden="true" />
+      <span className="button__background" aria-hidden="true" />
       {!isImageButton && (
-        <span className="button__background" aria-hidden="true" />
+        <span className="button__primary" aria-hidden="true" />
       )}
-      <span className="button__label">
+      <span className="button__frame">
         {imageUrl ? (
           <img
             src={imageUrl}
