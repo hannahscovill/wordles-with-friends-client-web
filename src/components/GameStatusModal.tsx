@@ -8,8 +8,6 @@ export interface GameStatusModalProps {
   won: boolean;
   /** The answer word (shown on loss) */
   answer: string;
-  /** The next game number */
-  nextGameNumber: number;
   /** Handler for play again button */
   onPlayAgain: () => void;
 }
@@ -17,7 +15,6 @@ export interface GameStatusModalProps {
 export const GameStatusModal = ({
   won,
   answer,
-  nextGameNumber,
   onPlayAgain,
 }: GameStatusModalProps): ReactElement => {
   return (
@@ -26,7 +23,7 @@ export const GameStatusModal = ({
         {won ? 'You won!' : `The word was: ${answer}`}
       </p>
       <Button size="s" onClick={onPlayAgain}>
-        Play Again (Game {nextGameNumber})
+        Play Again
       </Button>
     </Modal>
   );

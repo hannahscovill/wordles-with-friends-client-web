@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from './Button';
 
@@ -84,4 +85,34 @@ export const ImageDisabled: Story = {
     imageAlt: 'User avatar',
     disabled: true,
   },
+};
+
+export const OnLightVariant: Story = {
+  args: {
+    children: 'On Light',
+    variant: 'onLight',
+  },
+};
+
+export const OnModal: Story = {
+  args: {
+    children: 'Continue',
+    variant: 'onLight',
+  },
+  decorators: [
+    (Story): ReactElement => (
+      <div
+        style={{
+          padding: '24px 32px',
+          background: '#fff',
+          border: '4px solid #000',
+        }}
+      >
+        <p style={{ margin: '0 0 16px', textAlign: 'center', fontWeight: 600 }}>
+          Modal Content
+        </p>
+        <Story />
+      </div>
+    ),
+  ],
 };

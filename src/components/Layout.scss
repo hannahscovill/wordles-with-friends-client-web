@@ -1,15 +1,5 @@
 @use '../tokens.module.scss' as tokens;
 
-body {
-  margin: 0;
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-}
-
-#root {
-  width: 100%;
-  min-height: 100vh;
-}
-
 .app {
   display: flex;
   flex-direction: column;

@@ -11,7 +11,6 @@ export const HomePage = (): ReactElement => {
     keyStates,
     status,
     answer,
-    gameNumber,
     onKeyPress,
     onEnter,
     onBackspace,
@@ -24,7 +23,6 @@ export const HomePage = (): ReactElement => {
         <GameStatusModal
           won={status === 'won'}
           answer={answer}
-          nextGameNumber={gameNumber + 1}
           onPlayAgain={onNewGame}
         />
       )}
