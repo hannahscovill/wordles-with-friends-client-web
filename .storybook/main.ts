@@ -4,5 +4,14 @@ const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: ['@storybook/addon-docs'],
   framework: 'storybook-react-rsbuild',
+  rsbuildFinal: (config) => {
+    if (process.env.GITHUB_ACTIONS) {
+      config.output = {
+        ...config.output,
+        assetPrefix: '/wordles-with-friends-client-web/',
+      };
+    }
+    return config;
+  },
 };
 export default config;
