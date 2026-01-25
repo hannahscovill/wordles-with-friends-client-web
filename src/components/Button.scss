@@ -52,11 +52,6 @@
     transition: transform 200ms ease;
   }
 
-  &:focus-visible .button__frame {
-    outline: 3px solid #000;
-    outline-offset: 2px;
-  }
-
   &:hover:not(.button--disabled) {
     .button__primary {
       transform: translate(-0.75rem, -0.75rem);

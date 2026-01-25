@@ -22,7 +22,7 @@ export const GameStatusModal = ({
       <p className="game-status-modal__message">
         {won ? 'You won!' : `The word was: ${answer}`}
       </p>
-      <Button size="s" onClick={onPlayAgain}>
+      <Button size="s" variant="onLight" onClick={onPlayAgain}>
         Play Again
       </Button>
     </Modal>
