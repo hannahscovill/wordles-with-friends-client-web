@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import { Button } from './Button';
+import { Modal } from './Modal';
 import './GameStatusModal.scss';
 
 export interface GameStatusModalProps {
@@ -20,15 +21,13 @@ export const GameStatusModal = ({
   onPlayAgain,
 }: GameStatusModalProps): ReactElement => {
   return (
-    <div className="game-status-modal">
-      <div className="game-status-modal__content">
-        <p className="game-status-modal__message">
-          {won ? 'You won!' : `The word was: ${answer}`}
-        </p>
-        <Button size="s" onClick={onPlayAgain}>
-          Play Again (Game {nextGameNumber})
-        </Button>
-      </div>
-    </div>
+    <Modal>
+      <p className="game-status-modal__message">
+        {won ? 'You won!' : `The word was: ${answer}`}
+      </p>
+      <Button size="s" onClick={onPlayAgain}>
+        Play Again (Game {nextGameNumber})
+      </Button>
+    </Modal>
   );
 };
