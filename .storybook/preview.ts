@@ -1,5 +1,6 @@
 import type { Preview } from 'storybook-react-rsbuild';
 import '../src/tokens.module.scss';
+import '../src/global.scss';
 
 const preview: Preview = {
   parameters: {
