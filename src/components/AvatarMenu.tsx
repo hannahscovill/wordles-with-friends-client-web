@@ -1,5 +1,5 @@
 import { useRef, type ReactElement, type RefObject } from 'react';
-import { Button } from './Button';
+import { Popover } from './Popover';
 import './AvatarMenu.scss';
 
 export interface AvatarMenuProps {
@@ -53,18 +53,21 @@ export const AvatarMenu = ({
     }
   };
 
+  const trigger: ReactElement = (
+    <button
+      type="button"
+      className="avatar-menu__trigger"
+      aria-label="User menu"
+      aria-haspopup="menu"
+    >
+      <img src={avatarSrc} alt={avatarAlt} className="avatar-menu__image" />
+    </button>
+  );
+
   return (
-    <div className="avatar-menu">
-      <Button
-        className="avatar-menu__trigger"
-        size="s"
-        imageUrl={avatarSrc}
-        imageAlt={avatarAlt}
-        aria-label="User menu"
-        aria-haspopup="menu"
-      />
+    <Popover trigger={trigger}>
       <ul
-        className="avatar-menu__popover"
+        className="avatar-menu__list"
         role="menu"
         ref={menuRef}
         onKeyDown={handleKeyDown}
@@ -105,6 +108,6 @@ export const AvatarMenu = ({
           </li>
         )}
       </ul>
-    </div>
+    </Popover>
   );
 };

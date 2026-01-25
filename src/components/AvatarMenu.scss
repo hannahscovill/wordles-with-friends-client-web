@@ -1,32 +1,39 @@
 .avatar-menu {
-  position: relative;
+  &__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 3px solid #000;
+    border-radius: 0;
+    background: #fff;
+    cursor: pointer;
+    overflow: hidden;
 
-  &__trigger.button {
-    margin: 0;
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 3px solid #000;
+      outline-offset: 2px;
+    }
   }
 
-  &__popover {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    z-index: 100;
-    min-width: 140px;
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  &__list {
     margin: 0;
     padding: 0;
     list-style: none;
-    background: #fff;
-    border: 4px solid #000;
-    opacity: 0;
-    visibility: hidden;
-    transition:
-      opacity 150ms ease,
-      visibility 150ms ease;
-  }
-
-  &:hover &__popover,
-  &:focus-within &__popover {
-    opacity: 1;
-    visibility: visible;
   }
 
   &__item {
