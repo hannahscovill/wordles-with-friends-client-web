@@ -897,7 +897,14 @@ export function useGame(): UseGameReturn {
     ): void => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
+      // Let buttons handle their own Enter/Space key events
+      const target: EventTarget | null = e.target;
+      const isButton: boolean =
+        target instanceof HTMLButtonElement ||
+        (target instanceof HTMLElement && target.closest('button') !== null);
+
       if (e.key === 'Enter') {
+        if (isButton) return;
         e.preventDefault();
         submitGuess();
       } else if (e.key === 'Backspace') {
