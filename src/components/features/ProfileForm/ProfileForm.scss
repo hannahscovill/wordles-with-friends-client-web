@@ -1,0 +1,57 @@
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 400px;
+  padding: 24px;
+
+  &__avatar {
+    margin-bottom: 8px;
+  }
+
+  &__field {
+    width: 100%;
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  &__value {
+    display: block;
+    padding: 8px 0;
+    color: #666;
+    font-size: 1rem;
+  }
+
+  &__char-count {
+    display: block;
+    margin-top: 4px;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #666;
+  }
+
+  &__error {
+    margin: 0;
+    padding: 8px 12px;
+    width: 100%;
+    background: #fee2e2;
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    width: 100%;
+  }
+}

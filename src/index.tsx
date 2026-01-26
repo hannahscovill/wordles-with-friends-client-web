@@ -39,6 +39,7 @@ if (rootEl) {
         clientId={clientId}
         authorizationParams={{
           redirect_uri: window.location.origin,
+          scope: 'openid profile email read:current_user',
           audience,
         }}
       >
