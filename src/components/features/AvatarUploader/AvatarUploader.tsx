@@ -1,4 +1,5 @@
 import { useState, useRef, type ReactElement, type DragEvent } from 'react';
+import { Spinner } from '../../ui/Spinner';
 import './AvatarUploader.scss';
 
 const MAX_FILE_SIZE: number = 2 * 1024 * 1024; // 2MB
@@ -170,7 +171,7 @@ export const AvatarUploader = ({
       >
         {isUploading ? (
           <div className="avatar-uploader__loading">
-            <span className="avatar-uploader__spinner" />
+            <Spinner size="medium" label="Uploading avatar" />
           </div>
         ) : displaySrc ? (
           <img

@@ -1,5 +1,5 @@
 const API_BASE_URL: string =
-  import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8080';
+  import.meta.env.PUBLIC_API_URL ?? 'https://localhost:8080';
 
 export interface UserProfile {
   userId: string;

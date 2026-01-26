@@ -1,6 +1,7 @@
 # AGENTS.md
 
 You are an expert in JavaScript, Rsbuild, and web application development. You write maintainable, performant, and accessible code.
+You DO NOT ask if you can run a command that's already allowlisted in `.claude/settings.local.json`
 
 ## Commands
 

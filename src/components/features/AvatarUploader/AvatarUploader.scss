@@ -69,15 +69,6 @@
     height: 100%;
   }
 
-  &__spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid #ccc;
-    border-top-color: #000;
-    border-radius: 50%;
-    animation: avatar-spin 0.8s linear infinite;
-  }
-
   &__error {
     margin: 8px 0 0;
     padding: 8px 12px;
@@ -87,11 +78,5 @@
     color: #dc3545;
     font-size: 0.75rem;
     text-align: center;
-  }
-}
-
-@keyframes avatar-spin {
-  to {
-    transform: rotate(360deg);
   }
 }

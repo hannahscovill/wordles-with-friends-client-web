@@ -1,6 +1,7 @@
 import { useState, type ReactElement, type FormEvent } from 'react';
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
+import { Avatar } from '../../ui/Avatar';
 import { AvatarUploader } from '../AvatarUploader';
 import './ProfileForm.scss';
 
@@ -17,6 +18,8 @@ export interface ProfileFormProps {
   initialData: ProfileFormData;
   /** Callback when form is submitted */
   onSubmit: (data: { displayName: string; avatarUrl: string }) => Promise<void>;
+  /** Whether profile data is loading */
+  isLoading?: boolean;
   /** Whether form is currently saving */
   isSaving?: boolean;
 }
@@ -24,8 +27,10 @@ export interface ProfileFormProps {
 export const ProfileForm = ({
   initialData,
   onSubmit,
+  isLoading = false,
   isSaving = false,
 }: ProfileFormProps): ReactElement => {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [displayName, setDisplayName] = useState<string>(
     initialData.displayName,
   );
@@ -33,6 +38,18 @@ export const ProfileForm = ({
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [isAvatarUploading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [prevInitialData, setPrevInitialData] =
+    useState<ProfileFormData>(initialData);
+
+  // Sync local state when initialData changes (during render, not in effect)
+  if (
+    initialData.displayName !== prevInitialData.displayName ||
+    initialData.avatarUrl !== prevInitialData.avatarUrl
+  ) {
+    setPrevInitialData(initialData);
+    setDisplayName(initialData.displayName);
+    setAvatarUrl(initialData.avatarUrl);
+  }
 
   const hasChanges: boolean =
     displayName !== initialData.displayName ||
@@ -64,6 +81,7 @@ export const ProfileForm = ({
     setAvatarUrl(initialData.avatarUrl);
     setPendingAvatarFile(null);
     setError(null);
+    setIsEditing(false);
   };
 
   const handleSubmit = async (event: FormEvent): Promise<void> => {
@@ -86,10 +104,43 @@ export const ProfileForm = ({
         URL.revokeObjectURL(avatarUrl);
         setPendingAvatarFile(null);
       }
+
+      setIsEditing(false);
     } catch {
       setError('Failed to save changes. Please try again.');
     }
   };
+
+  if (!isEditing) {
+    return (
+      <div className="profile-form">
+        <div className="profile-form__avatar">
+          <Avatar src={avatarUrl} alt="Profile avatar" size="l" />
+        </div>
+
+        <div className="profile-form__field">
+          <span className="profile-form__label">Display Name</span>
+          <span className="profile-form__value">{displayName || '—'}</span>
+        </div>
+
+        <div className="profile-form__field">
+          <span className="profile-form__label">Email</span>
+          <span className="profile-form__value">{initialData.email}</span>
+        </div>
+
+        <div className="profile-form__actions">
+          <Button
+            size="s"
+            type="button"
+            onClick={() => setIsEditing(true)}
+            disabled={isLoading}
+          >
+            Edit Profile
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form className="profile-form" onSubmit={handleSubmit}>
@@ -102,11 +153,6 @@ export const ProfileForm = ({
       </div>
 
       <div className="profile-form__field">
-        <span className="profile-form__label">Email</span>
-        <span className="profile-form__email">{initialData.email}</span>
-      </div>
-
-      <div className="profile-form__field">
         <Input
           label="Display Name"
           value={displayName}
@@ -114,10 +160,16 @@ export const ProfileForm = ({
           error={displayNameError}
           maxLength={MAX_DISPLAY_NAME_LENGTH + 10}
           fullWidth
+          disabled={isLoading || isSaving}
         />
         <span className="profile-form__char-count">
           {displayName.length}/{MAX_DISPLAY_NAME_LENGTH}
         </span>
+      </div>
+
+      <div className="profile-form__field">
+        <span className="profile-form__label">Email</span>
+        <span className="profile-form__value">{initialData.email}</span>
       </div>
 
       {error && <p className="profile-form__error">{error}</p>}
@@ -127,14 +179,16 @@ export const ProfileForm = ({
           size="s"
           type="button"
           onClick={handleCancel}
-          disabled={!hasChanges || isSaving}
+          disabled={isLoading || isSaving}
         >
           Cancel
         </Button>
         <Button
           size="s"
           type="submit"
-          disabled={!hasChanges || Boolean(displayNameError) || isSaving}
+          disabled={
+            isLoading || !hasChanges || Boolean(displayNameError) || isSaving
+          }
         >
           {isSaving ? 'Saving...' : 'Save Changes'}
         </Button>

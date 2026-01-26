@@ -1,5 +1,4 @@
 import { useState, useEffect, type ReactElement } from 'react';
-import { useNavigate, type UseNavigateResult } from '@tanstack/react-router';
 import { useAuth0 } from '@auth0/auth0-react';
 import {
   ProfileForm,
@@ -10,28 +9,38 @@ import {
   getUserProfile,
   type UserProfile,
 } from '../api/profile';
+import { Spinner } from '../components/ui/Spinner';
 import './ProfilePage.scss';
 
 export const ProfilePage = (): ReactElement => {
-  const navigate: UseNavigateResult<string> = useNavigate();
-  const { user, isLoading, isAuthenticated, getAccessTokenSilently } =
-    useAuth0();
+  const {
+    user,
+    isLoading,
+    isAuthenticated,
+    getAccessTokenSilently,
+    loginWithRedirect,
+  } = useAuth0();
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [profileData, setProfileData] = useState<ProfileFormData | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
+  const [profileData, setProfileData] = useState<ProfileFormData>({
+    email: '',
+    displayName: '',
+    avatarUrl: '',
+  });
 
-  // Redirect if not authenticated after loading
+  // Start login flow if not authenticated (wait for Auth0 to finish loading first)
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate({ to: '/' });
+      loginWithRedirect({
+        appState: { returnTo: '/profile' },
+      });
     }
-  }, [isLoading, isAuthenticated, navigate]);
+  }, [isLoading, isAuthenticated, loginWithRedirect]);
 
   // Load user profile data
   useEffect(() => {
     const loadProfile = async (): Promise<void> => {
       if (!isAuthenticated || !user) {
-        setIsLoadingProfile(false);
         return;
       }
 
@@ -39,16 +48,39 @@ export const ProfilePage = (): ReactElement => {
         const token: string = await getAccessTokenSilently();
         const profile: UserProfile | null = await getUserProfile(token);
 
+        // Get display_name from token's user_metadata
+        const tokenDisplayName: string | undefined =
+          (user as Record<string, unknown>).user_metadata &&
+          typeof (user as Record<string, unknown>).user_metadata === 'object'
+            ? ((
+                (user as Record<string, unknown>).user_metadata as Record<
+                  string,
+                  unknown
+                >
+              ).display_name as string | undefined)
+            : undefined;
+
         setProfileData({
           email: user.email ?? '',
-          displayName: profile?.displayName ?? user.name ?? '',
+          displayName: tokenDisplayName ?? profile?.displayName ?? '',
           avatarUrl: profile?.avatarUrl ?? user.picture ?? '',
         });
       } catch {
         // Fallback to Auth0 user data if profile fetch fails
+        const tokenDisplayName: string | undefined =
+          (user as Record<string, unknown>).user_metadata &&
+          typeof (user as Record<string, unknown>).user_metadata === 'object'
+            ? ((
+                (user as Record<string, unknown>).user_metadata as Record<
+                  string,
+                  unknown
+                >
+              ).display_name as string | undefined)
+            : undefined;
+
         setProfileData({
           email: user.email ?? '',
-          displayName: user.name ?? '',
+          displayName: tokenDisplayName ?? '',
           avatarUrl: user.picture ?? '',
         });
       } finally {
@@ -56,8 +88,7 @@ export const ProfilePage = (): ReactElement => {
       }
     };
 
-    // Only load profile once auth is done loading
-    if (!isLoading) {
+    if (!isLoading && isAuthenticated) {
       loadProfile();
     }
   }, [isLoading, isAuthenticated, user, getAccessTokenSilently]);
@@ -75,22 +106,22 @@ export const ProfilePage = (): ReactElement => {
       });
 
       // Update local profile data to reflect the saved changes
-      if (profileData) {
-        setProfileData({
-          ...profileData,
-          displayName: data.displayName,
-          avatarUrl: data.avatarUrl,
-        });
-      }
+      setProfileData({
+        ...profileData,
+        displayName: data.displayName,
+        avatarUrl: data.avatarUrl,
+      });
     } finally {
       setIsSaving(false);
     }
   };
 
-  if (isLoading || isLoadingProfile || !profileData) {
+  if (isLoading) {
     return (
       <div className="profile-page">
-        <div className="profile-page__loading">Loading profile...</div>
+        <div className="profile-page__loading">
+          <Spinner size="large" label="Loading profile" />
+        </div>
       </div>
     );
   }
@@ -98,17 +129,19 @@ export const ProfilePage = (): ReactElement => {
   if (!isAuthenticated) {
     return (
       <div className="profile-page">
-        <div className="profile-page__loading">Redirecting...</div>
+        <div className="profile-page__loading">
+          <Spinner size="large" label="Redirecting to login" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="profile-page">
-      <h1 className="profile-page__title">Profile</h1>
       <ProfileForm
         initialData={profileData}
         onSubmit={handleSubmit}
+        isLoading={isLoadingProfile}
         isSaving={isSaving}
       />
     </div>

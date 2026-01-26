@@ -26,13 +26,20 @@ export const Avatar = ({
   editable = false,
   onEditClick,
 }: AvatarProps): ReactElement => {
-  const [imgSrc, setImgSrc] = useState(src);
-  const [hasError, setHasError] = useState(false);
+  const [hasError, setHasError] = useState<boolean>(false);
+  const [prevSrc, setPrevSrc] = useState<string>(src);
+
+  // Reset error state when src changes (during render, not in effect)
+  if (src !== prevSrc) {
+    setPrevSrc(src);
+    setHasError(false);
+  }
+
+  const imgSrc: string = hasError ? FALLBACK_IMAGE : src;
 
   const handleError = (): void => {
     if (!hasError) {
       setHasError(true);
-      setImgSrc(FALLBACK_IMAGE);
     }
   };
 
