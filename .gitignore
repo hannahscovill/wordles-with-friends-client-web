@@ -19,3 +19,4 @@ dist/
 storybook-static
 .env
 .playwright-mcp
+TEST_CREDENTIALS.txt
