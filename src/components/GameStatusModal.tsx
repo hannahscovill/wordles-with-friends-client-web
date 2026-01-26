@@ -1,6 +1,5 @@
 import type { ReactElement } from 'react';
-import { Button } from './Button';
-import { Modal } from './Modal';
+import { Button, Modal } from './ui';
 import './GameStatusModal.scss';
 
 export interface GameStatusModalProps {
