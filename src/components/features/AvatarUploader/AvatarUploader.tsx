@@ -1,8 +1,4 @@
-import { useState, type ReactElement } from 'react';
-import { Avatar, type AvatarSize } from '../../ui/Avatar';
-import { Button } from '../../ui/Button';
-import { FileUpload } from '../../ui/FileUpload';
-import { Modal } from '../../ui/Modal';
+import { useState, useRef, type ReactElement, type DragEvent } from 'react';
 import './AvatarUploader.scss';
 
 const MAX_FILE_SIZE: number = 2 * 1024 * 1024; // 2MB
@@ -15,16 +11,12 @@ const ALLOWED_TYPES: string[] = [
 ];
 
 export interface AvatarUploaderProps {
-  /** Current avatar URL */
-  currentSrc: string;
-  /** Alt text */
-  alt: string;
+  /** Current avatar URL (optional - shows placeholder if not provided) */
+  currentSrc?: string;
   /** Callback when new image is selected (returns File, not uploaded yet) */
   onImageSelect: (file: File) => void;
   /** Loading state during upload */
   isUploading?: boolean;
-  /** Size of the avatar display */
-  size?: AvatarSize;
 }
 
 interface ValidationError {
@@ -78,20 +70,16 @@ const validateFile = (file: File): Promise<ValidationError | null> => {
 
 export const AvatarUploader = ({
   currentSrc,
-  alt,
   onImageSelect,
   isUploading = false,
-  size = 'l',
 }: AvatarUploaderProps): ReactElement => {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const inputRef: React.RefObject<HTMLInputElement | null> =
+    useRef<HTMLInputElement>(null);
 
-  const handleEditClick = (): void => {
-    setIsModalOpen(true);
-    setError(null);
-  };
+  const displaySrc: string | null = previewUrl ?? currentSrc ?? null;
 
   const handleFileSelect = async (file: File): Promise<void> => {
     setError(null);
@@ -102,84 +90,102 @@ export const AvatarUploader = ({
       return;
     }
 
-    // Create preview URL
-    const url: string = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    setSelectedFile(file);
-  };
-
-  const handleCancel = (): void => {
+    // Clean up old preview URL
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
-    setPreviewUrl(null);
-    setSelectedFile(null);
-    setError(null);
-    setIsModalOpen(false);
+
+    // Create preview URL
+    const url: string = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    onImageSelect(file);
   };
 
-  const handleConfirm = (): void => {
-    if (selectedFile) {
-      onImageSelect(selectedFile);
+  const handleClick = (): void => {
+    inputRef.current?.click();
+  };
+
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    const file: File | undefined = event.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
     }
-    handleCancel();
+    // Reset input so same file can be selected again
+    event.target.value = '';
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLDivElement>): void => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLDivElement>): void => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>): void => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+
+    const file: File | undefined = event.dataTransfer.files[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent): void => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleClick();
+    }
   };
 
   return (
-    <>
-      <div className="avatar-uploader">
+    <div className="avatar-uploader">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleInputChange}
+        className="avatar-uploader__input"
+        aria-label="Upload avatar image"
+      />
+
+      <div
+        className={`avatar-uploader__dropzone ${isDragging ? 'avatar-uploader__dropzone--dragging' : ''} ${displaySrc ? 'avatar-uploader__dropzone--has-image' : ''}`}
+        onClick={handleClick}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label="Click or drag to upload avatar image"
+      >
         {isUploading ? (
-          <div
-            className={`avatar-uploader__loading avatar-uploader__loading--${size}`}
-          >
+          <div className="avatar-uploader__loading">
             <span className="avatar-uploader__spinner" />
           </div>
-        ) : (
-          <Avatar
-            src={currentSrc}
-            alt={alt}
-            size={size}
-            editable
-            onEditClick={handleEditClick}
+        ) : displaySrc ? (
+          <img
+            src={displaySrc}
+            alt="Avatar preview"
+            className="avatar-uploader__preview-image"
           />
+        ) : (
+          <span className="avatar-uploader__placeholder">
+            Click or drag to upload
+          </span>
         )}
       </div>
 
-      {isModalOpen && (
-        <Modal>
-          <h2 className="avatar-uploader__title">Change Avatar</h2>
-
-          <div className="avatar-uploader__preview">
-            <Avatar
-              src={previewUrl ?? currentSrc}
-              alt={selectedFile ? 'New avatar preview' : alt}
-              size="l"
-            />
-          </div>
-
-          {error && <p className="avatar-uploader__error">{error}</p>}
-
-          <FileUpload accept="image/*" onFileSelect={handleFileSelect}>
-            <Button size="s" variant="onLight">
-              {selectedFile ? 'Choose Different' : 'Choose Image'}
-            </Button>
-          </FileUpload>
-
-          <div className="avatar-uploader__actions">
-            <Button size="s" variant="onLight" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button
-              size="s"
-              variant="onLight"
-              onClick={handleConfirm}
-              disabled={!selectedFile}
-            >
-              Confirm
-            </Button>
-          </div>
-        </Modal>
-      )}
-    </>
+      {error && <p className="avatar-uploader__error">{error}</p>}
+    </div>
   );
 };

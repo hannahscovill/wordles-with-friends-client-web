@@ -96,10 +96,8 @@ export const ProfileForm = ({
       <div className="profile-form__avatar">
         <AvatarUploader
           currentSrc={avatarUrl}
-          alt={`${displayName}'s avatar`}
           onImageSelect={handleAvatarSelect}
           isUploading={isAvatarUploading}
-          size="l"
         />
       </div>
 
