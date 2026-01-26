@@ -17,7 +17,7 @@ export interface AvatarProps {
 }
 
 const FALLBACK_IMAGE: string =
-  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="50" fill="%23ccc"/%3E%3Ccircle cx="50" cy="40" r="18" fill="%23fff"/%3E%3Cellipse cx="50" cy="85" rx="30" ry="25" fill="%23fff"/%3E%3C/svg%3E';
+  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23ccc"/%3E%3Ccircle cx="50" cy="40" r="18" fill="%23fff"/%3E%3Cellipse cx="50" cy="85" rx="30" ry="25" fill="%23fff"/%3E%3C/svg%3E';
 
 export const Avatar = ({
   src,
