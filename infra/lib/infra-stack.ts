@@ -57,13 +57,8 @@ export class InfraStack extends cdk.Stack {
       domainNames: [DOMAIN_NAME],
       certificate: this.certificate,
       // Handle SPA routing - return index.html for error responses
+      // Note: CloudFront only supports 400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504
       errorResponses: [
-        {
-          httpStatus: 401,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: cdk.Duration.seconds(0),
-        },
         {
           httpStatus: 403,
           responseHttpStatus: 200,
