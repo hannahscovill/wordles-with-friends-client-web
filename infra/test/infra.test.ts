@@ -37,19 +37,22 @@ describe('InfraStack', () => {
     });
 
     test('creates bucket with public access blocked', () => {
-      template.hasResourceProperties('AWS::S3::BucketPolicy', Match.objectLike({
-        PolicyDocument: Match.objectLike({
-          Statement: Match.arrayWith([
-            Match.objectLike({
-              Effect: 'Allow',
-              Principal: {
-                Service: 'cloudfront.amazonaws.com',
-              },
-              Action: 's3:GetObject',
-            }),
-          ]),
+      template.hasResourceProperties(
+        'AWS::S3::BucketPolicy',
+        Match.objectLike({
+          PolicyDocument: Match.objectLike({
+            Statement: Match.arrayWith([
+              Match.objectLike({
+                Effect: 'Allow',
+                Principal: {
+                  Service: 'cloudfront.amazonaws.com',
+                },
+                Action: 's3:GetObject',
+              }),
+            ]),
+          }),
         }),
-      }));
+      );
     });
   });
 

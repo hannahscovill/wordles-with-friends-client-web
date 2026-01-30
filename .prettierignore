@@ -3,5 +3,7 @@ package-lock.json
 pnpm-lock.yaml
 yarn.lock
 
-# CDK infrastructure
-infra/
+# CDK build artifacts
+infra/cdk.out/
+infra/**/*.js
+infra/**/*.d.ts
