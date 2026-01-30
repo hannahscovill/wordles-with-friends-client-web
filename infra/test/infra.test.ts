@@ -8,7 +8,7 @@ describe('InfraStack', () => {
   beforeAll(() => {
     const app = new cdk.App();
     const stack = new InfraStack(app, 'TestStack', {
-      env: { account: '123456789012', region: 'us-west-2' },
+      env: { account: '123456789012', region: 'us-east-1' },
     });
     template = Template.fromStack(stack);
   });
@@ -56,6 +56,15 @@ describe('InfraStack', () => {
     });
   });
 
+  describe('ACM Certificate', () => {
+    test('creates certificate for wordles.dev', () => {
+      template.hasResourceProperties('AWS::CertificateManager::Certificate', {
+        DomainName: 'wordles.dev',
+        ValidationMethod: 'DNS',
+      });
+    });
+  });
+
   describe('CloudFront Distribution', () => {
     test('creates distribution with HTTPS redirect', () => {
       template.hasResourceProperties('AWS::CloudFront::Distribution', {
@@ -72,6 +81,14 @@ describe('InfraStack', () => {
       template.hasResourceProperties('AWS::CloudFront::Distribution', {
         DistributionConfig: Match.objectLike({
           DefaultRootObject: 'index.html',
+        }),
+      });
+    });
+
+    test('creates distribution with custom domain', () => {
+      template.hasResourceProperties('AWS::CloudFront::Distribution', {
+        DistributionConfig: Match.objectLike({
+          Aliases: ['wordles.dev'],
         }),
       });
     });
@@ -127,6 +144,14 @@ describe('InfraStack', () => {
 
     test('exports website URL', () => {
       template.hasOutput('WebsiteUrl', {});
+    });
+
+    test('exports custom domain', () => {
+      template.hasOutput('CustomDomain', {});
+    });
+
+    test('exports certificate ARN', () => {
+      template.hasOutput('CertificateArn', {});
     });
   });
 });
