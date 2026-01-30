@@ -56,16 +56,22 @@ export class InfraStack extends cdk.Stack {
       // Custom domain configuration
       domainNames: [DOMAIN_NAME],
       certificate: this.certificate,
-      // Handle SPA routing - return index.html for 404s
+      // Handle SPA routing - return index.html for error responses
       errorResponses: [
         {
-          httpStatus: 404,
+          httpStatus: 401,
           responseHttpStatus: 200,
           responsePagePath: '/index.html',
           ttl: cdk.Duration.seconds(0),
         },
         {
           httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+          ttl: cdk.Duration.seconds(0),
+        },
+        {
+          httpStatus: 404,
           responseHttpStatus: 200,
           responsePagePath: '/index.html',
           ttl: cdk.Duration.seconds(0),
