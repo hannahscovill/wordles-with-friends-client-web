@@ -1,0 +1,88 @@
+const API_BASE_URL: string =
+  import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8080';
+
+const SESSION_COOKIE_NAME: string = 'wordle_session';
+
+function generateSessionId(): string {
+  return crypto.randomUUID();
+}
+
+function getSessionCookie(): string | null {
+  const match: RegExpMatchArray | null = document.cookie.match(
+    new RegExp(`(^| )${SESSION_COOKIE_NAME}=([^;]+)`),
+  );
+  return match ? match[2] : null;
+}
+
+function setSessionCookie(sessionId: string): void {
+  // Set cookie to expire in 1 year
+  const expires: Date = new Date();
+  expires.setFullYear(expires.getFullYear() + 1);
+  document.cookie = `${SESSION_COOKIE_NAME}=${sessionId}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+}
+
+function ensureSessionCookie(): string {
+  let sessionId: string | null = getSessionCookie();
+  if (!sessionId) {
+    sessionId = generateSessionId();
+    setSessionCookie(sessionId);
+  }
+  return sessionId;
+}
+
+export interface GuessRequest {
+  puzzle_date_iso_day: string;
+  word_guessed: string;
+}
+
+export type LetterGrade = 'correct' | 'contained' | 'wrong';
+
+export interface GradedLetter {
+  letter: string;
+  grade: LetterGrade;
+}
+
+export type GradedMove = GradedLetter[];
+
+export interface GameState {
+  game_id: string;
+  user_id: string;
+  moves_qty: number;
+  won: boolean;
+  moves: GradedMove[];
+}
+
+export interface SubmitGuessOptions {
+  token?: string;
+}
+
+export const submitGuess = async (
+  data: GuessRequest,
+  options: SubmitGuessOptions = {},
+): Promise<GameState> => {
+  const { token } = options;
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  } else {
+    // Ensure anonymous users have a session cookie
+    ensureSessionCookie();
+  }
+
+  const response: Response = await fetch(`${API_BASE_URL}/guess`, {
+    method: 'POST',
+    headers,
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to submit guess: ${response.status}`);
+  }
+
+  return (await response.json()) as GameState;
+};
