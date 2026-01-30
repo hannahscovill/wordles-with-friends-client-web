@@ -22,7 +22,6 @@ export class InfraStack extends cdk.Stack {
 
     // S3 bucket for website assets
     this.bucket = new s3.Bucket(this, 'WebsiteBucket', {
-      bucketName: `wordles-with-friends-${this.account}-${this.region}`,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
       versioned: true,
