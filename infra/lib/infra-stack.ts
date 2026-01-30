@@ -72,29 +72,6 @@ export class InfraStack extends cdk.Stack {
       destinationBucket: this.bucket,
       distribution: this.distribution,
       distributionPaths: ['/*'],
-      cacheControl: [
-        s3deploy.CacheControl.setPublic(),
-        s3deploy.CacheControl.maxAge(cdk.Duration.days(365)),
-        s3deploy.CacheControl.immutable(),
-      ],
-      exclude: ['index.html', '*.json'],
-    });
-
-    // Deploy index.html with no-cache
-    new s3deploy.BucketDeployment(this, 'DeployIndexHtml', {
-      sources: [s3deploy.Source.asset(path.join(__dirname, '../../dist'), {
-        exclude: ['**/*'],
-        bundling: undefined,
-      })],
-      destinationBucket: this.bucket,
-      distribution: this.distribution,
-      distributionPaths: ['/index.html'],
-      cacheControl: [
-        s3deploy.CacheControl.noCache(),
-        s3deploy.CacheControl.mustRevalidate(),
-      ],
-      include: ['index.html'],
-      prune: false,
     });
 
     // Outputs
