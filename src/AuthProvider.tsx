@@ -8,8 +8,6 @@ import {
 import { useAuth0, type Auth0ContextInterface } from '@auth0/auth0-react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
-const AUTH_LOADING_TIMEOUT_MS: number = 10000;
-
 interface AuthTokens {
   access_token: string;
   id_token: string;
@@ -34,6 +32,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
   const hasRedirected: MutableRefObject<boolean> = useRef(false);
 
   // Handle Auth0 errors (e.g., login_required, consent_required)
+  // This only triggers when a user actively tries to login and encounters an error
   useEffect(() => {
     if (error && !hasRedirected.current) {
       console.error('Auth0 error:', error);
@@ -42,22 +41,6 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
       loginWithRedirect();
     }
   }, [error, setAuthTokens, loginWithRedirect]);
-
-  // Handle stuck loading state - if Auth0 takes too long, clear tokens and redirect
-  useEffect(() => {
-    if (!isLoading) return;
-
-    const timeoutId: ReturnType<typeof setTimeout> = setTimeout((): void => {
-      if (isLoading && !hasRedirected.current) {
-        console.warn('Auth0 loading timeout - redirecting to login');
-        setAuthTokens(null);
-        hasRedirected.current = true;
-        loginWithRedirect();
-      }
-    }, AUTH_LOADING_TIMEOUT_MS);
-
-    return (): void => clearTimeout(timeoutId);
-  }, [isLoading, setAuthTokens, loginWithRedirect]);
 
   useEffect(() => {
     const storeTokens = async (): Promise<void> => {
