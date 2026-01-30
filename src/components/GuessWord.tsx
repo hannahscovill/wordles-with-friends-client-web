@@ -11,11 +11,13 @@ export interface GuessWordProps {
     GuessLetterProps,
     GuessLetterProps,
   ];
+  /** Whether to show shake animation */
+  shake?: boolean;
 }
 
-export const GuessWord = ({ boxes }: GuessWordProps): ReactElement => {
+export const GuessWord = ({ boxes, shake }: GuessWordProps): ReactElement => {
   return (
-    <div className="guess-word">
+    <div className={`guess-word${shake ? ' guess-word--shake' : ''}`}>
       {boxes.map((boxProps, index) => (
         <GuessLetter key={index} {...boxProps} />
       ))}

@@ -1,6 +1,12 @@
-import { useReducer, useCallback, useEffect } from 'react';
+import { useReducer, useCallback, useEffect, useState } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import type { GuessLetterProps } from '../components/GuessLetter';
 import type { KeyState } from '../components/Keyboard';
+import {
+  submitGuess as submitGuessApi,
+  type GameState as ApiGameState,
+  type GradedMove,
+} from '../api/guess';
 
 // Common 5-letter words for the game
 const WORDS: string[] = [
@@ -729,69 +735,33 @@ interface GameState {
   guesses: GradedGuess[];
   status: GameStatus;
   gameNumber: number;
+  puzzleDate: string;
+  isSubmitting: boolean;
 }
 
 type GameAction =
   | { type: 'ADD_LETTER'; letter: string }
   | { type: 'REMOVE_LETTER' }
-  | { type: 'SUBMIT_GUESS' }
+  | { type: 'SUBMIT_GUESS_START' }
+  | { type: 'SUBMIT_GUESS_SUCCESS'; payload: ApiGameState }
+  | { type: 'SUBMIT_GUESS_ERROR' }
   | { type: 'NEW_GAME' };
+
+function convertApiMoveToLocal(move: GradedMove): GradedGuess {
+  return move.map((letter) => ({
+    letter: letter.letter.toUpperCase(),
+    correct_letter_and_position: letter.grade === 'correct',
+    letter_contained_in_answer:
+      letter.grade === 'correct' || letter.grade === 'contained',
+  })) as GradedGuess;
+}
+
+function getTodayIsoDate(): string {
+  return new Date().toISOString().split('T')[0];
+}
 
 function getRandomWord(): string {
   return WORDS[Math.floor(Math.random() * WORDS.length)];
-}
-
-function gradeGuess(guess: string, answer: string): GradedGuess {
-  const result: GuessLetterProps[] = [];
-  const answerLetters: string[] = answer.split('');
-  const guessLetters: string[] = guess.split('');
-
-  // Track which answer letters have been "used"
-  const used: boolean[] = new Array(5).fill(false);
-
-  // First pass: mark correct positions
-  for (let i: number = 0; i < 5; i++) {
-    if (guessLetters[i] === answerLetters[i]) {
-      result[i] = {
-        letter: guessLetters[i],
-        correct_letter_and_position: true,
-        letter_contained_in_answer: true,
-      };
-      used[i] = true;
-    }
-  }
-
-  // Second pass: mark contained letters
-  for (let i: number = 0; i < 5; i++) {
-    if (result[i]) continue; // Already marked as correct
-
-    const letter: string = guessLetters[i];
-    let foundIndex: number = -1;
-
-    for (let j: number = 0; j < 5; j++) {
-      if (!used[j] && answerLetters[j] === letter) {
-        foundIndex = j;
-        break;
-      }
-    }
-
-    if (foundIndex !== -1) {
-      result[i] = {
-        letter,
-        correct_letter_and_position: false,
-        letter_contained_in_answer: true,
-      };
-      used[foundIndex] = true;
-    } else {
-      result[i] = {
-        letter,
-        correct_letter_and_position: false,
-        letter_contained_in_answer: false,
-      };
-    }
-  }
-
-  return result as GradedGuess;
 }
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -814,23 +784,36 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         currentGuess: state.currentGuess.slice(0, -1),
       };
 
-    case 'SUBMIT_GUESS': {
+    case 'SUBMIT_GUESS_START':
       if (state.status !== 'playing' || state.currentGuess.length !== 5) {
         return state;
       }
+      return {
+        ...state,
+        isSubmitting: true,
+      };
 
-      const graded: GradedGuess = gradeGuess(state.currentGuess, state.answer);
-      const newGuesses: GradedGuess[] = [...state.guesses, graded];
-      const isWin: boolean = state.currentGuess === state.answer;
-      const isLoss: boolean = !isWin && newGuesses.length >= 6;
+    case 'SUBMIT_GUESS_SUCCESS': {
+      const apiState: ApiGameState = action.payload;
+      const newGuesses: GradedGuess[] = apiState.moves.map(
+        convertApiMoveToLocal,
+      );
+      const isLost: boolean = !apiState.won && newGuesses.length >= 6;
 
       return {
         ...state,
         guesses: newGuesses,
         currentGuess: '',
-        status: isWin ? 'won' : isLoss ? 'lost' : 'playing',
+        isSubmitting: false,
+        status: apiState.won ? 'won' : isLost ? 'lost' : 'playing',
       };
     }
+
+    case 'SUBMIT_GUESS_ERROR':
+      return {
+        ...state,
+        isSubmitting: false,
+      };
 
     case 'NEW_GAME':
       return {
@@ -839,6 +822,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         guesses: [],
         status: 'playing',
         gameNumber: state.gameNumber + 1,
+        puzzleDate: getTodayIsoDate(),
+        isSubmitting: false,
       };
 
     default:
@@ -853,15 +838,20 @@ function createInitialState(): GameState {
     guesses: [],
     status: 'playing',
     gameNumber: 1,
+    puzzleDate: getTodayIsoDate(),
+    isSubmitting: false,
   };
 }
 
 interface UseGameReturn {
-  guesses: { boxes: GradedGuess }[];
+  guesses: { boxes: GradedGuess; shake?: boolean }[];
   keyStates: Record<string, KeyState>;
   status: GameStatus;
   answer: string;
   gameNumber: number;
+  isSubmitting: boolean;
+  error: Error | null;
+  invalidWord: boolean;
   onKeyPress: (letter: string) => void;
   onEnter: () => void;
   onBackspace: () => void;
@@ -870,6 +860,20 @@ interface UseGameReturn {
 
 export function useGame(): UseGameReturn {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
+  const [error, setError] = useState<Error | null>(null);
+  const [invalidWord, setInvalidWord] = useState<boolean>(false);
+  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+
+  // Clear invalidWord after animation duration
+  useEffect(() => {
+    if (invalidWord) {
+      const timer: ReturnType<typeof setTimeout> = setTimeout((): void => {
+        setInvalidWord(false);
+      }, 600);
+      return (): void => clearTimeout(timer);
+    }
+    return undefined;
+  }, [invalidWord]);
 
   const addLetter: (letter: string) => void = useCallback(
     (letter: string): void => {
@@ -882,11 +886,45 @@ export function useGame(): UseGameReturn {
     dispatch({ type: 'REMOVE_LETTER' });
   }, []);
 
-  const submitGuess: () => void = useCallback((): void => {
-    dispatch({ type: 'SUBMIT_GUESS' });
-  }, []);
+  const submitGuess: () => Promise<void> =
+    useCallback(async (): Promise<void> => {
+      if (state.status !== 'playing' || state.currentGuess.length !== 5) {
+        return;
+      }
+
+      dispatch({ type: 'SUBMIT_GUESS_START' });
+      setError(null);
+
+      try {
+        const token: string | undefined = isAuthenticated
+          ? await getAccessTokenSilently()
+          : undefined;
+
+        const response: ApiGameState = await submitGuessApi(
+          {
+            puzzle_date_iso_day: state.puzzleDate,
+            word_guessed: state.currentGuess,
+          },
+          { token },
+        );
+
+        dispatch({ type: 'SUBMIT_GUESS_SUCCESS', payload: response });
+      } catch (e: unknown) {
+        const err: Error = e instanceof Error ? e : new Error(String(e));
+        setError(err);
+        setInvalidWord(true);
+        dispatch({ type: 'SUBMIT_GUESS_ERROR' });
+      }
+    }, [
+      state.status,
+      state.currentGuess,
+      state.puzzleDate,
+      isAuthenticated,
+      getAccessTokenSilently,
+    ]);
 
   const newGame: () => void = useCallback((): void => {
+    setError(null);
     dispatch({ type: 'NEW_GAME' });
   }, []);
 
@@ -940,9 +978,8 @@ export function useGame(): UseGameReturn {
   }
 
   // Build guesses array for GameBoard (include current guess as in-progress row)
-  const displayGuesses: { boxes: GradedGuess }[] = state.guesses.map(
-    (graded: GradedGuess) => ({ boxes: graded }),
-  );
+  const displayGuesses: { boxes: GradedGuess; shake?: boolean }[] =
+    state.guesses.map((graded: GradedGuess) => ({ boxes: graded }));
 
   if (state.status === 'playing' && state.currentGuess.length > 0) {
     const currentRow: GuessLetterProps[] = [];
@@ -953,7 +990,10 @@ export function useGame(): UseGameReturn {
         correct_letter_and_position: false,
       });
     }
-    displayGuesses.push({ boxes: currentRow as GradedGuess });
+    displayGuesses.push({
+      boxes: currentRow as GradedGuess,
+      shake: invalidWord,
+    });
   }
 
   return {
@@ -962,6 +1002,9 @@ export function useGame(): UseGameReturn {
     status: state.status,
     answer: state.answer,
     gameNumber: state.gameNumber,
+    isSubmitting: state.isSubmitting,
+    error,
+    invalidWord,
     onKeyPress: addLetter,
     onEnter: submitGuess,
     onBackspace: removeLetter,
