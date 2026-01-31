@@ -17,7 +17,11 @@ export interface ProfileFormProps {
   /** Initial profile data */
   initialData: ProfileFormData;
   /** Callback when form is submitted */
-  onSubmit: (data: { displayName: string; avatarUrl: string }) => Promise<void>;
+  onSubmit: (data: {
+    displayName: string;
+    avatarUrl: string;
+    avatarFile?: File;
+  }) => Promise<void>;
   /** Whether profile data is loading */
   isLoading?: boolean;
   /** Whether form is currently saving */
@@ -92,11 +96,10 @@ export const ProfileForm = ({
     }
 
     try {
-      // If there's a pending avatar file, the parent component should handle upload
-      // For now, we just pass the current avatarUrl (which may be a blob URL for preview)
       await onSubmit({
         displayName,
         avatarUrl,
+        avatarFile: pendingAvatarFile ?? undefined,
       });
 
       // Clean up blob URL if we had one

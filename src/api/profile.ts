@@ -58,3 +58,38 @@ export const updateUserProfile = async (
 
   return (await response.json()) as UserProfile;
 };
+
+export interface UploadAvatarResponse {
+  avatarUrl: string;
+}
+
+export const uploadAvatar = async (
+  token: string,
+  file: File,
+): Promise<UploadAvatarResponse> => {
+  const MAX_FILE_SIZE: number = 2 * 1024 * 1024; // 2MB
+
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error('Image must be less than 2MB.');
+  }
+
+  const formData: FormData = new FormData();
+  formData.append('avatar', file);
+
+  const response: Response = await fetch(`${API_BASE_URL}/profile/avatar`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText: string = await response.text();
+    throw new Error(
+      `Failed to upload avatar: ${response.status} - ${errorText}`,
+    );
+  }
+
+  return (await response.json()) as UploadAvatarResponse;
+};

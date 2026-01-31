@@ -7,7 +7,9 @@ import {
 import {
   updateUserProfile,
   getUserProfile,
+  uploadAvatar,
   type UserProfile,
+  type UploadAvatarResponse,
 } from '../api/profile';
 import { Spinner } from '../components/ui/Spinner';
 import { useLocalStorage } from '../hooks/useLocalStorage';
@@ -113,20 +115,33 @@ export const ProfilePage = (): ReactElement => {
   const handleSubmit = async (data: {
     displayName: string;
     avatarUrl: string;
+    avatarFile?: File;
   }): Promise<void> => {
     setIsSaving(true);
     try {
       const token: string = await getAccessTokenSilently();
+
+      let finalAvatarUrl: string = data.avatarUrl;
+
+      // If there's a new avatar file, upload it first
+      if (data.avatarFile) {
+        const uploadResponse: UploadAvatarResponse = await uploadAvatar(
+          token,
+          data.avatarFile,
+        );
+        finalAvatarUrl = uploadResponse.avatarUrl;
+      }
+
       await updateUserProfile(token, {
         displayName: data.displayName,
-        avatarUrl: data.avatarUrl,
+        avatarUrl: finalAvatarUrl,
       });
 
       // Update local profile data to reflect the saved changes
       setProfileData({
         ...profileData,
         displayName: data.displayName,
-        avatarUrl: data.avatarUrl,
+        avatarUrl: finalAvatarUrl,
       });
     } finally {
       setIsSaving(false);
