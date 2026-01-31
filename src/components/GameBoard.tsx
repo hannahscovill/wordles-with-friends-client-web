@@ -15,18 +15,20 @@ export interface GameBoardProps {
 
 export const GameBoard = ({ guesses }: GameBoardProps): ReactElement => {
   return (
-    <div className="game-board">
-      {Array.from({ length: TOTAL_ROWS }, (_, index) =>
-        guesses[index] ? (
-          <GuessWord
-            key={index}
-            boxes={guesses[index].boxes}
-            shake={guesses[index].shake}
-          />
-        ) : (
-          <GuessWordEmpty key={index} />
-        ),
-      )}
+    <div className="game-board-wrapper">
+      <div className="game-board">
+        {Array.from({ length: TOTAL_ROWS }, (_, index) =>
+          guesses[index] ? (
+            <GuessWord
+              key={index}
+              boxes={guesses[index].boxes}
+              shake={guesses[index].shake}
+            />
+          ) : (
+            <GuessWordEmpty key={index} />
+          ),
+        )}
+      </div>
     </div>
   );
 };

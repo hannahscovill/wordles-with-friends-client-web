@@ -1,17 +1,22 @@
+.keyboard-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  --keyboard-width: 520px;
+  --scale: min(1, calc((100vw - 16px) / var(--keyboard-width)));
+}
+
 .keyboard {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   padding: 16px;
-  width: 100%;
-  max-width: 520px;
-  box-sizing: border-box;
+  zoom: var(--scale);
 }
 
 .keyboard__row {
   display: flex;
   gap: 6px;
   justify-content: center;
-  width: 100%;
 }
