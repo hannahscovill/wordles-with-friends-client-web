@@ -12,6 +12,8 @@
   color: var(--color-text-game);
   background-color: var(--color-key-unused);
   transition: background-color 0.1s ease;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .key:hover {
@@ -24,33 +26,39 @@
 
 /* Alphabet keys */
 .key--alphabet {
-  min-width: 43px;
+  flex: 1 1 43px;
+  max-width: 43px;
   font-size: 0.875rem;
 }
 
 .key--alphabet.key--wide {
-  min-width: 65px;
+  flex: 1.5 1 65px;
+  max-width: 65px;
 }
 
 /* Special keys (Delete) */
 .key--special {
-  min-width: 65px;
+  flex: 1.5 1 65px;
+  max-width: 65px;
   font-size: 0.75rem;
 }
 
 .key--special.key--wide {
-  min-width: 85px;
+  flex: 2 1 85px;
+  max-width: 85px;
 }
 
 /* Enter key */
 .key--enter {
-  min-width: 65px;
+  flex: 1.5 1 65px;
+  max-width: 65px;
   font-size: 0.75rem;
   background-color: var(--color-button-shadow);
 }
 
 .key--enter.key--wide {
-  min-width: 85px;
+  flex: 2 1 85px;
+  max-width: 85px;
 }
 
 .key--wrong {
