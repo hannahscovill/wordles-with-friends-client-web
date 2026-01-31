@@ -4,10 +4,14 @@
   align-items: center;
   gap: 8px;
   padding: 16px;
+  width: 100%;
+  max-width: 520px;
+  box-sizing: border-box;
 }
 
 .keyboard__row {
   display: flex;
   gap: 6px;
   justify-content: center;
+  width: 100%;
 }
