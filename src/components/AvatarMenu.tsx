@@ -110,7 +110,6 @@ export const AvatarMenu = ({
             </button>
           </li>
         )}
-        <li role="none" className="avatar-menu__separator" aria-hidden="true" />
         <li role="none">
           <button
             type="button"
