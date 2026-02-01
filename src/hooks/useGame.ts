@@ -756,8 +756,12 @@ function convertApiMoveToLocal(move: GradedMove): GradedGuess {
   })) as GradedGuess;
 }
 
-function getTodayIsoDate(): string {
-  return new Date().toISOString().split('T')[0];
+function getTodayLocalDate(): string {
+  const now: Date = new Date();
+  const year: number = now.getFullYear();
+  const month: string = String(now.getMonth() + 1).padStart(2, '0');
+  const day: string = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function getRandomWord(): string {
@@ -822,7 +826,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         guesses: [],
         status: 'playing',
         gameNumber: state.gameNumber + 1,
-        puzzleDate: getTodayIsoDate(),
+        puzzleDate: getTodayLocalDate(),
         isSubmitting: false,
       };
 
@@ -838,7 +842,7 @@ function createInitialState(): GameState {
     guesses: [],
     status: 'playing',
     gameNumber: 1,
-    puzzleDate: getTodayIsoDate(),
+    puzzleDate: getTodayLocalDate(),
     isSubmitting: false,
   };
 }
