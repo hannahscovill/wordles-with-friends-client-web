@@ -89,7 +89,24 @@ export const submitGuess = async (
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to submit guess: ${response.status}`);
+    let errorMessage: string = `Failed to submit guess: ${response.status}`;
+    try {
+      const errorBody: {
+        error?: { code?: string; message?: string } | string;
+      } = (await response.json()) as {
+        error?: { code?: string; message?: string } | string;
+      };
+      if (errorBody.error) {
+        if (typeof errorBody.error === 'string') {
+          errorMessage = errorBody.error;
+        } else if (errorBody.error.message) {
+          errorMessage = errorBody.error.message;
+        }
+      }
+    } catch {
+      // If we can't parse the response body, use the default message
+    }
+    throw new Error(errorMessage);
   }
 
   return (await response.json()) as GameState;

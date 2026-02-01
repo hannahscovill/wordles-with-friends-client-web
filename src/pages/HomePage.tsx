@@ -13,6 +13,7 @@ export const HomePage = (): ReactElement => {
     status,
     answer,
     invalidWord,
+    error,
     onKeyPress,
     onEnter,
     onBackspace,
@@ -48,7 +49,7 @@ export const HomePage = (): ReactElement => {
       <div className="home-page__game-container">
         <GameBoard guesses={guesses} />
         <Toast
-          message="Not in word list"
+          message={error?.message ?? 'Invalid guess'}
           visible={showToast}
           onHide={hideToast}
         />
