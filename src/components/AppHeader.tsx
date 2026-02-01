@@ -19,9 +19,15 @@ export const AppHeader = ({
   const { isAuthenticated, user, loginWithRedirect, logout } = useAuth0();
   const navigate: UseNavigateResult<string> = useNavigate();
 
+  // Use avatar_url from user_metadata if available, otherwise fall back to Auth0 picture
+  const userMetadata: Record<string, unknown> | undefined = (
+    user as Record<string, unknown> | undefined
+  )?.user_metadata as Record<string, unknown> | undefined;
   const avatarSrc: string =
-    user?.picture ?? 'https://www.gravatar.com/avatar/?d=mp';
-  const avatarAlt: string = user?.name ?? 'User avatar';
+    (userMetadata?.avatar_url as string | undefined) ??
+    user?.picture ??
+    'https://www.gravatar.com/avatar/?d=mp';
+  const avatarAlt: string = user?.email ?? user?.name ?? 'User avatar';
 
   return (
     <header className="app-header">
