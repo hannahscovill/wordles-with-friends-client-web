@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react';
+import { Link } from '@tanstack/react-router';
 import { Button, Modal } from './ui';
 import './GameStatusModal.scss';
 
@@ -7,23 +8,22 @@ export interface GameStatusModalProps {
   won: boolean;
   /** The answer word (shown on loss) */
   answer: string;
-  /** Handler for play again button */
-  onPlayAgain: () => void;
 }
 
 export const GameStatusModal = ({
   won,
   answer,
-  onPlayAgain,
 }: GameStatusModalProps): ReactElement => {
   return (
     <Modal>
       <p className="game-status-modal__message">
         {won ? 'You won!' : `The word was: ${answer}`}
       </p>
-      <Button size="s" variant="onLight" onClick={onPlayAgain}>
-        Play Again
-      </Button>
+      <Link to="/history">
+        <Button size="s" variant="onLight">
+          Play Other Games
+        </Button>
+      </Link>
     </Modal>
   );
 };

@@ -27,4 +27,15 @@
     font-size: 16px;
     color: var(--wordle-text-secondary, #787c7e);
   }
+
+  &__date-header {
+    text-align: center;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 16px;
+    padding: 8px 16px;
+    background-color: var(--color-surface);
+    border-radius: 8px;
+  }
 }

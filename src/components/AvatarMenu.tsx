@@ -15,6 +15,8 @@ export interface AvatarMenuProps {
   onLogInClick?: () => void;
   /** Handler for profile option click */
   onProfileClick?: () => void;
+  /** Handler for score history option click */
+  onScoreHistoryClick?: () => void;
   /** Handler for game maker option click */
   onGameMakerClick?: () => void;
   /** Handler for log out option click */
@@ -30,6 +32,7 @@ export const AvatarMenu = ({
   isGameAdmin = false,
   onLogInClick,
   onProfileClick,
+  onScoreHistoryClick,
   onGameMakerClick,
   onLogOutClick,
   onReportIssueClick,
@@ -105,6 +108,16 @@ export const AvatarMenu = ({
                 </button>
               </li>
             )}
+            <li role="none">
+              <button
+                type="button"
+                className="avatar-menu__item"
+                role="menuitem"
+                onClick={onScoreHistoryClick}
+              >
+                Score History
+              </button>
+            </li>
             <li role="none">
               <button
                 type="button"

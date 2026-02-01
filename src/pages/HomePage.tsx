@@ -7,6 +7,15 @@ import { Toast } from '../components/Toast';
 import { useGame } from '../hooks/useGame';
 import './HomePage.scss';
 
+function formatDateForDisplay(dateStr: string): string {
+  const date: Date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 export const HomePage = (): ReactElement => {
   const params: { puzzleDate?: string } = useParams({ strict: false }) as {
     puzzleDate?: string;
@@ -25,7 +34,6 @@ export const HomePage = (): ReactElement => {
     onKeyPress,
     onEnter,
     onBackspace,
-    onNewGame,
   } = useGame({ puzzleDate: urlPuzzleDate });
 
   const [showToast, setShowToast] = useState<boolean>(false);
@@ -56,14 +64,12 @@ export const HomePage = (): ReactElement => {
   return (
     <div className="home-page">
       {status !== 'playing' && (
-        <GameStatusModal
-          won={status === 'won'}
-          answer={answer}
-          onPlayAgain={onNewGame}
-        />
+        <GameStatusModal won={status === 'won'} answer={answer} />
       )}
       <div className="home-page__game-container">
-        <div className="home-page__puzzle-date">{puzzleDate}</div>
+        <div className="home-page__puzzle-date">
+          {formatDateForDisplay(puzzleDate)}
+        </div>
         <GameBoard guesses={guesses} />
         <Toast
           message={error?.message ?? 'Invalid guess'}

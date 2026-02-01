@@ -49,6 +49,7 @@ export const AppHeader = ({
             isGameAdmin={isGameAdmin}
             onLogInClick={() => loginWithRedirect()}
             onProfileClick={() => navigate({ to: '/profile' })}
+            onScoreHistoryClick={() => navigate({ to: '/history' })}
             onGameMakerClick={() => navigate({ to: '/gamemaker' })}
             onLogOutClick={() =>
               logout({ logoutParams: { returnTo: window.location.origin } })
