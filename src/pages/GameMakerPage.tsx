@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
 import { setPuzzle, type SetPuzzleResponse } from '../api/puzzle';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { NotFoundPage } from './NotFoundPage';
 import './GameMakerPage.scss';
 
 interface AuthTokens {
@@ -124,15 +125,9 @@ export const GameMakerPage = (): ReactElement => {
     );
   }
 
-  // Check for admin privileges after auth is confirmed
+  // Show 404 for non-admin users
   if (!isGameAdmin) {
-    return (
-      <div className="gamemaker-page">
-        <div className="gamemaker-page__error">
-          You do not have permission to access this page.
-        </div>
-      </div>
-    );
+    return <NotFoundPage />;
   }
 
   return (
