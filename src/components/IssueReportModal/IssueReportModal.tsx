@@ -1,4 +1,4 @@
-import { useState, type ReactElement, type FormEvent } from 'react';
+import { useState, useEffect, type ReactElement, type FormEvent } from 'react';
 import { Modal, Button, Input, Textarea } from '../ui';
 import './IssueReportModal.scss';
 
@@ -95,6 +95,26 @@ export const IssueReportModal = ({
     description?: string;
   }>({});
 
+  // Prevent keyboard events from reaching the game while modal is open
+  useEffect((): (() => void) => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      // Allow the event to work within the modal, but stop it from
+      // propagating to window-level listeners (like the game keyboard)
+      event.stopPropagation();
+
+      // Close on Escape
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    // Use capture phase to intercept before it reaches window listeners
+    document.addEventListener('keydown', handleKeyDown, true);
+    return (): void => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [onClose]);
+
   const validate = (): boolean => {
     const newErrors: { title?: string; description?: string } = {};
 
@@ -134,18 +154,8 @@ export const IssueReportModal = ({
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent): void => {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  };
-
   return (
-    <div
-      className="issue-report-modal-backdrop"
-      onClick={handleBackdropClick}
-      onKeyDown={handleKeyDown}
-    >
+    <div className="issue-report-modal-backdrop" onClick={handleBackdropClick}>
       <Modal>
         <form onSubmit={handleSubmit} className="issue-report-modal">
           <h2 className="issue-report-modal__title">Report an Issue</h2>
