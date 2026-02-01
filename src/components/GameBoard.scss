@@ -1,5 +1,14 @@
+.game-board-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  --board-width: 326px;
+  --scale: min(1, calc((100vw - 32px) / var(--board-width)));
+}
+
 .game-board {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  zoom: var(--scale);
 }

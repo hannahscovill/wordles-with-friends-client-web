@@ -32,30 +32,32 @@ export const Keyboard = ({
   };
 
   return (
-    <div className="keyboard">
-      {KEYBOARD_ROWS.map((row, rowIndex) => (
-        <div key={rowIndex} className="keyboard__row">
-          {rowIndex === 2 && (
-            <Key
-              label="Delete"
-              keyCategory="special"
-              wide
-              onClick={onBackspace}
-            />
-          )}
-          {row.map((letter) => (
-            <Key
-              key={letter}
-              label={letter}
-              state={getKeyState(letter)}
-              onClick={() => onKeyPress?.(letter)}
-            />
-          ))}
-          {rowIndex === 2 && (
-            <Key label="Enter" keyCategory="enter" wide onClick={onEnter} />
-          )}
-        </div>
-      ))}
+    <div className="keyboard-wrapper">
+      <div className="keyboard">
+        {KEYBOARD_ROWS.map((row, rowIndex) => (
+          <div key={rowIndex} className="keyboard__row">
+            {rowIndex === 2 && (
+              <Key
+                label="Delete"
+                keyCategory="special"
+                wide
+                onClick={onBackspace}
+              />
+            )}
+            {row.map((letter) => (
+              <Key
+                key={letter}
+                label={letter}
+                state={getKeyState(letter)}
+                onClick={() => onKeyPress?.(letter)}
+              />
+            ))}
+            {rowIndex === 2 && (
+              <Key label="Enter" keyCategory="enter" wide onClick={onEnter} />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
