@@ -25,12 +25,15 @@ export const AppHeader = ({
   const userMetadata: Record<string, unknown> | undefined = (
     user as Record<string, unknown> | undefined
   )?.user_metadata as Record<string, unknown> | undefined;
+  const appMetadata: Record<string, unknown> | undefined = (
+    user as Record<string, unknown> | undefined
+  )?.app_metadata as Record<string, unknown> | undefined;
   const avatarSrc: string =
     (userMetadata?.avatar_url as string | undefined) ??
     user?.picture ??
     'https://www.gravatar.com/avatar/?d=mp';
   const avatarAlt: string = user?.email ?? user?.name ?? 'User avatar';
-  const isGameAdmin: boolean = userMetadata?.game_admin === true;
+  const isGameAdmin: boolean = appMetadata?.game_admin === true;
 
   return (
     <>

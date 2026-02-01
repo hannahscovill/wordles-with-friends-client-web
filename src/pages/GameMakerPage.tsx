@@ -30,11 +30,11 @@ export const GameMakerPage = (): ReactElement => {
   const hasStoredTokens: boolean =
     authTokens !== null && authTokens.access_token !== '';
 
-  // Check if user has game_admin privilege
-  const userMetadata: Record<string, unknown> | undefined = (
+  // Check if user has game_admin privilege in app_metadata
+  const appMetadata: Record<string, unknown> | undefined = (
     user as Record<string, unknown> | undefined
-  )?.user_metadata as Record<string, unknown> | undefined;
-  const isGameAdmin: boolean = userMetadata?.game_admin === true;
+  )?.app_metadata as Record<string, unknown> | undefined;
+  const isGameAdmin: boolean = appMetadata?.game_admin === true;
 
   // Start login flow if not authenticated
   useEffect(() => {
