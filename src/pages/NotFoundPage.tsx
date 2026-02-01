@@ -11,9 +11,6 @@ export const NotFoundPage = (): ReactElement => {
         <div className="not-found-page__tree not-found-page__tree--3" />
         <div className="not-found-page__tree not-found-page__tree--4" />
         <div className="not-found-page__tree not-found-page__tree--5" />
-        <div className="not-found-page__bigfoot">
-          <span className="not-found-page__bigfoot-emoji">🦶</span>
-        </div>
       </div>
       <div className="not-found-page__content">
         <h1 className="not-found-page__title">404</h1>
@@ -26,11 +23,6 @@ export const NotFoundPage = (): ReactElement => {
         <Link to="/" className="not-found-page__link">
           Return to safety
         </Link>
-      </div>
-      <div className="not-found-page__footprints">
-        <span className="not-found-page__footprint">🦶</span>
-        <span className="not-found-page__footprint">🦶</span>
-        <span className="not-found-page__footprint">🦶</span>
       </div>
     </div>
   );
