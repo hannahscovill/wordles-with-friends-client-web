@@ -7,5 +7,10 @@ export default defineConfig({
   plugins: [pluginReact(), pluginSass()],
   testEnvironment: 'happy-dom',
   setupFiles: ['./tests/rstest.setup.ts'],
-  exclude: ['**/node_modules/**', '**/dist/**', '**/infra/**'],
+  exclude: [
+    '**/node_modules/**',
+    '**/dist/**',
+    '**/infra/**',
+    '**/tests/e2e/**',
+  ],
 });

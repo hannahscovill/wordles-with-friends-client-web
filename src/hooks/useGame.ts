@@ -835,14 +835,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
-function createInitialState(): GameState {
+function createInitialState(puzzleDate?: string): GameState {
   return {
     answer: getRandomWord(),
     currentGuess: '',
     guesses: [],
     status: 'playing',
     gameNumber: 1,
-    puzzleDate: getTodayLocalDate(),
+    puzzleDate: puzzleDate ?? getTodayLocalDate(),
     isSubmitting: false,
   };
 }
@@ -853,6 +853,7 @@ interface UseGameReturn {
   status: GameStatus;
   answer: string;
   gameNumber: number;
+  puzzleDate: string;
   isSubmitting: boolean;
   error: Error | null;
   invalidWord: boolean;
@@ -862,8 +863,12 @@ interface UseGameReturn {
   onNewGame: () => void;
 }
 
-export function useGame(): UseGameReturn {
-  const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
+export function useGame(puzzleDateParam?: string): UseGameReturn {
+  const [state, dispatch] = useReducer(
+    gameReducer,
+    puzzleDateParam,
+    createInitialState,
+  );
   const [error, setError] = useState<Error | null>(null);
   const [invalidWord, setInvalidWord] = useState<boolean>(false);
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
@@ -1006,6 +1011,7 @@ export function useGame(): UseGameReturn {
     status: state.status,
     answer: state.answer,
     gameNumber: state.gameNumber,
+    puzzleDate: state.puzzleDate,
     isSubmitting: state.isSubmitting,
     error,
     invalidWord,

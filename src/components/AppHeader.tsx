@@ -41,6 +41,7 @@ export const AppHeader = ({
           isLoggedIn={isAuthenticated}
           onLogInClick={() => loginWithRedirect()}
           onProfileClick={() => navigate({ to: '/profile' })}
+          onScoreHistoryClick={() => navigate({ to: '/history' })}
           onLogOutClick={() =>
             logout({ logoutParams: { returnTo: window.location.origin } })
           }

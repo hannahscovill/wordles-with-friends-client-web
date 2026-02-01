@@ -1,0 +1,34 @@
+.mini-game-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  &__row {
+    display: flex;
+    gap: 4px;
+  }
+
+  &__tile {
+    width: 24px;
+    height: 24px;
+    border-radius: 2px;
+
+    &--wrong {
+      background-color: var(--color-wrong);
+    }
+
+    &--contained {
+      background-color: var(--color-contained);
+    }
+
+    &--correct {
+      background-color: var(--color-correct);
+    }
+  }
+
+  &__status {
+    margin-top: 8px;
+    font-size: 1.25rem;
+  }
+}

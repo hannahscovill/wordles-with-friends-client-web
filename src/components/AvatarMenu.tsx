@@ -13,6 +13,8 @@ export interface AvatarMenuProps {
   onLogInClick?: () => void;
   /** Handler for profile option click */
   onProfileClick?: () => void;
+  /** Handler for score history option click */
+  onScoreHistoryClick?: () => void;
   /** Handler for log out option click */
   onLogOutClick?: () => void;
 }
@@ -23,6 +25,7 @@ export const AvatarMenu = ({
   isLoggedIn = false,
   onLogInClick,
   onProfileClick,
+  onScoreHistoryClick,
   onLogOutClick,
 }: AvatarMenuProps): ReactElement => {
   const menuRef: RefObject<HTMLUListElement | null> =
@@ -82,6 +85,16 @@ export const AvatarMenu = ({
                 onClick={onProfileClick}
               >
                 Profile
+              </button>
+            </li>
+            <li role="none">
+              <button
+                type="button"
+                className="avatar-menu__item"
+                role="menuitem"
+                onClick={onScoreHistoryClick}
+              >
+                Score History
               </button>
             </li>
             <li role="none">
