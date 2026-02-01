@@ -34,7 +34,7 @@ export const GameMakerPage = (): ReactElement => {
   // Check if user has game_admin privilege in app_metadata
   const appMetadata: Record<string, unknown> | undefined = (
     user as Record<string, unknown> | undefined
-  )?.app_metadata as Record<string, unknown> | undefined;
+  )?.['wordles.dev/app_metadata'] as Record<string, unknown> | undefined;
   const isGameAdmin: boolean = appMetadata?.game_admin === true;
 
   // Start login flow if not authenticated
