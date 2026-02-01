@@ -27,7 +27,7 @@ export const AppHeader = ({
   )?.user_metadata as Record<string, unknown> | undefined;
   const appMetadata: Record<string, unknown> | undefined = (
     user as Record<string, unknown> | undefined
-  )?.app_metadata as Record<string, unknown> | undefined;
+  )?.['wordles.dev/app_metadata'] as Record<string, unknown> | undefined;
   const avatarSrc: string =
     (userMetadata?.avatar_url as string | undefined) ??
     user?.picture ??
