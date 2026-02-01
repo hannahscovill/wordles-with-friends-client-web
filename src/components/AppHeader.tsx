@@ -30,6 +30,7 @@ export const AppHeader = ({
     user?.picture ??
     'https://www.gravatar.com/avatar/?d=mp';
   const avatarAlt: string = user?.email ?? user?.name ?? 'User avatar';
+  const isGameAdmin: boolean = userMetadata?.game_admin === true;
 
   return (
     <>
@@ -42,8 +43,10 @@ export const AppHeader = ({
             avatarSrc={avatarSrc}
             avatarAlt={avatarAlt}
             isLoggedIn={isAuthenticated}
+            isGameAdmin={isGameAdmin}
             onLogInClick={() => loginWithRedirect()}
             onProfileClick={() => navigate({ to: '/profile' })}
+            onGameMakerClick={() => navigate({ to: '/gamemaker' })}
             onLogOutClick={() =>
               logout({ logoutParams: { returnTo: window.location.origin } })
             }

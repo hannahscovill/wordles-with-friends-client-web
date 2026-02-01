@@ -9,10 +9,14 @@ export interface AvatarMenuProps {
   avatarAlt?: string;
   /** Whether the user is logged in */
   isLoggedIn?: boolean;
+  /** Whether the user is a game admin */
+  isGameAdmin?: boolean;
   /** Handler for log in option click */
   onLogInClick?: () => void;
   /** Handler for profile option click */
   onProfileClick?: () => void;
+  /** Handler for game maker option click */
+  onGameMakerClick?: () => void;
   /** Handler for log out option click */
   onLogOutClick?: () => void;
   /** Handler for report issue option click */
@@ -23,8 +27,10 @@ export const AvatarMenu = ({
   avatarSrc,
   avatarAlt = 'User avatar',
   isLoggedIn = false,
+  isGameAdmin = false,
   onLogInClick,
   onProfileClick,
+  onGameMakerClick,
   onLogOutClick,
   onReportIssueClick,
 }: AvatarMenuProps): ReactElement => {
@@ -87,6 +93,18 @@ export const AvatarMenu = ({
                 Profile
               </button>
             </li>
+            {isGameAdmin && (
+              <li role="none">
+                <button
+                  type="button"
+                  className="avatar-menu__item"
+                  role="menuitem"
+                  onClick={onGameMakerClick}
+                >
+                  Game Maker
+                </button>
+              </li>
+            )}
             <li role="none">
               <button
                 type="button"
