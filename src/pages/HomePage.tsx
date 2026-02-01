@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type ReactElement } from 'react';
+import { useParams } from '@tanstack/react-router';
 import { GameBoard } from '../components/GameBoard';
 import { GameStatusModal } from '../components/GameStatusModal';
 import { Keyboard } from '../components/Keyboard';
@@ -7,6 +8,11 @@ import { useGame } from '../hooks/useGame';
 import './HomePage.scss';
 
 export const HomePage = (): ReactElement => {
+  const params: { puzzleDate?: string } = useParams({ strict: false }) as {
+    puzzleDate?: string;
+  };
+  const urlPuzzleDate: string | undefined = params.puzzleDate;
+
   const {
     guesses,
     keyStates,
@@ -19,7 +25,7 @@ export const HomePage = (): ReactElement => {
     onEnter,
     onBackspace,
     onNewGame,
-  } = useGame();
+  } = useGame({ puzzleDate: urlPuzzleDate });
 
   const [showToast, setShowToast] = useState<boolean>(false);
 

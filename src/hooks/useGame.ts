@@ -851,16 +851,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
-function createInitialState(): GameState {
+function createInitialState(puzzleDate?: string): GameState {
   return {
     answer: getRandomWord(),
     currentGuess: '',
     guesses: [],
     status: 'playing',
     gameNumber: 1,
-    puzzleDate: getTodayLocalDate(),
+    puzzleDate: puzzleDate ?? getTodayLocalDate(),
     isSubmitting: false,
   };
+}
+
+interface UseGameOptions {
+  puzzleDate?: string;
 }
 
 interface UseGameReturn {
@@ -880,8 +884,13 @@ interface UseGameReturn {
   onNewGame: () => void;
 }
 
-export function useGame(): UseGameReturn {
-  const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
+export function useGame(options: UseGameOptions = {}): UseGameReturn {
+  const initialPuzzleDate: string = options.puzzleDate ?? getTodayLocalDate();
+  const [state, dispatch] = useReducer(
+    gameReducer,
+    initialPuzzleDate,
+    createInitialState,
+  );
   const [error, setError] = useState<Error | null>(null);
   const [invalidWord, setInvalidWord] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
