@@ -7,11 +7,13 @@ import { rootRoute, type RouterContext } from './routes/__root';
 import { indexRoute } from './routes/index';
 import { profileRoute } from './routes/profile';
 import { puzzleRoute } from './routes/puzzle';
+import { gamemakerRoute } from './routes/gamemaker';
 
 const routeTree: AnyRoute = rootRoute.addChildren([
   indexRoute,
   profileRoute,
   puzzleRoute,
+  gamemakerRoute,
 ]);
 
 export const router: Router<AnyRoute, 'never', boolean> = createRouter({
