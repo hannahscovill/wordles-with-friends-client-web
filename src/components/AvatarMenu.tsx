@@ -9,24 +9,33 @@ export interface AvatarMenuProps {
   avatarAlt?: string;
   /** Whether the user is logged in */
   isLoggedIn?: boolean;
+  /** Whether the user is a game admin */
+  isGameAdmin?: boolean;
   /** Handler for log in option click */
   onLogInClick?: () => void;
   /** Handler for profile option click */
   onProfileClick?: () => void;
   /** Handler for score history option click */
   onScoreHistoryClick?: () => void;
+  /** Handler for game maker option click */
+  onGameMakerClick?: () => void;
   /** Handler for log out option click */
   onLogOutClick?: () => void;
+  /** Handler for report issue option click */
+  onReportIssueClick?: () => void;
 }
 
 export const AvatarMenu = ({
   avatarSrc,
   avatarAlt = 'User avatar',
   isLoggedIn = false,
+  isGameAdmin = false,
   onLogInClick,
   onProfileClick,
   onScoreHistoryClick,
+  onGameMakerClick,
   onLogOutClick,
+  onReportIssueClick,
 }: AvatarMenuProps): ReactElement => {
   const menuRef: RefObject<HTMLUListElement | null> =
     useRef<HTMLUListElement>(null);
@@ -87,6 +96,18 @@ export const AvatarMenu = ({
                 Profile
               </button>
             </li>
+            {isGameAdmin && (
+              <li role="none">
+                <button
+                  type="button"
+                  className="avatar-menu__item"
+                  role="menuitem"
+                  onClick={onGameMakerClick}
+                >
+                  Game Maker
+                </button>
+              </li>
+            )}
             <li role="none">
               <button
                 type="button"
@@ -120,6 +141,16 @@ export const AvatarMenu = ({
             </button>
           </li>
         )}
+        <li role="none">
+          <button
+            type="button"
+            className="avatar-menu__item"
+            role="menuitem"
+            onClick={onReportIssueClick}
+          >
+            Report Issue
+          </button>
+        </li>
       </ul>
     </Popover>
   );

@@ -25,10 +25,10 @@ export const HomePage = (): ReactElement => {
     answer,
     puzzleDate,
     invalidWord,
+    error,
     onKeyPress,
     onEnter,
     onBackspace,
-    onNewGame,
   } = useGame(date);
 
   const [showToast, setShowToast] = useState<boolean>(false);
@@ -51,11 +51,7 @@ export const HomePage = (): ReactElement => {
   return (
     <div className="home-page">
       {status !== 'playing' && (
-        <GameStatusModal
-          won={status === 'won'}
-          answer={answer}
-          onPlayAgain={onNewGame}
-        />
+        <GameStatusModal won={status === 'won'} answer={answer} />
       )}
       <div className="home-page__game-container">
         {date && (
@@ -65,7 +61,7 @@ export const HomePage = (): ReactElement => {
         )}
         <GameBoard guesses={guesses} />
         <Toast
-          message="Not in word list"
+          message={error?.message ?? 'Invalid guess'}
           visible={showToast}
           onHide={hideToast}
         />
