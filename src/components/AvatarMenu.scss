@@ -59,4 +59,10 @@
       border-bottom: 2px solid #000;
     }
   }
+
+  &__separator {
+    height: 0;
+    margin: 4px 0;
+    border-top: 2px dashed #000;
+  }
 }

@@ -15,6 +15,8 @@ export interface AvatarMenuProps {
   onProfileClick?: () => void;
   /** Handler for log out option click */
   onLogOutClick?: () => void;
+  /** Handler for report issue option click */
+  onReportIssueClick?: () => void;
 }
 
 export const AvatarMenu = ({
@@ -24,6 +26,7 @@ export const AvatarMenu = ({
   onLogInClick,
   onProfileClick,
   onLogOutClick,
+  onReportIssueClick,
 }: AvatarMenuProps): ReactElement => {
   const menuRef: RefObject<HTMLUListElement | null> =
     useRef<HTMLUListElement>(null);
@@ -107,6 +110,17 @@ export const AvatarMenu = ({
             </button>
           </li>
         )}
+        <li role="none" className="avatar-menu__separator" aria-hidden="true" />
+        <li role="none">
+          <button
+            type="button"
+            className="avatar-menu__item"
+            role="menuitem"
+            onClick={onReportIssueClick}
+          >
+            Report Issue
+          </button>
+        </li>
       </ul>
     </Popover>
   );
