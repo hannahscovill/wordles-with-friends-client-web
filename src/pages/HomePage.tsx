@@ -12,6 +12,8 @@ export const HomePage = (): ReactElement => {
     keyStates,
     status,
     answer,
+    puzzleDate,
+    isLoading,
     invalidWord,
     onKeyPress,
     onEnter,
@@ -36,6 +38,14 @@ export const HomePage = (): ReactElement => {
     setShowToast(false);
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="home-page">
+        <div className="home-page__loading">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="home-page">
       {status !== 'playing' && (
@@ -46,6 +56,7 @@ export const HomePage = (): ReactElement => {
         />
       )}
       <div className="home-page__game-container">
+        <div className="home-page__puzzle-date">{puzzleDate}</div>
         <GameBoard guesses={guesses} />
         <Toast
           message="Not in word list"
