@@ -902,12 +902,9 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
 
   // Load game progress on startup
   useEffect(() => {
-    const loadGameProgress = async (): Promise<void> => {
-      // Wait for auth to finish loading
-      if (authLoading) {
-        return;
-      }
+    let isMounted: boolean = true;
 
+    const loadGameProgress = async (): Promise<void> => {
       try {
         let token: string | undefined;
 
@@ -924,9 +921,14 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
           }
         }
 
-        // If authenticated and no cached token, get fresh token
-        if (isAuthenticated && !token) {
-          token = await getAccessTokenSilently();
+        // If authenticated and no cached token, try to get fresh token
+        // Don't block on this - if it fails, proceed without auth
+        if (isAuthenticated && !token && !authLoading) {
+          try {
+            token = await getAccessTokenSilently();
+          } catch {
+            // Token fetch failed, proceed without auth
+          }
         }
 
         // Fetch game progress (will use cookie if no token)
@@ -935,17 +937,23 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
           { token },
         );
 
-        if (gameProgress) {
+        if (isMounted && gameProgress) {
           dispatch({ type: 'LOAD_GAME_PROGRESS', payload: gameProgress });
         }
       } catch (e) {
         console.error('Failed to load game progress:', e);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     loadGameProgress();
+
+    return (): void => {
+      isMounted = false;
+    };
   }, [authLoading, isAuthenticated, getAccessTokenSilently, state.puzzleDate]);
 
   // Clear invalidWord after animation duration
