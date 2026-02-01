@@ -4,6 +4,7 @@ import type { GuessLetterProps } from '../components/GuessLetter';
 import type { KeyState } from '../components/Keyboard';
 import {
   submitGuess as submitGuessApi,
+  getGameProgress as getGameProgressApi,
   type GameState as ApiGameState,
   type GradedMove,
 } from '../api/guess';
@@ -745,7 +746,8 @@ type GameAction =
   | { type: 'SUBMIT_GUESS_START' }
   | { type: 'SUBMIT_GUESS_SUCCESS'; payload: ApiGameState }
   | { type: 'SUBMIT_GUESS_ERROR' }
-  | { type: 'NEW_GAME' };
+  | { type: 'NEW_GAME' }
+  | { type: 'LOAD_GAME_PROGRESS'; payload: ApiGameState };
 
 function convertApiMoveToLocal(move: GradedMove): GradedGuess {
   return move.map((letter) => ({
@@ -830,21 +832,39 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         isSubmitting: false,
       };
 
+    case 'LOAD_GAME_PROGRESS': {
+      const apiState: ApiGameState = action.payload;
+      const loadedGuesses: GradedGuess[] = apiState.moves.map(
+        convertApiMoveToLocal,
+      );
+      const isLost: boolean = !apiState.won && loadedGuesses.length >= 6;
+
+      return {
+        ...state,
+        guesses: loadedGuesses,
+        status: apiState.won ? 'won' : isLost ? 'lost' : 'playing',
+      };
+    }
+
     default:
       return state;
   }
 }
 
-function createInitialState(): GameState {
+function createInitialState(puzzleDate?: string): GameState {
   return {
     answer: getRandomWord(),
     currentGuess: '',
     guesses: [],
     status: 'playing',
     gameNumber: 1,
-    puzzleDate: getTodayLocalDate(),
+    puzzleDate: puzzleDate ?? getTodayLocalDate(),
     isSubmitting: false,
   };
+}
+
+interface UseGameOptions {
+  puzzleDate?: string;
 }
 
 interface UseGameReturn {
@@ -853,7 +873,9 @@ interface UseGameReturn {
   status: GameStatus;
   answer: string;
   gameNumber: number;
+  puzzleDate: string;
   isSubmitting: boolean;
+  isLoading: boolean;
   error: Error | null;
   invalidWord: boolean;
   onKeyPress: (letter: string) => void;
@@ -862,11 +884,77 @@ interface UseGameReturn {
   onNewGame: () => void;
 }
 
-export function useGame(): UseGameReturn {
-  const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
+export function useGame(options: UseGameOptions = {}): UseGameReturn {
+  const initialPuzzleDate: string = options.puzzleDate ?? getTodayLocalDate();
+  const [state, dispatch] = useReducer(
+    gameReducer,
+    initialPuzzleDate,
+    createInitialState,
+  );
   const [error, setError] = useState<Error | null>(null);
   const [invalidWord, setInvalidWord] = useState<boolean>(false);
-  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const {
+    getAccessTokenSilently,
+    isAuthenticated,
+    isLoading: authLoading,
+  } = useAuth0();
+
+  // Load game progress on startup
+  useEffect(() => {
+    let isMounted: boolean = true;
+
+    const loadGameProgress = async (): Promise<void> => {
+      try {
+        let token: string | undefined;
+
+        // First check for auth token in localStorage
+        const storedTokens: string | null = localStorage.getItem('auth_tokens');
+        if (storedTokens) {
+          try {
+            const parsed: { access_token?: string } = JSON.parse(
+              storedTokens,
+            ) as { access_token?: string };
+            token = parsed.access_token;
+          } catch {
+            // Invalid JSON, ignore
+          }
+        }
+
+        // If authenticated and no cached token, try to get fresh token
+        // Don't block on this - if it fails, proceed without auth
+        if (isAuthenticated && !token && !authLoading) {
+          try {
+            token = await getAccessTokenSilently();
+          } catch {
+            // Token fetch failed, proceed without auth
+          }
+        }
+
+        // Fetch game progress (will use cookie if no token)
+        const gameProgress: ApiGameState | null = await getGameProgressApi(
+          state.puzzleDate,
+          { token },
+        );
+
+        if (isMounted && gameProgress) {
+          dispatch({ type: 'LOAD_GAME_PROGRESS', payload: gameProgress });
+        }
+      } catch (e) {
+        console.error('Failed to load game progress:', e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadGameProgress();
+
+    return (): void => {
+      isMounted = false;
+    };
+  }, [authLoading, isAuthenticated, getAccessTokenSilently, state.puzzleDate]);
 
   // Clear invalidWord after animation duration
   useEffect(() => {
@@ -1006,7 +1094,9 @@ export function useGame(): UseGameReturn {
     status: state.status,
     answer: state.answer,
     gameNumber: state.gameNumber,
+    puzzleDate: state.puzzleDate,
     isSubmitting: state.isSubmitting,
+    isLoading,
     error,
     invalidWord,
     onKeyPress: addLetter,

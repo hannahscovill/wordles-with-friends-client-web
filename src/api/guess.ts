@@ -111,3 +111,49 @@ export const submitGuess = async (
 
   return (await response.json()) as GameState;
 };
+
+export interface GetGameProgressOptions {
+  token?: string;
+}
+
+export const getGameProgress = async (
+  puzzleDateIsoDay: string,
+  options: GetGameProgressOptions = {},
+): Promise<GameState | null> => {
+  const { token } = options;
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  } else {
+    // Check if there's a session cookie for anonymous users
+    const sessionId: string | null = getSessionCookie();
+    if (!sessionId) {
+      // No session cookie means no saved progress
+      return null;
+    }
+  }
+
+  const response: Response = await fetch(
+    `${API_BASE_URL}/game/${puzzleDateIsoDay}`,
+    {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    },
+  );
+
+  if (response.status === 404) {
+    // No game found for this date
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to get game progress: ${response.status}`);
+  }
+
+  return (await response.json()) as GameState;
+};

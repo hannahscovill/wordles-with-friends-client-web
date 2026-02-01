@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type ReactElement } from 'react';
+import { useParams } from '@tanstack/react-router';
 import { GameBoard } from '../components/GameBoard';
 import { GameStatusModal } from '../components/GameStatusModal';
 import { Keyboard } from '../components/Keyboard';
@@ -7,18 +8,25 @@ import { useGame } from '../hooks/useGame';
 import './HomePage.scss';
 
 export const HomePage = (): ReactElement => {
+  const params: { puzzleDate?: string } = useParams({ strict: false }) as {
+    puzzleDate?: string;
+  };
+  const urlPuzzleDate: string | undefined = params.puzzleDate;
+
   const {
     guesses,
     keyStates,
     status,
     answer,
+    puzzleDate,
+    isLoading,
     invalidWord,
     error,
     onKeyPress,
     onEnter,
     onBackspace,
     onNewGame,
-  } = useGame();
+  } = useGame({ puzzleDate: urlPuzzleDate });
 
   const [showToast, setShowToast] = useState<boolean>(false);
 
@@ -37,6 +45,14 @@ export const HomePage = (): ReactElement => {
     setShowToast(false);
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="home-page">
+        <div className="home-page__loading">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="home-page">
       {status !== 'playing' && (
@@ -47,6 +63,7 @@ export const HomePage = (): ReactElement => {
         />
       )}
       <div className="home-page__game-container">
+        <div className="home-page__puzzle-date">{puzzleDate}</div>
         <GameBoard guesses={guesses} />
         <Toast
           message={error?.message ?? 'Invalid guess'}
