@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, type ReactElement } from 'react';
-import { useSearch } from '@tanstack/react-router';
+import { useParams } from '@tanstack/react-router';
 import { GameBoard } from '../components/GameBoard';
 import { GameStatusModal } from '../components/GameStatusModal';
 import { Keyboard } from '../components/Keyboard';
@@ -17,19 +17,24 @@ function formatDateForDisplay(dateStr: string): string {
 }
 
 export const HomePage = (): ReactElement => {
-  const { date } = useSearch({ from: '/' });
+  const params: { puzzleDate?: string } = useParams({ strict: false }) as {
+    puzzleDate?: string;
+  };
+  const urlPuzzleDate: string | undefined = params.puzzleDate;
+
   const {
     guesses,
     keyStates,
     status,
     answer,
     puzzleDate,
+    isLoading,
     invalidWord,
     error,
     onKeyPress,
     onEnter,
     onBackspace,
-  } = useGame(date);
+  } = useGame({ puzzleDate: urlPuzzleDate });
 
   const [showToast, setShowToast] = useState<boolean>(false);
 
@@ -48,17 +53,23 @@ export const HomePage = (): ReactElement => {
     setShowToast(false);
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="home-page">
+        <div className="home-page__loading">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="home-page">
       {status !== 'playing' && (
         <GameStatusModal won={status === 'won'} answer={answer} />
       )}
       <div className="home-page__game-container">
-        {date && (
-          <div className="home-page__date-header">
-            {formatDateForDisplay(puzzleDate)}
-          </div>
-        )}
+        <div className="home-page__puzzle-date">
+          {formatDateForDisplay(puzzleDate)}
+        </div>
         <GameBoard guesses={guesses} />
         <Toast
           message={error?.message ?? 'Invalid guess'}
