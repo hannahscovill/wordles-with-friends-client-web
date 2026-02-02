@@ -183,6 +183,7 @@ export const ProfilePage = (): ReactElement => {
 
   return (
     <div className="profile-page">
+      <h1 className="profile-page__title">Profile</h1>
       <ProfileForm
         initialData={profileData}
         onSubmit={handleSubmit}

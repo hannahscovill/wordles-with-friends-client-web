@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Link } from '@tanstack/react-router';
+import { useNavigate, type NavigateFn } from '@tanstack/react-router';
 import { Button, Modal } from './ui';
 import './GameStatusModal.scss';
 
@@ -14,16 +14,20 @@ export const GameStatusModal = ({
   won,
   answer,
 }: GameStatusModalProps): ReactElement => {
+  const navigate: NavigateFn = useNavigate();
+
+  const handlePlayOtherGames = (): void => {
+    navigate({ to: '/history' });
+  };
+
   return (
     <Modal>
       <p className="game-status-modal__message">
         {won ? 'You won!' : `The word was: ${answer}`}
       </p>
-      <Link to="/history">
-        <Button size="s" variant="onLight">
-          Play Other Games
-        </Button>
-      </Link>
+      <Button size="s" variant="onLight" onClick={handlePlayOtherGames}>
+        Play Other Games
+      </Button>
     </Modal>
   );
 };
