@@ -7,7 +7,13 @@ import {
 } from '@tanstack/react-router';
 import { AvatarMenu } from './AvatarMenu';
 import { IssueReportModal } from './IssueReportModal';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import './AppHeader.scss';
+
+interface AuthTokens {
+  access_token: string;
+  id_token: string;
+}
 
 export interface AppHeaderProps {
   /** The title to display in the header */
@@ -17,9 +23,19 @@ export interface AppHeaderProps {
 export const AppHeader = ({
   title = 'Wordles with Friends',
 }: AppHeaderProps): ReactElement => {
-  const { isAuthenticated, user, loginWithRedirect, logout } = useAuth0();
+  const { isAuthenticated, isLoading, user, loginWithRedirect, logout } =
+    useAuth0();
   const navigate: UseNavigateResult<string> = useNavigate();
   const [isIssueModalOpen, setIsIssueModalOpen] = useState<boolean>(false);
+  const [authTokens] = useLocalStorage<AuthTokens>('auth_tokens');
+
+  // Check if we have stored tokens - used to show logged-in UI while Auth0 validates
+  const hasStoredTokens: boolean =
+    authTokens !== null && authTokens.access_token !== '';
+
+  // Consider user logged in if Auth0 confirms it, OR if Auth0 is still loading
+  // but we have stored tokens (optimistic UI to avoid flash of logged-out state)
+  const isLoggedIn: boolean = isAuthenticated || (isLoading && hasStoredTokens);
 
   // Use avatar_url from user_metadata if available, otherwise fall back to Auth0 picture
   const userMetadata: Record<string, unknown> | undefined = (
@@ -45,7 +61,7 @@ export const AppHeader = ({
           <AvatarMenu
             avatarSrc={avatarSrc}
             avatarAlt={avatarAlt}
-            isLoggedIn={isAuthenticated}
+            isLoggedIn={isLoggedIn}
             isGameAdmin={isGameAdmin}
             onLogInClick={() => loginWithRedirect()}
             onProfileClick={() => navigate({ to: '/profile' })}
