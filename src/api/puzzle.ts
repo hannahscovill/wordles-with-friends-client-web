@@ -23,6 +23,10 @@ export interface GetPuzzlesParams {
   endDate?: string;
 }
 
+export interface GetPuzzlesResponse {
+  puzzles: Puzzle[];
+}
+
 export const getPuzzles = async (
   token: string,
   params?: GetPuzzlesParams,
@@ -58,7 +62,26 @@ export const getPuzzles = async (
     throw new Error(`Failed to fetch puzzles: ${response.status}`);
   }
 
-  return (await response.json()) as Puzzle[];
+  const data: unknown = await response.json();
+
+  // Handle expected response shape: { puzzles: [...] }
+  if (
+    data !== null &&
+    typeof data === 'object' &&
+    'puzzles' in data &&
+    Array.isArray((data as GetPuzzlesResponse).puzzles)
+  ) {
+    return (data as GetPuzzlesResponse).puzzles;
+  }
+
+  // Handle case where response is directly an array (backwards compatibility)
+  if (Array.isArray(data)) {
+    return data as Puzzle[];
+  }
+
+  // Response is not in expected format
+  console.error('Unexpected API response format:', data);
+  return [];
 };
 
 export const setPuzzle = async (
