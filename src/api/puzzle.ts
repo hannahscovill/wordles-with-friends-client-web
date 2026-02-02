@@ -88,7 +88,7 @@ export const setPuzzle = async (
   token: string,
   data: SetPuzzleRequest,
 ): Promise<SetPuzzleResponse> => {
-  const response: Response = await fetch(`${API_BASE_URL}/puzzle`, {
+  const response: Response = await fetch(`${API_BASE_URL}/puzzles`, {
     method: 'PUT',
     headers: {
       Authorization: `Bearer ${token}`,
