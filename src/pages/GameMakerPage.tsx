@@ -39,6 +39,19 @@ const formatLocalDate = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+const generateDatesInRange = (startDate: string, endDate: string): string[] => {
+  const dates: string[] = [];
+  const current: Date = new Date(startDate + 'T00:00:00');
+  const end: Date = new Date(endDate + 'T00:00:00');
+
+  while (current <= end) {
+    dates.push(formatLocalDate(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
+};
+
 const getDateRange = (preset: PresetPeriod): DateRange | null => {
   const today: Date = new Date();
 
@@ -122,6 +135,9 @@ export const GameMakerPage = (): ReactElement => {
   const hasStoredTokens: boolean =
     authTokens !== null && authTokens.access_token !== '';
 
+  // Check if "All" is selected (no date range)
+  const isAllSelected: boolean = !customStartDate && !customEndDate;
+
   // Check if user has game_admin privilege in app_metadata
   const appMetadata: Record<string, unknown> | undefined = (
     user as Record<string, unknown> | undefined
@@ -167,6 +183,40 @@ export const GameMakerPage = (): ReactElement => {
       fetchPuzzles();
     }
   }, [isAuthenticated, isGameAdmin, fetchPuzzles]);
+
+  // Compute display rows: merge all dates in range with API puzzles (except for "All" mode)
+  const displayRows: Puzzle[] = useMemo(() => {
+    // For "All" mode, just show puzzles from API
+    if (isAllSelected) {
+      return allPuzzles;
+    }
+
+    // If we don't have both start and end dates, just show API puzzles
+    if (!customStartDate || !customEndDate) {
+      return allPuzzles;
+    }
+
+    // Generate all dates in the range
+    const allDatesInRange: string[] = generateDatesInRange(
+      customStartDate,
+      customEndDate,
+    );
+
+    // Create a map of existing puzzles by date
+    const puzzlesByDate: Map<string, Puzzle> = new Map<string, Puzzle>(
+      allPuzzles.map((puzzle) => [puzzle.date, puzzle]),
+    );
+
+    // Merge: for each date, use existing puzzle or create empty entry
+    return allDatesInRange.map((date) => {
+      const existingPuzzle: Puzzle | undefined = puzzlesByDate.get(date);
+      if (existingPuzzle) {
+        return existingPuzzle;
+      }
+      // Create empty puzzle entry for date without a puzzle
+      return { date, word: '' };
+    });
+  }, [isAllSelected, customStartDate, customEndDate, allPuzzles]);
 
   // Start login flow if not authenticated
   useEffect(() => {
@@ -403,14 +453,14 @@ export const GameMakerPage = (): ReactElement => {
               </tr>
             </thead>
             <tbody>
-              {allPuzzles.length === 0 ? (
+              {displayRows.length === 0 ? (
                 <tr>
                   <td colSpan={2} className="gamemaker-page__empty">
                     No puzzles found
                   </td>
                 </tr>
               ) : (
-                allPuzzles.map((puzzle) => (
+                displayRows.map((puzzle) => (
                   <tr key={puzzle.date}>
                     <td>{puzzle.date}</td>
                     <td>
@@ -430,7 +480,7 @@ export const GameMakerPage = (): ReactElement => {
                           className="gamemaker-page__set-answer-btn"
                           onClick={() => handleSetAnswerClick(puzzle.date)}
                         >
-                          Set Answer
+                          Set Game
                         </button>
                       )}
                     </td>
