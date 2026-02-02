@@ -1,10 +1,17 @@
 const API_BASE_URL: string =
   import.meta.env.PUBLIC_API_URL ?? 'https://api.wordles.dev';
 
-export interface SetPuzzleRequest {
+export interface SetPuzzleRequestCustom {
   date: string;
   word: string;
 }
+
+export interface SetPuzzleRequestRandom {
+  date: string;
+  set_random_unused_word: true;
+}
+
+export type SetPuzzleRequest = SetPuzzleRequestCustom | SetPuzzleRequestRandom;
 
 export interface SetPuzzleResponse {
   date: string;
@@ -103,6 +110,10 @@ export const setPuzzle = async (
 
   if (response.status === 403) {
     throw new Error('Forbidden: You do not have admin privileges.');
+  }
+
+  if (response.status === 404) {
+    throw new Error('Word not found: The word does not exist in the word list.');
   }
 
   if (!response.ok) {
