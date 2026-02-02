@@ -172,10 +172,19 @@ export const ScoreHistoryPage = (): ReactElement => {
             <div className="score-history-page__card-content">
               {entry.played && entry.guesses ? (
                 <MiniGameBoard guesses={entry.guesses} won={entry.won} />
+              ) : entry.in_progress && entry.guesses ? (
+                <>
+                  <MiniGameBoard guesses={entry.guesses} />
+                  <Link
+                    to={`/${entry.puzzle_date}`}
+                    className="score-history-page__play-button"
+                  >
+                    Continue Game
+                  </Link>
+                </>
               ) : (
                 <Link
-                  to="/"
-                  search={{ date: entry.puzzle_date }}
+                  to={`/${entry.puzzle_date}`}
                   className="score-history-page__play-button"
                 >
                   Play

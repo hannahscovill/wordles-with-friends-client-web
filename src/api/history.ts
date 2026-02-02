@@ -48,6 +48,7 @@ export interface HistoryEntry {
   won?: boolean;
   guesses?: GradedMove[];
   guess_count?: number;
+  in_progress?: boolean;
 }
 
 export interface HistoryResponse {
@@ -98,7 +99,18 @@ export const getHistory = async (token: string): Promise<HistoryResponse> => {
   const last7Days: string[] = getLast7Days();
   const entries: HistoryEntry[] = last7Days.map((date: string) => {
     const game: GameRecord | undefined = gamesByDate.get(date);
-    if (game && !game.in_progress) {
+    if (game) {
+      if (game.in_progress) {
+        // In-progress game - show progress with continue button
+        return {
+          puzzle_date: date,
+          played: false,
+          in_progress: true,
+          guesses: convertGradesToGuesses(game.graded_guesses),
+          guess_count: game.guesses_count,
+        };
+      }
+      // Completed game
       return {
         puzzle_date: date,
         played: true,
