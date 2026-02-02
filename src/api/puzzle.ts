@@ -1,5 +1,5 @@
 const API_BASE_URL: string =
-  import.meta.env.PUBLIC_API_URL ?? 'https://localhost:8080';
+  import.meta.env.PUBLIC_API_URL ?? 'https://api.wordles.dev';
 
 export interface SetPuzzleRequest {
   date: string;
@@ -29,10 +29,10 @@ export const getPuzzles = async (
 ): Promise<Puzzle[]> => {
   const searchParams: URLSearchParams = new URLSearchParams();
   if (params?.startDate) {
-    searchParams.set('startDate', params.startDate);
+    searchParams.set('start_date', params.startDate);
   }
   if (params?.endDate) {
-    searchParams.set('endDate', params.endDate);
+    searchParams.set('end_date', params.endDate);
   }
 
   const queryString: string = searchParams.toString();

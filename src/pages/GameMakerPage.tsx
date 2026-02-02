@@ -10,7 +10,6 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
-import { Select } from '../components/ui/Select';
 import {
   setPuzzle,
   getPuzzles,
@@ -28,39 +27,59 @@ interface AuthTokens {
 
 type PresetPeriod = 'week' | 'month' | 'year' | 'all';
 
-import type { SelectOption } from '../components/ui/Select';
-
-const PAGE_SIZE_OPTIONS: SelectOption[] = [
-  { value: '7', label: '7' },
-  { value: '14', label: '14' },
-  { value: '30', label: '30' },
-  { value: '50', label: '50' },
-];
-
 interface DateRange {
   startDate: string;
   endDate: string;
 }
 
+const formatLocalDate = (date: Date): string => {
+  const year: number = date.getFullYear();
+  const month: string = String(date.getMonth() + 1).padStart(2, '0');
+  const day: string = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const getDateRange = (preset: PresetPeriod): DateRange | null => {
   const today: Date = new Date();
-  const endDate: string = today.toISOString().split('T')[0];
 
   switch (preset) {
     case 'week': {
-      const weekAgo: Date = new Date(today);
-      weekAgo.setDate(today.getDate() - 7);
-      return { startDate: weekAgo.toISOString().split('T')[0], endDate };
+      // Sunday to Saturday of current week
+      const dayOfWeek: number = today.getDay();
+      const sunday: Date = new Date(today);
+      sunday.setDate(today.getDate() - dayOfWeek);
+      const saturday: Date = new Date(sunday);
+      saturday.setDate(sunday.getDate() + 6);
+      return {
+        startDate: formatLocalDate(sunday),
+        endDate: formatLocalDate(saturday),
+      };
     }
     case 'month': {
-      const monthAgo: Date = new Date(today);
-      monthAgo.setMonth(today.getMonth() - 1);
-      return { startDate: monthAgo.toISOString().split('T')[0], endDate };
+      // First to last day of current month
+      const firstOfMonth: Date = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1,
+      );
+      const lastOfMonth: Date = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+      );
+      return {
+        startDate: formatLocalDate(firstOfMonth),
+        endDate: formatLocalDate(lastOfMonth),
+      };
     }
     case 'year': {
-      const yearAgo: Date = new Date(today);
-      yearAgo.setFullYear(today.getFullYear() - 1);
-      return { startDate: yearAgo.toISOString().split('T')[0], endDate };
+      // First to last day of current year
+      const firstOfYear: Date = new Date(today.getFullYear(), 0, 1);
+      const lastOfYear: Date = new Date(today.getFullYear(), 11, 31);
+      return {
+        startDate: formatLocalDate(firstOfYear),
+        endDate: formatLocalDate(lastOfYear),
+      };
     }
     case 'all':
       return null;
@@ -87,10 +106,13 @@ export const GameMakerPage = (): ReactElement => {
 
   // Filter and pagination state
   const [presetPeriod, setPresetPeriod] = useState<PresetPeriod>('week');
-  const [customStartDate, setCustomStartDate] = useState<string>('');
-  const [customEndDate, setCustomEndDate] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(7);
+  const initialRange: DateRange | null = getDateRange('week');
+  const [customStartDate, setCustomStartDate] = useState<string>(
+    initialRange?.startDate ?? '',
+  );
+  const [customEndDate, setCustomEndDate] = useState<string>(
+    initialRange?.endDate ?? '',
+  );
   const [visibleAnswers, setVisibleAnswers] = useState<Set<string>>(new Set());
 
   // Puzzle data state
@@ -131,7 +153,6 @@ export const GameMakerPage = (): ReactElement => {
           activeDateRange ?? undefined,
         );
         setAllPuzzles(puzzles);
-        setCurrentPage(1);
       } catch (error) {
         setErrorMessage(
           error instanceof Error ? error.message : 'Failed to fetch puzzles',
@@ -160,17 +181,16 @@ export const GameMakerPage = (): ReactElement => {
     }
   }, [isLoading, isAuthenticated, loginWithRedirect, hasStoredTokens]);
 
-  // Pagination calculations
-  const totalPages: number = Math.ceil(allPuzzles.length / pageSize);
-  const paginatedPuzzles: Puzzle[] = useMemo(() => {
-    const start: number = (currentPage - 1) * pageSize;
-    return allPuzzles.slice(start, start + pageSize);
-  }, [allPuzzles, currentPage, pageSize]);
-
   const handlePresetClick = (preset: PresetPeriod): void => {
     setPresetPeriod(preset);
-    setCustomStartDate('');
-    setCustomEndDate('');
+    const range: DateRange | null = getDateRange(preset);
+    if (range) {
+      setCustomStartDate(range.startDate);
+      setCustomEndDate(range.endDate);
+    } else {
+      setCustomStartDate('');
+      setCustomEndDate('');
+    }
   };
 
   const handleCustomDateChange = (
@@ -184,9 +204,43 @@ export const GameMakerPage = (): ReactElement => {
     }
   };
 
-  const handlePageSizeChange = (newSize: number): void => {
-    setPageSize(newSize);
-    setCurrentPage(1);
+  const handleNavigate = (direction: 'prev' | 'next'): void => {
+    if (presetPeriod === 'all' || !customStartDate) return;
+
+    const currentStart: Date = new Date(customStartDate + 'T00:00:00');
+    const offset: number = direction === 'prev' ? -1 : 1;
+
+    let newStart: Date;
+    let newEnd: Date;
+
+    switch (presetPeriod) {
+      case 'week': {
+        newStart = new Date(currentStart);
+        newStart.setDate(currentStart.getDate() + offset * 7);
+        newEnd = new Date(newStart);
+        newEnd.setDate(newStart.getDate() + 6);
+        break;
+      }
+      case 'month': {
+        newStart = new Date(
+          currentStart.getFullYear(),
+          currentStart.getMonth() + offset,
+          1,
+        );
+        newEnd = new Date(newStart.getFullYear(), newStart.getMonth() + 1, 0);
+        break;
+      }
+      case 'year': {
+        newStart = new Date(currentStart.getFullYear() + offset, 0, 1);
+        newEnd = new Date(currentStart.getFullYear() + offset, 11, 31);
+        break;
+      }
+      default:
+        return;
+    }
+
+    setCustomStartDate(formatLocalDate(newStart));
+    setCustomEndDate(formatLocalDate(newEnd));
   };
 
   const toggleAnswerVisibility = (date: string): void => {
@@ -254,79 +308,6 @@ export const GameMakerPage = (): ReactElement => {
     }
   };
 
-  const renderPagination = (): ReactElement | null => {
-    if (totalPages <= 1) return null;
-
-    const pages: (number | string)[] = [];
-    const maxVisiblePages: number = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i: number = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, '...', totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1, '...', totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(
-          1,
-          '...',
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          '...',
-          totalPages,
-        );
-      }
-    }
-
-    return (
-      <div className="gamemaker-page__pagination">
-        <button
-          type="button"
-          className="gamemaker-page__pagination-button"
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-          disabled={currentPage === 1}
-        >
-          Prev
-        </button>
-        {pages.map((page, index) =>
-          typeof page === 'number' ? (
-            <button
-              key={page}
-              type="button"
-              className={`gamemaker-page__pagination-number ${
-                currentPage === page
-                  ? 'gamemaker-page__pagination-number--active'
-                  : ''
-              }`}
-              onClick={() => setCurrentPage(page)}
-            >
-              {page}
-            </button>
-          ) : (
-            <span
-              key={`ellipsis-${index}`}
-              className="gamemaker-page__pagination-ellipsis"
-            >
-              {page}
-            </span>
-          ),
-        )}
-        <button
-          type="button"
-          className="gamemaker-page__pagination-button"
-          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
-      </div>
-    );
-  };
-
   // Show loading while checking auth
   if (!hasStoredTokens && !isAuthenticated) {
     return (
@@ -370,20 +351,26 @@ export const GameMakerPage = (): ReactElement => {
       <div className="gamemaker-page__filter-section">
         <div className="gamemaker-page__preset-buttons">
           {(['week', 'month', 'year', 'all'] as PresetPeriod[]).map(
-            (preset) => (
-              <button
-                key={preset}
-                type="button"
-                className={`gamemaker-page__preset-button ${
-                  presetPeriod === preset && !customStartDate && !customEndDate
-                    ? 'gamemaker-page__preset-button--active'
-                    : ''
-                }`}
-                onClick={() => handlePresetClick(preset)}
-              >
-                {preset.charAt(0).toUpperCase() + preset.slice(1)}
-              </button>
-            ),
+            (preset) => {
+              const presetRange: DateRange | null = getDateRange(preset);
+              const isActive: boolean =
+                preset === 'all'
+                  ? !customStartDate && !customEndDate
+                  : presetRange?.startDate === customStartDate &&
+                    presetRange?.endDate === customEndDate;
+              return (
+                <button
+                  key={preset}
+                  type="button"
+                  className={`gamemaker-page__preset-button ${
+                    isActive ? 'gamemaker-page__preset-button--active' : ''
+                  }`}
+                  onClick={() => handlePresetClick(preset)}
+                >
+                  {preset.charAt(0).toUpperCase() + preset.slice(1)}
+                </button>
+              );
+            },
           )}
         </div>
         <div className="gamemaker-page__date-pickers">
@@ -402,15 +389,6 @@ export const GameMakerPage = (): ReactElement => {
         </div>
       </div>
 
-      <div className="gamemaker-page__page-size-selector">
-        <Select
-          label="Show"
-          options={PAGE_SIZE_OPTIONS}
-          value={String(pageSize)}
-          onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-        />
-      </div>
-
       {isLoadingPuzzles ? (
         <div className="gamemaker-page__loading">
           <Spinner size="medium" label="Loading puzzles" />
@@ -425,14 +403,14 @@ export const GameMakerPage = (): ReactElement => {
               </tr>
             </thead>
             <tbody>
-              {paginatedPuzzles.length === 0 ? (
+              {allPuzzles.length === 0 ? (
                 <tr>
                   <td colSpan={2} className="gamemaker-page__empty">
                     No puzzles found
                   </td>
                 </tr>
               ) : (
-                paginatedPuzzles.map((puzzle) => (
+                allPuzzles.map((puzzle) => (
                   <tr key={puzzle.date}>
                     <td>{puzzle.date}</td>
                     <td>
@@ -442,21 +420,18 @@ export const GameMakerPage = (): ReactElement => {
                           className="gamemaker-page__answer-toggle"
                           onClick={() => toggleAnswerVisibility(puzzle.date)}
                         >
-                          {visibleAnswers.has(puzzle.date) ? (
-                            puzzle.word
-                          ) : (
-                            <span className="gamemaker-page__answer-hidden">
-                              Click to reveal
-                            </span>
-                          )}
+                          {visibleAnswers.has(puzzle.date)
+                            ? puzzle.word
+                            : '* * * * *'}
                         </button>
                       ) : (
-                        <Button
-                          size="s"
+                        <button
+                          type="button"
+                          className="gamemaker-page__set-answer-btn"
                           onClick={() => handleSetAnswerClick(puzzle.date)}
                         >
                           Set Answer
-                        </Button>
+                        </button>
                       )}
                     </td>
                   </tr>
@@ -465,7 +440,24 @@ export const GameMakerPage = (): ReactElement => {
             </tbody>
           </table>
 
-          {renderPagination()}
+          <div className="gamemaker-page__navigation">
+            <button
+              type="button"
+              className="gamemaker-page__nav-button"
+              onClick={() => handleNavigate('prev')}
+              disabled={presetPeriod === 'all'}
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              className="gamemaker-page__nav-button"
+              onClick={() => handleNavigate('next')}
+              disabled={presetPeriod === 'all'}
+            >
+              Next
+            </button>
+          </div>
         </>
       )}
 
