@@ -9,15 +9,15 @@ interface MockPuzzle {
   word: string;
 }
 
-// Mock data
+// Mock data - mix of set and unset answers
 const mockPuzzles: MockPuzzle[] = [
   { date: '2025-01-26', word: 'CRANE' },
   { date: '2025-01-27', word: 'SLATE' },
-  { date: '2025-01-28', word: 'TRACE' },
+  { date: '2025-01-28', word: '' }, // Unset - shows "Set Answer" button
   { date: '2025-01-29', word: 'CRATE' },
-  { date: '2025-01-30', word: 'STARE' },
+  { date: '2025-01-30', word: '' }, // Unset - shows "Set Answer" button
   { date: '2025-01-31', word: 'ADIEU' },
-  { date: '2025-02-01', word: 'AUDIO' },
+  { date: '2025-02-01', word: '' }, // Unset - shows "Set Answer" button
 ];
 
 // Create a mock component that shows the UI without Auth0
@@ -73,7 +73,6 @@ const MockGameMakerPage = (): ReactElement => {
           <tr>
             <th>Date</th>
             <th>Answer</th>
-            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -81,25 +80,29 @@ const MockGameMakerPage = (): ReactElement => {
             <tr key={puzzle.date}>
               <td>{puzzle.date}</td>
               <td>
-                <button type="button" className="gamemaker-page__answer-toggle">
-                  <span className="gamemaker-page__answer-hidden">
-                    Click to reveal
-                  </span>
-                </button>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  style={{
-                    padding: '8px 16px',
-                    border: '3px solid #000',
-                    background: '#fff',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                  }}
-                >
-                  Set Answer
-                </button>
+                {puzzle.word ? (
+                  <button
+                    type="button"
+                    className="gamemaker-page__answer-toggle"
+                  >
+                    <span className="gamemaker-page__answer-hidden">
+                      Click to reveal
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    style={{
+                      padding: '8px 16px',
+                      border: '3px solid #000',
+                      background: '#fff',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Set Answer
+                  </button>
+                )}
               </td>
             </tr>
           ))}
@@ -193,7 +196,6 @@ const MockGameMakerPageWithVisibleAnswers = (): ReactElement => {
           <tr>
             <th>Date</th>
             <th>Answer</th>
-            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -201,29 +203,33 @@ const MockGameMakerPageWithVisibleAnswers = (): ReactElement => {
             <tr key={puzzle.date}>
               <td>{puzzle.date}</td>
               <td>
-                <button type="button" className="gamemaker-page__answer-toggle">
-                  {visibleDates.has(puzzle.date) ? (
-                    puzzle.word
-                  ) : (
-                    <span className="gamemaker-page__answer-hidden">
-                      Click to reveal
-                    </span>
-                  )}
-                </button>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  style={{
-                    padding: '8px 16px',
-                    border: '3px solid #000',
-                    background: '#fff',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                  }}
-                >
-                  Set Answer
-                </button>
+                {puzzle.word ? (
+                  <button
+                    type="button"
+                    className="gamemaker-page__answer-toggle"
+                  >
+                    {visibleDates.has(puzzle.date) ? (
+                      puzzle.word
+                    ) : (
+                      <span className="gamemaker-page__answer-hidden">
+                        Click to reveal
+                      </span>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    style={{
+                      padding: '8px 16px',
+                      border: '3px solid #000',
+                      background: '#fff',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Set Answer
+                  </button>
+                )}
               </td>
             </tr>
           ))}

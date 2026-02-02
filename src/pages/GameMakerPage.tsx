@@ -422,13 +422,12 @@ export const GameMakerPage = (): ReactElement => {
               <tr>
                 <th>Date</th>
                 <th>Answer</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {paginatedPuzzles.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="gamemaker-page__empty">
+                  <td colSpan={2} className="gamemaker-page__empty">
                     No puzzles found
                   </td>
                 </tr>
@@ -437,27 +436,28 @@ export const GameMakerPage = (): ReactElement => {
                   <tr key={puzzle.date}>
                     <td>{puzzle.date}</td>
                     <td>
-                      <button
-                        type="button"
-                        className="gamemaker-page__answer-toggle"
-                        onClick={() => toggleAnswerVisibility(puzzle.date)}
-                      >
-                        {visibleAnswers.has(puzzle.date) ? (
-                          puzzle.word
-                        ) : (
-                          <span className="gamemaker-page__answer-hidden">
-                            Click to reveal
-                          </span>
-                        )}
-                      </button>
-                    </td>
-                    <td>
-                      <Button
-                        size="s"
-                        onClick={() => handleSetAnswerClick(puzzle.date)}
-                      >
-                        Set Answer
-                      </Button>
+                      {puzzle.word ? (
+                        <button
+                          type="button"
+                          className="gamemaker-page__answer-toggle"
+                          onClick={() => toggleAnswerVisibility(puzzle.date)}
+                        >
+                          {visibleAnswers.has(puzzle.date) ? (
+                            puzzle.word
+                          ) : (
+                            <span className="gamemaker-page__answer-hidden">
+                              Click to reveal
+                            </span>
+                          )}
+                        </button>
+                      ) : (
+                        <Button
+                          size="s"
+                          onClick={() => handleSetAnswerClick(puzzle.date)}
+                        >
+                          Set Answer
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))
