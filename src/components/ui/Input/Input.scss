@@ -19,7 +19,9 @@
     border: 3px solid #000;
     background: #fff;
     outline: none;
-    transition: border-color 200ms ease;
+    transition:
+      border-color 200ms ease,
+      background-color 200ms ease;
 
     &:focus {
       border-color: var(--color-button-shadow);
