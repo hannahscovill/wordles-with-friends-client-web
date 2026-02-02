@@ -7,22 +7,14 @@ import { Toast } from '../components/Toast';
 import { useGame } from '../hooks/useGame';
 import './HomePage.scss';
 
-interface FormattedDate {
-  weekday: string;
-  monthDay: string;
-  year: string;
-}
-
-function formatDateForDisplay(dateStr: string): FormattedDate {
+function formatDateForDisplay(dateStr: string): string {
   const date: Date = new Date(dateStr + 'T00:00:00');
-  return {
-    weekday: date.toLocaleDateString('en-US', { weekday: 'long' }),
-    monthDay: date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: '2-digit',
-    }),
-    year: date.toLocaleDateString('en-US', { year: 'numeric' }),
-  };
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 export const HomePage = (): ReactElement => {
@@ -71,8 +63,6 @@ export const HomePage = (): ReactElement => {
     );
   }
 
-  const formattedDate: FormattedDate = formatDateForDisplay(puzzleDate);
-
   return (
     <div className="home-page">
       {completedDuringSession && (
@@ -80,13 +70,7 @@ export const HomePage = (): ReactElement => {
       )}
       <div className="home-page__game-container">
         <div className="home-page__date-title">
-          <span className="home-page__date-weekday">
-            {formattedDate.weekday}
-          </span>
-          <span className="home-page__date-month-day">
-            {formattedDate.monthDay}
-          </span>
-          <span className="home-page__date-year">{formattedDate.year}</span>
+          {formatDateForDisplay(puzzleDate)}
         </div>
         <GameBoard guesses={guesses} />
         <Toast
