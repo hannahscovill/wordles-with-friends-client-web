@@ -41,7 +41,8 @@ export const GameMakerPage = (): ReactElement => {
 
   // Filter and pagination state
   const [presetPeriod, setPresetPeriod] = useState<PresetPeriod>('week');
-  const initialRange: { startDate: string; endDate: string } | null = getDateRange('week');
+  const initialRange: { startDate: string; endDate: string } | null =
+    getDateRange('week');
   const [customStartDate, setCustomStartDate] = useState<string>(
     initialRange?.startDate ?? '',
   );
@@ -288,7 +289,11 @@ export const GameMakerPage = (): ReactElement => {
               type="button"
               className="gamemaker-page__nav-button"
               onClick={() => {
-                const newRange: DateRange | null = navigateDateRange(presetPeriod, customStartDate, 'prev');
+                const newRange: DateRange | null = navigateDateRange(
+                  presetPeriod,
+                  customStartDate,
+                  'prev',
+                );
                 if (newRange) {
                   setCustomStartDate(newRange.startDate);
                   setCustomEndDate(newRange.endDate);
@@ -302,7 +307,11 @@ export const GameMakerPage = (): ReactElement => {
               type="button"
               className="gamemaker-page__nav-button"
               onClick={() => {
-                const newRange: DateRange | null = navigateDateRange(presetPeriod, customStartDate, 'next');
+                const newRange: DateRange | null = navigateDateRange(
+                  presetPeriod,
+                  customStartDate,
+                  'next',
+                );
                 if (newRange) {
                   setCustomStartDate(newRange.startDate);
                   setCustomEndDate(newRange.endDate);

@@ -40,7 +40,11 @@ export const DateFilter = ({
   };
 
   const handleNavigate = (direction: 'prev' | 'next'): void => {
-    const newRange: DateRange | null = navigateDateRange(presetPeriod, customStartDate, direction);
+    const newRange: DateRange | null = navigateDateRange(
+      presetPeriod,
+      customStartDate,
+      direction,
+    );
     if (newRange) {
       onStartDateChange(newRange.startDate);
       onEndDateChange(newRange.endDate);

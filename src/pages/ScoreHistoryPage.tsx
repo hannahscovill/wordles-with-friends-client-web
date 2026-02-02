@@ -21,7 +21,6 @@ import {
   type DateRange,
   formatDateForDisplay,
   getTodayLocalDate,
-  generateDatesInRange,
   getDateRange,
   navigateDateRange,
 } from '../utils/dates';
@@ -77,61 +76,60 @@ export const ScoreHistoryPage = (): ReactElement => {
     fetchHistory();
   }, [fetchHistory]);
 
-  // Compute display rows: merge all dates in range with history data
-  // Only show dates that have puzzles available
+  // Compute display rows: merge history with available puzzles
+  // Shows all dates from history AND available puzzles
   const displayRows: HistoryEntry[] = useMemo(() => {
-    // Helper to filter by available puzzles
-    const filterByAvailablePuzzles = (
-      entries: HistoryEntry[],
-    ): HistoryEntry[] =>
-      entries.filter((entry) => availablePuzzles.has(entry.puzzle_date));
-
-    // For "All" mode, just show data from API filtered by available puzzles
-    if (isAllSelected) {
-      return filterByAvailablePuzzles(historyData);
-    }
-
-    // For "Year" mode, skip generation (too many dates) and filter API data
-    if (skipDateGeneration) {
-      return filterByAvailablePuzzles(
-        historyData.filter((entry) => {
-          if (!customStartDate && !customEndDate) return true;
-          if (customStartDate && entry.puzzle_date < customStartDate)
-            return false;
-          if (customEndDate && entry.puzzle_date > customEndDate) return false;
-          return true;
-        }),
-      );
-    }
-
-    // If we don't have both start and end dates, filter API data
-    if (!customStartDate || !customEndDate) {
-      return filterByAvailablePuzzles(historyData);
-    }
-
-    // Generate all dates in the range (newest first)
-    const allDatesInRange: string[] = generateDatesInRange(
-      customStartDate,
-      customEndDate,
-      true,
-    );
-
-    // Create a map of history by date
+    // Create a map of history by date for quick lookup
     const historyByDate: Map<string, HistoryEntry> = new Map(
       historyData.map((entry) => [entry.puzzle_date, entry]),
     );
 
-    // Merge: for each date with a puzzle, use existing history or create empty entry
-    return allDatesInRange
-      .filter((date) => availablePuzzles.has(date))
-      .map((date) => {
-        const existingEntry: HistoryEntry | undefined = historyByDate.get(date);
-        if (existingEntry) {
-          return existingEntry;
-        }
-        // Create empty entry for date without history
-        return { puzzle_date: date, played: false };
-      });
+    // Get all unique dates from both history and available puzzles
+    const allDates: Set<string> = new Set([
+      ...historyData.map((entry) => entry.puzzle_date),
+      ...availablePuzzles,
+    ]);
+
+    // Convert to sorted array (newest first)
+    const sortedDates: string[] = Array.from(allDates).sort((a, b) =>
+      b.localeCompare(a),
+    );
+
+    // Helper to create entry for a date
+    const createEntry = (date: string): HistoryEntry => {
+      const existingEntry: HistoryEntry | undefined = historyByDate.get(date);
+      if (existingEntry) {
+        return existingEntry;
+      }
+      return { puzzle_date: date, played: false };
+    };
+
+    // For "All" mode, show all dates
+    if (isAllSelected) {
+      return sortedDates.map(createEntry);
+    }
+
+    // For "Year" mode, filter by date range
+    if (skipDateGeneration) {
+      return sortedDates
+        .filter((date) => {
+          if (!customStartDate && !customEndDate) return true;
+          if (customStartDate && date < customStartDate) return false;
+          if (customEndDate && date > customEndDate) return false;
+          return true;
+        })
+        .map(createEntry);
+    }
+
+    // If we don't have both start and end dates, show all dates
+    if (!customStartDate || !customEndDate) {
+      return sortedDates.map(createEntry);
+    }
+
+    // Filter to only those in the date range
+    return sortedDates
+      .filter((date) => date >= customStartDate && date <= customEndDate)
+      .map(createEntry);
   }, [
     skipDateGeneration,
     isAllSelected,
