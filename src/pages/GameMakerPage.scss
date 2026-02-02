@@ -20,53 +20,6 @@
     color: var(--color-text-primary, #1a1a1b);
   }
 
-  &__filter-section {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
-  &__preset-buttons {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  &__preset-button {
-    padding: 8px 16px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: 3px solid #000;
-    background: #fff;
-    cursor: pointer;
-    transition: all 200ms ease;
-
-    &:hover {
-      background: var(--color-button-shadow);
-    }
-
-    &--active {
-      background: var(--color-button-shadow);
-    }
-  }
-
-  &__date-pickers {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  &__page-size-selector {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-
   &__table {
     width: 100%;
     border-collapse: collapse;

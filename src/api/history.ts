@@ -57,22 +57,6 @@ export interface HistoryResponse {
   games_won: number;
 }
 
-function getLast7Days(): string[] {
-  const dates: string[] = [];
-  const today: Date = new Date();
-
-  for (let i: number = 0; i < 7; i++) {
-    const date: Date = new Date(today);
-    date.setDate(today.getDate() - i);
-    const year: number = date.getFullYear();
-    const month: string = String(date.getMonth() + 1).padStart(2, '0');
-    const day: string = String(date.getDate()).padStart(2, '0');
-    dates.push(`${year}-${month}-${day}`);
-  }
-
-  return dates;
-}
-
 export const getHistory = async (token: string): Promise<HistoryResponse> => {
   const response: Response = await fetch(`${API_BASE_URL}/history`, {
     method: 'GET',
@@ -89,21 +73,13 @@ export const getHistory = async (token: string): Promise<HistoryResponse> => {
   const apiResponse: HistoryApiResponse =
     (await response.json()) as HistoryApiResponse;
 
-  // Create a map of played games by date
-  const gamesByDate: Map<string, GameRecord> = new Map();
-  for (const game of apiResponse.games) {
-    gamesByDate.set(game.puzzle_date, game);
-  }
-
-  // Build entries for the last 7 days
-  const last7Days: string[] = getLast7Days();
-  const entries: HistoryEntry[] = last7Days.map((date: string) => {
-    const game: GameRecord | undefined = gamesByDate.get(date);
-    if (game) {
+  // Convert all games from API to history entries
+  const entries: HistoryEntry[] = apiResponse.games.map(
+    (game: GameRecord): HistoryEntry => {
       if (game.in_progress) {
         // In-progress game - show progress with continue button
         return {
-          puzzle_date: date,
+          puzzle_date: game.puzzle_date,
           played: false,
           in_progress: true,
           guesses: convertGradesToGuesses(game.graded_guesses),
@@ -112,18 +88,14 @@ export const getHistory = async (token: string): Promise<HistoryResponse> => {
       }
       // Completed game
       return {
-        puzzle_date: date,
+        puzzle_date: game.puzzle_date,
         played: true,
         won: game.won,
         guesses: convertGradesToGuesses(game.graded_guesses),
         guess_count: game.guesses_count,
       };
-    }
-    return {
-      puzzle_date: date,
-      played: false,
-    };
-  });
+    },
+  );
 
   return {
     entries,
