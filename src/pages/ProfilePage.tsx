@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactElement } from 'react';
-import { useAuth0, type Auth0ContextInterface } from '@auth0/auth0-react';
+import { useAuth0 } from '@auth0/auth0-react';
 import {
   ProfileForm,
   type ProfileFormData,
@@ -11,13 +11,11 @@ import {
   type UserProfile,
   type UploadAvatarResponse,
 } from '../api/profile';
-import { Spinner } from '../components/ui/Spinner';
-import { isEffectivelyAuthenticated } from '../utils/routeAuth';
 import './ProfilePage.scss';
 
 export const ProfilePage = (): ReactElement => {
-  const auth: Auth0ContextInterface = useAuth0();
-  const { user, isLoading, isAuthenticated, getAccessTokenSilently } = auth;
+  // Router protects this route - we trust we're authenticated if rendering
+  const { user, getAccessTokenSilently } = useAuth0();
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
   const [profileData, setProfileData] = useState<ProfileFormData>({
@@ -26,10 +24,10 @@ export const ProfilePage = (): ReactElement => {
     avatarUrl: '',
   });
 
-  // Load user profile data
+  // Load user profile data when user becomes available
   useEffect(() => {
     const loadProfile = async (): Promise<void> => {
-      if (!isAuthenticated || !user) {
+      if (!user) {
         return;
       }
 
@@ -77,10 +75,8 @@ export const ProfilePage = (): ReactElement => {
       }
     };
 
-    if (!isLoading && isAuthenticated) {
-      loadProfile();
-    }
-  }, [isLoading, isAuthenticated, user, getAccessTokenSilently]);
+    loadProfile();
+  }, [user, getAccessTokenSilently]);
 
   const handleSubmit = async (data: {
     displayName: string;
@@ -118,18 +114,8 @@ export const ProfilePage = (): ReactElement => {
     }
   };
 
-  // Show loading only if we have no auth state at all
-  // (router protects this route, so we trust stored tokens while Auth0 validates)
-  if (!isEffectivelyAuthenticated(auth)) {
-    return (
-      <div className="profile-page">
-        <div className="profile-page__loading">
-          <Spinner size="large" label="Loading profile" />
-        </div>
-      </div>
-    );
-  }
-
+  // Router protects this route, so we always render the form
+  // ProfileForm handles its own loading state via isLoading prop
   return (
     <div className="profile-page">
       <h1 className="profile-page__title">Profile</h1>
