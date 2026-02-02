@@ -16,6 +16,8 @@ import {
   getPuzzles,
   type SetPuzzleResponse,
   type Puzzle,
+  type SetPuzzleRequestCustom,
+  type SetPuzzleRequestRandom,
 } from '../api/puzzle';
 import { NotFoundPage } from './NotFoundPage';
 import {
@@ -35,6 +37,7 @@ export const GameMakerPage = (): ReactElement => {
   const [modalDate, setModalDate] = useState<string>('');
   const [word, setWord] = useState<string>('');
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [savingRandomDate, setSavingRandomDate] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -185,10 +188,11 @@ export const GameMakerPage = (): ReactElement => {
     setIsSaving(true);
     try {
       const token: string = await getAccessTokenSilently();
-      const response: SetPuzzleResponse = await setPuzzle(token, {
+      const request: SetPuzzleRequestCustom = {
         date: modalDate,
         word: word.toUpperCase(),
-      });
+      };
+      const response: SetPuzzleResponse = await setPuzzle(token, request);
       setSuccessMessage(`Puzzle set for ${response.date}: ${response.word}`);
       setWord('');
       setShowModal(false);
@@ -200,6 +204,29 @@ export const GameMakerPage = (): ReactElement => {
       );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSetRandomClick = async (date: string): Promise<void> => {
+    setSuccessMessage('');
+    setErrorMessage('');
+    setSavingRandomDate(date);
+
+    try {
+      const token: string = await getAccessTokenSilently();
+      const request: SetPuzzleRequestRandom = {
+        date,
+        set_random_unused_word: true,
+      };
+      const response: SetPuzzleResponse = await setPuzzle(token, request);
+      setSuccessMessage(`Random puzzle set for ${response.date}`);
+      fetchPuzzles();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Failed to set random puzzle',
+      );
+    } finally {
+      setSavingRandomDate(null);
     }
   };
 
@@ -269,13 +296,26 @@ export const GameMakerPage = (): ReactElement => {
                             : '* * * * *'}
                         </button>
                       ) : (
-                        <button
-                          type="button"
-                          className="gamemaker-page__set-answer-btn"
-                          onClick={() => handleSetAnswerClick(puzzle.date)}
-                        >
-                          Set Game
-                        </button>
+                        <div className="gamemaker-page__button-group">
+                          <button
+                            type="button"
+                            className="gamemaker-page__set-answer-btn"
+                            onClick={() => handleSetAnswerClick(puzzle.date)}
+                            disabled={savingRandomDate === puzzle.date}
+                          >
+                            Custom
+                          </button>
+                          <button
+                            type="button"
+                            className="gamemaker-page__set-answer-btn"
+                            onClick={() => handleSetRandomClick(puzzle.date)}
+                            disabled={savingRandomDate === puzzle.date}
+                          >
+                            {savingRandomDate === puzzle.date
+                              ? 'Setting...'
+                              : 'Random'}
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -349,7 +389,10 @@ export const GameMakerPage = (): ReactElement => {
                 label="5-Letter Word"
                 type="text"
                 value={word}
-                onChange={(e) => setWord(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  setWord(e.target.value.toUpperCase());
+                  setErrorMessage('');
+                }}
                 maxLength={5}
                 pattern="[A-Za-z]{5}"
                 placeholder="WORD"
@@ -358,14 +401,19 @@ export const GameMakerPage = (): ReactElement => {
                 error={
                   word.length > 0 && word.length !== 5
                     ? 'Must be 5 letters'
-                    : undefined
+                    : errorMessage.length > 0
+                      ? errorMessage
+                      : undefined
                 }
               />
               <div className="gamemaker-page__modal-actions">
                 <Button
                   size="s"
                   variant="onLight"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setErrorMessage('');
+                  }}
                 >
                   Cancel
                 </Button>

@@ -104,7 +104,7 @@ export const AvatarMenu = ({
                   role="menuitem"
                   onClick={onGameMakerClick}
                 >
-                  Game Maker
+                  Gamemaker
                 </button>
               </li>
             )}
