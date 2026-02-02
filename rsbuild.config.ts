@@ -6,6 +6,6 @@ import { pluginSass } from '@rsbuild/plugin-sass';
 export default defineConfig({
   plugins: [pluginReact(), pluginSass()],
   html: {
-    title: 'wordles <> friends',
+    title: 'wordles && friends',
   },
 });
