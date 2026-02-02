@@ -11,24 +11,11 @@ import {
   type UserProfile,
   type UploadAvatarResponse,
 } from '../api/profile';
-import { Spinner } from '../components/ui/Spinner';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import './ProfilePage.scss';
 
-interface AuthTokens {
-  access_token: string;
-  id_token: string;
-}
-
 export const ProfilePage = (): ReactElement => {
-  const {
-    user,
-    isLoading,
-    isAuthenticated,
-    getAccessTokenSilently,
-    loginWithRedirect,
-  } = useAuth0();
-  const [authTokens] = useLocalStorage<AuthTokens>('auth_tokens');
+  // Router protects this route - we trust we're authenticated if rendering
+  const { user, getAccessTokenSilently } = useAuth0();
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
   const [profileData, setProfileData] = useState<ProfileFormData>({
@@ -37,29 +24,10 @@ export const ProfilePage = (): ReactElement => {
     avatarUrl: '',
   });
 
-  // Check if we have stored tokens - if not, redirect immediately without waiting for Auth0
-  const hasStoredTokens: boolean =
-    authTokens !== null && authTokens.access_token !== '';
-
-  // Start login flow if not authenticated
-  // If no tokens in localStorage, redirect immediately without waiting for Auth0 to load
-  // If tokens exist, wait for Auth0 to validate them first
-  useEffect(() => {
-    if (!hasStoredTokens && !isAuthenticated) {
-      loginWithRedirect({
-        appState: { returnTo: '/profile' },
-      });
-    } else if (!isLoading && !isAuthenticated) {
-      loginWithRedirect({
-        appState: { returnTo: '/profile' },
-      });
-    }
-  }, [isLoading, isAuthenticated, loginWithRedirect, hasStoredTokens]);
-
-  // Load user profile data
+  // Load user profile data when user becomes available
   useEffect(() => {
     const loadProfile = async (): Promise<void> => {
-      if (!isAuthenticated || !user) {
+      if (!user) {
         return;
       }
 
@@ -107,10 +75,8 @@ export const ProfilePage = (): ReactElement => {
       }
     };
 
-    if (!isLoading && isAuthenticated) {
-      loadProfile();
-    }
-  }, [isLoading, isAuthenticated, user, getAccessTokenSilently]);
+    loadProfile();
+  }, [user, getAccessTokenSilently]);
 
   const handleSubmit = async (data: {
     displayName: string;
@@ -148,39 +114,8 @@ export const ProfilePage = (): ReactElement => {
     }
   };
 
-  // If no stored tokens, show redirect spinner immediately (don't wait for Auth0)
-  if (!hasStoredTokens && !isAuthenticated) {
-    return (
-      <div className="profile-page">
-        <div className="profile-page__loading">
-          <Spinner size="large" label="Redirecting to login" />
-        </div>
-      </div>
-    );
-  }
-
-  // If we have stored tokens, wait for Auth0 to validate them
-  if (isLoading) {
-    return (
-      <div className="profile-page">
-        <div className="profile-page__loading">
-          <Spinner size="large" label="Loading profile" />
-        </div>
-      </div>
-    );
-  }
-
-  // Auth0 finished loading but user is not authenticated (tokens were invalid)
-  if (!isAuthenticated) {
-    return (
-      <div className="profile-page">
-        <div className="profile-page__loading">
-          <Spinner size="large" label="Redirecting to login" />
-        </div>
-      </div>
-    );
-  }
-
+  // Router protects this route, so we always render the form
+  // ProfileForm handles its own loading state via isLoading prop
   return (
     <div className="profile-page">
       <h1 className="profile-page__title">Profile</h1>

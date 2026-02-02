@@ -16,14 +16,8 @@ import {
   type SetPuzzleResponse,
   type Puzzle,
 } from '../api/puzzle';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import { NotFoundPage } from './NotFoundPage';
 import './GameMakerPage.scss';
-
-interface AuthTokens {
-  access_token: string;
-  id_token: string;
-}
 
 type PresetPeriod = 'week' | 'month' | 'year' | 'all';
 
@@ -100,14 +94,8 @@ const getDateRange = (preset: PresetPeriod): DateRange | null => {
 };
 
 export const GameMakerPage = (): ReactElement => {
-  const {
-    user,
-    isLoading,
-    isAuthenticated,
-    getAccessTokenSilently,
-    loginWithRedirect,
-  } = useAuth0();
-  const [authTokens] = useLocalStorage<AuthTokens>('auth_tokens');
+  // Router protects this route - we trust we're authenticated if rendering
+  const { user, getAccessTokenSilently } = useAuth0();
 
   // Form state for setting puzzles
   const [modalDate, setModalDate] = useState<string>('');
@@ -131,9 +119,6 @@ export const GameMakerPage = (): ReactElement => {
   // Puzzle data state
   const [allPuzzles, setAllPuzzles] = useState<Puzzle[]>([]);
   const [isLoadingPuzzles, setIsLoadingPuzzles] = useState<boolean>(false);
-
-  const hasStoredTokens: boolean =
-    authTokens !== null && authTokens.access_token !== '';
 
   // Check if we should skip date generation (All or Year mode)
   // Year mode has too many dates (365) so we treat it like All mode
@@ -161,8 +146,6 @@ export const GameMakerPage = (): ReactElement => {
   // Fetch puzzles when date range changes
   const fetchPuzzles: () => Promise<void> =
     useCallback(async (): Promise<void> => {
-      if (!isAuthenticated) return;
-
       setIsLoadingPuzzles(true);
       try {
         const token: string = await getAccessTokenSilently();
@@ -178,13 +161,13 @@ export const GameMakerPage = (): ReactElement => {
       } finally {
         setIsLoadingPuzzles(false);
       }
-    }, [isAuthenticated, getAccessTokenSilently, activeDateRange]);
+    }, [getAccessTokenSilently, activeDateRange]);
 
   useEffect(() => {
-    if (isAuthenticated && isGameAdmin) {
+    if (isGameAdmin) {
       fetchPuzzles();
     }
-  }, [isAuthenticated, isGameAdmin, fetchPuzzles]);
+  }, [isGameAdmin, fetchPuzzles]);
 
   // Compute display rows: merge all dates in range with API puzzles (except for All/Year mode)
   const displayRows: Puzzle[] = useMemo(() => {
@@ -219,19 +202,6 @@ export const GameMakerPage = (): ReactElement => {
       return { date, word: '' };
     });
   }, [skipDateGeneration, customStartDate, customEndDate, allPuzzles]);
-
-  // Start login flow if not authenticated
-  useEffect(() => {
-    if (!hasStoredTokens && !isAuthenticated) {
-      loginWithRedirect({
-        appState: { returnTo: '/gamemaker' },
-      });
-    } else if (!isLoading && !isAuthenticated) {
-      loginWithRedirect({
-        appState: { returnTo: '/gamemaker' },
-      });
-    }
-  }, [isLoading, isAuthenticated, loginWithRedirect, hasStoredTokens]);
 
   const handlePresetClick = (preset: PresetPeriod): void => {
     setPresetPeriod(preset);
@@ -360,18 +330,8 @@ export const GameMakerPage = (): ReactElement => {
     }
   };
 
-  // Show loading while checking auth
-  if (!hasStoredTokens && !isAuthenticated) {
-    return (
-      <div className="gamemaker-page">
-        <div className="gamemaker-page__loading">
-          <Spinner size="large" label="Redirecting to login" />
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
+  // Wait for user data to determine role (router handles auth)
+  if (!user) {
     return (
       <div className="gamemaker-page">
         <div className="gamemaker-page__loading">
@@ -381,17 +341,7 @@ export const GameMakerPage = (): ReactElement => {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="gamemaker-page">
-        <div className="gamemaker-page__loading">
-          <Spinner size="large" label="Redirecting to login" />
-        </div>
-      </div>
-    );
-  }
-
-  // Show 404 for non-admin users
+  // Show 404 for non-admin users (role-based access check)
   if (!isGameAdmin) {
     return <NotFoundPage />;
   }
