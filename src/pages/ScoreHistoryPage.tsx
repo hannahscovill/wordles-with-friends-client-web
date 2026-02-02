@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactElement } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useAuth0, type Auth0ContextInterface } from '@auth0/auth0-react';
 import {
   getHistory,
   type HistoryEntry,
@@ -8,6 +8,7 @@ import {
 import { MiniGameBoard } from '../components/MiniGameBoard';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
+import { isEffectivelyAuthenticated } from '../utils/routeAuth';
 import './ScoreHistoryPage.scss';
 
 function formatDateForDisplay(dateStr: string): string {
@@ -44,7 +45,8 @@ function getLast7Days(): string[] {
 }
 
 export const ScoreHistoryPage = (): ReactElement => {
-  const { isLoading, isAuthenticated, getAccessTokenSilently } = useAuth0();
+  const auth: Auth0ContextInterface = useAuth0();
+  const { isLoading, isAuthenticated, getAccessTokenSilently } = auth;
   const [historyData, setHistoryData] = useState<HistoryEntry[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -81,8 +83,9 @@ export const ScoreHistoryPage = (): ReactElement => {
     }
   }, [isLoading, isAuthenticated, getAccessTokenSilently]);
 
-  // Show loading while Auth0 validates (router handles redirect if needed)
-  if (isLoading || !isAuthenticated) {
+  // Show loading only if we have no auth state at all
+  // (router protects this route, so we trust stored tokens while Auth0 validates)
+  if (!isEffectivelyAuthenticated(auth)) {
     return (
       <div className="score-history-page">
         <div className="score-history-page__loading">

@@ -37,6 +37,7 @@ if (rootEl) {
       <Auth0Provider
         domain={domain}
         clientId={clientId}
+        cacheLocation="localstorage"
         authorizationParams={{
           redirect_uri: window.location.origin,
           scope: 'openid profile email read:current_user',

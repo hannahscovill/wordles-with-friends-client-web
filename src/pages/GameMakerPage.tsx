@@ -6,7 +6,7 @@ import {
   type ReactElement,
   type FormEvent,
 } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useAuth0, type Auth0ContextInterface } from '@auth0/auth0-react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
@@ -17,6 +17,7 @@ import {
   type Puzzle,
 } from '../api/puzzle';
 import { NotFoundPage } from './NotFoundPage';
+import { isEffectivelyAuthenticated } from '../utils/routeAuth';
 import './GameMakerPage.scss';
 
 type PresetPeriod = 'week' | 'month' | 'year' | 'all';
@@ -81,8 +82,8 @@ const getDateRange = (preset: PresetPeriod): DateRange | null => {
 };
 
 export const GameMakerPage = (): ReactElement => {
-  const { user, isLoading, isAuthenticated, getAccessTokenSilently } =
-    useAuth0();
+  const auth: Auth0ContextInterface = useAuth0();
+  const { user, isAuthenticated, getAccessTokenSilently } = auth;
 
   // Form state for setting puzzles
   const [modalDate, setModalDate] = useState<string>('');
@@ -280,8 +281,9 @@ export const GameMakerPage = (): ReactElement => {
     }
   };
 
-  // Show loading while Auth0 validates (router handles redirect if needed)
-  if (isLoading || !isAuthenticated) {
+  // Show loading only if we have no auth state at all
+  // (router protects this route, so we trust stored tokens while Auth0 validates)
+  if (!isEffectivelyAuthenticated(auth)) {
     return (
       <div className="gamemaker-page">
         <div className="gamemaker-page__loading">

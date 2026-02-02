@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactElement } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useAuth0, type Auth0ContextInterface } from '@auth0/auth0-react';
 import {
   ProfileForm,
   type ProfileFormData,
@@ -12,11 +12,12 @@ import {
   type UploadAvatarResponse,
 } from '../api/profile';
 import { Spinner } from '../components/ui/Spinner';
+import { isEffectivelyAuthenticated } from '../utils/routeAuth';
 import './ProfilePage.scss';
 
 export const ProfilePage = (): ReactElement => {
-  const { user, isLoading, isAuthenticated, getAccessTokenSilently } =
-    useAuth0();
+  const auth: Auth0ContextInterface = useAuth0();
+  const { user, isLoading, isAuthenticated, getAccessTokenSilently } = auth;
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
   const [profileData, setProfileData] = useState<ProfileFormData>({
@@ -117,8 +118,9 @@ export const ProfilePage = (): ReactElement => {
     }
   };
 
-  // Show loading while Auth0 validates (router handles redirect if needed)
-  if (isLoading || !isAuthenticated) {
+  // Show loading only if we have no auth state at all
+  // (router protects this route, so we trust stored tokens while Auth0 validates)
+  if (!isEffectivelyAuthenticated(auth)) {
     return (
       <div className="profile-page">
         <div className="profile-page__loading">
