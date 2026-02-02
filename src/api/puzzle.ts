@@ -113,7 +113,9 @@ export const setPuzzle = async (
   }
 
   if (response.status === 404) {
-    throw new Error('Word not found: The word does not exist in the word list.');
+    throw new Error(
+      'Word not found: The word does not exist in the word list.',
+    );
   }
 
   if (!response.ok) {

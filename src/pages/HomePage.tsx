@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, type ReactElement } from 'react';
-import { useParams } from '@tanstack/react-router';
+import { useLoaderData } from '@tanstack/react-router';
 import { GameBoard } from '../components/GameBoard';
 import { GameStatusModal } from '../components/GameStatusModal';
 import { Keyboard } from '../components/Keyboard';
@@ -17,18 +17,23 @@ function formatDateForDisplay(dateStr: string): string {
   });
 }
 
-export const HomePage = (): ReactElement => {
-  const params: { puzzleDate?: string } = useParams({ strict: false }) as {
-    puzzleDate?: string;
-  };
-  const urlPuzzleDate: string | undefined = params.puzzleDate;
+interface LoaderData {
+  puzzleDate?: string;
+}
 
+export const HomePage = (): ReactElement => {
+  // Get puzzleDate from route loader if available (puzzle route provides it)
+  // Index route doesn't have loader data, so this will be undefined
+  const loaderData: LoaderData | undefined = useLoaderData({
+    strict: false,
+  }) as LoaderData | undefined;
+  const puzzleDate: string | undefined = loaderData?.puzzleDate;
   const {
     guesses,
     keyStates,
     status,
     answer,
-    puzzleDate,
+    puzzleDate: activePuzzleDate,
     isLoading,
     invalidWord,
     error,
@@ -36,7 +41,7 @@ export const HomePage = (): ReactElement => {
     onKeyPress,
     onEnter,
     onBackspace,
-  } = useGame({ puzzleDate: urlPuzzleDate });
+  } = useGame({ puzzleDate });
 
   const [showToast, setShowToast] = useState<boolean>(false);
 
@@ -70,7 +75,7 @@ export const HomePage = (): ReactElement => {
       )}
       <div className="home-page__game-container">
         <div className="home-page__date-title">
-          {formatDateForDisplay(puzzleDate)}
+          {formatDateForDisplay(activePuzzleDate)}
         </div>
         <GameBoard guesses={guesses} />
         <Toast
