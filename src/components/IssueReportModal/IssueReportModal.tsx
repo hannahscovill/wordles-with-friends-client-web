@@ -160,6 +160,10 @@ export const IssueReportModal = ({
         <form onSubmit={handleSubmit} className="issue-report-modal">
           <h2 className="issue-report-modal__title">Report an Issue</h2>
 
+          <p className="issue-report-modal__github-account">
+            Requires a GitHub account
+          </p>
+
           <div className="issue-report-modal__type-selector">
             <span className="issue-report-modal__type-label">Issue Type</span>
             <div className="issue-report-modal__type-options">
@@ -208,10 +212,6 @@ export const IssueReportModal = ({
             rows={5}
             fullWidth
           />
-
-          <p className="issue-report-modal__note">
-            This will open GitHub where you can review and submit the issue.
-          </p>
 
           <div className="issue-report-modal__actions">
             <Button type="button" size="s" variant="onLight" onClick={onClose}>
