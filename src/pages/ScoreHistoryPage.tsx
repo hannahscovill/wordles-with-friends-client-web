@@ -11,6 +11,7 @@ import {
   type HistoryEntry,
   type HistoryResponse,
 } from '../api/history';
+import { getPuzzles, type Puzzle } from '../api/puzzle';
 import { MiniGameBoard } from '../components/MiniGameBoard';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
@@ -30,6 +31,9 @@ export const ScoreHistoryPage = (): ReactElement => {
   // Router protects this route - we trust we're authenticated if rendering
   const { getAccessTokenSilently } = useAuth0();
   const [historyData, setHistoryData] = useState<HistoryEntry[]>([]);
+  const [availablePuzzles, setAvailablePuzzles] = useState<Set<string>>(
+    new Set(),
+  );
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -48,19 +52,22 @@ export const ScoreHistoryPage = (): ReactElement => {
   const isAllSelected: boolean = !customStartDate && !customEndDate;
   const skipDateGeneration: boolean = isAllSelected || presetPeriod === 'year';
 
-  // Fetch history data
+  // Fetch history and available puzzles
   const fetchHistory: () => Promise<void> =
     useCallback(async (): Promise<void> => {
       setIsLoadingHistory(true);
       try {
         const token: string = await getAccessTokenSilently();
-        const response: HistoryResponse = await getHistory(token);
-        setHistoryData(response.entries);
+        const [historyResponse, puzzles]: [HistoryResponse, Puzzle[]] =
+          await Promise.all([getHistory(token), getPuzzles(token)]);
+        setHistoryData(historyResponse.entries);
+        setAvailablePuzzles(new Set(puzzles.map((p: Puzzle) => p.date)));
         setError(null);
       } catch (e: unknown) {
         const err: Error = e instanceof Error ? e : new Error(String(e));
         setError(err);
         setHistoryData([]);
+        setAvailablePuzzles(new Set());
       } finally {
         setIsLoadingHistory(false);
       }
@@ -71,26 +78,35 @@ export const ScoreHistoryPage = (): ReactElement => {
   }, [fetchHistory]);
 
   // Compute display rows: merge all dates in range with history data
+  // Only show dates that have puzzles available
   const displayRows: HistoryEntry[] = useMemo(() => {
-    // For "All" mode, just show data from API
+    // Helper to filter by available puzzles
+    const filterByAvailablePuzzles = (
+      entries: HistoryEntry[],
+    ): HistoryEntry[] =>
+      entries.filter((entry) => availablePuzzles.has(entry.puzzle_date));
+
+    // For "All" mode, just show data from API filtered by available puzzles
     if (isAllSelected) {
-      return historyData;
+      return filterByAvailablePuzzles(historyData);
     }
 
     // For "Year" mode, skip generation (too many dates) and filter API data
     if (skipDateGeneration) {
-      return historyData.filter((entry) => {
-        if (!customStartDate && !customEndDate) return true;
-        if (customStartDate && entry.puzzle_date < customStartDate)
-          return false;
-        if (customEndDate && entry.puzzle_date > customEndDate) return false;
-        return true;
-      });
+      return filterByAvailablePuzzles(
+        historyData.filter((entry) => {
+          if (!customStartDate && !customEndDate) return true;
+          if (customStartDate && entry.puzzle_date < customStartDate)
+            return false;
+          if (customEndDate && entry.puzzle_date > customEndDate) return false;
+          return true;
+        }),
+      );
     }
 
     // If we don't have both start and end dates, filter API data
     if (!customStartDate || !customEndDate) {
-      return historyData;
+      return filterByAvailablePuzzles(historyData);
     }
 
     // Generate all dates in the range (newest first)
@@ -105,21 +121,24 @@ export const ScoreHistoryPage = (): ReactElement => {
       historyData.map((entry) => [entry.puzzle_date, entry]),
     );
 
-    // Merge: for each date, use existing history or create empty entry
-    return allDatesInRange.map((date) => {
-      const existingEntry: HistoryEntry | undefined = historyByDate.get(date);
-      if (existingEntry) {
-        return existingEntry;
-      }
-      // Create empty entry for date without history
-      return { puzzle_date: date, played: false };
-    });
+    // Merge: for each date with a puzzle, use existing history or create empty entry
+    return allDatesInRange
+      .filter((date) => availablePuzzles.has(date))
+      .map((date) => {
+        const existingEntry: HistoryEntry | undefined = historyByDate.get(date);
+        if (existingEntry) {
+          return existingEntry;
+        }
+        // Create empty entry for date without history
+        return { puzzle_date: date, played: false };
+      });
   }, [
     skipDateGeneration,
     isAllSelected,
     customStartDate,
     customEndDate,
     historyData,
+    availablePuzzles,
   ]);
 
   const today: string = getTodayLocalDate();
@@ -175,7 +194,7 @@ export const ScoreHistoryPage = (): ReactElement => {
                 </td>
                 <td className="score-history-page__game-cell">
                   {entry.played && entry.guesses ? (
-                    <MiniGameBoard guesses={entry.guesses} won={entry.won} />
+                    <MiniGameBoard guesses={entry.guesses} />
                   ) : entry.in_progress && entry.guesses ? (
                     <div className="score-history-page__in-progress">
                       <MiniGameBoard guesses={entry.guesses} />
