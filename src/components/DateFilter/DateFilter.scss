@@ -1,0 +1,65 @@
+.date-filter {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  &__preset-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__preset-button {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 3px solid #000;
+    background: #fff;
+    cursor: pointer;
+    transition: all 200ms ease;
+
+    &:hover {
+      background: var(--color-button-shadow);
+    }
+
+    &--active {
+      background: var(--color-button-shadow);
+    }
+  }
+
+  &__date-pickers {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  &__navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  &__nav-button {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 3px solid #000;
+    background: #fff;
+    cursor: pointer;
+    transition: all 200ms ease;
+
+    &:hover:not(:disabled) {
+      background: var(--color-button-shadow);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+  }
+}

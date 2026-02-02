@@ -10,6 +10,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
+import { DateFilter } from '../components/DateFilter';
 import {
   setPuzzle,
   getPuzzles,
@@ -17,81 +18,14 @@ import {
   type Puzzle,
 } from '../api/puzzle';
 import { NotFoundPage } from './NotFoundPage';
+import {
+  type PresetPeriod,
+  type DateRange,
+  generateDatesInRange,
+  getDateRange,
+  navigateDateRange,
+} from '../utils/dates';
 import './GameMakerPage.scss';
-
-type PresetPeriod = 'week' | 'month' | 'year' | 'all';
-
-interface DateRange {
-  startDate: string;
-  endDate: string;
-}
-
-const formatLocalDate = (date: Date): string => {
-  const year: number = date.getFullYear();
-  const month: string = String(date.getMonth() + 1).padStart(2, '0');
-  const day: string = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const generateDatesInRange = (startDate: string, endDate: string): string[] => {
-  const dates: string[] = [];
-  const current: Date = new Date(startDate + 'T00:00:00');
-  const end: Date = new Date(endDate + 'T00:00:00');
-
-  while (current <= end) {
-    dates.push(formatLocalDate(current));
-    current.setDate(current.getDate() + 1);
-  }
-
-  return dates;
-};
-
-const getDateRange = (preset: PresetPeriod): DateRange | null => {
-  const today: Date = new Date();
-
-  switch (preset) {
-    case 'week': {
-      // Sunday to Saturday of current week
-      const dayOfWeek: number = today.getDay();
-      const sunday: Date = new Date(today);
-      sunday.setDate(today.getDate() - dayOfWeek);
-      const saturday: Date = new Date(sunday);
-      saturday.setDate(sunday.getDate() + 6);
-      return {
-        startDate: formatLocalDate(sunday),
-        endDate: formatLocalDate(saturday),
-      };
-    }
-    case 'month': {
-      // First to last day of current month
-      const firstOfMonth: Date = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        1,
-      );
-      const lastOfMonth: Date = new Date(
-        today.getFullYear(),
-        today.getMonth() + 1,
-        0,
-      );
-      return {
-        startDate: formatLocalDate(firstOfMonth),
-        endDate: formatLocalDate(lastOfMonth),
-      };
-    }
-    case 'year': {
-      // First to last day of current year
-      const firstOfYear: Date = new Date(today.getFullYear(), 0, 1);
-      const lastOfYear: Date = new Date(today.getFullYear(), 11, 31);
-      return {
-        startDate: formatLocalDate(firstOfYear),
-        endDate: formatLocalDate(lastOfYear),
-      };
-    }
-    case 'all':
-      return null;
-  }
-};
 
 export const GameMakerPage = (): ReactElement => {
   // Router protects this route - we trust we're authenticated if rendering
@@ -107,7 +41,7 @@ export const GameMakerPage = (): ReactElement => {
 
   // Filter and pagination state
   const [presetPeriod, setPresetPeriod] = useState<PresetPeriod>('week');
-  const initialRange: DateRange | null = getDateRange('week');
+  const initialRange: { startDate: string; endDate: string } | null = getDateRange('week');
   const [customStartDate, setCustomStartDate] = useState<string>(
     initialRange?.startDate ?? '',
   );
@@ -203,68 +137,6 @@ export const GameMakerPage = (): ReactElement => {
     });
   }, [skipDateGeneration, customStartDate, customEndDate, allPuzzles]);
 
-  const handlePresetClick = (preset: PresetPeriod): void => {
-    setPresetPeriod(preset);
-    const range: DateRange | null = getDateRange(preset);
-    if (range) {
-      setCustomStartDate(range.startDate);
-      setCustomEndDate(range.endDate);
-    } else {
-      setCustomStartDate('');
-      setCustomEndDate('');
-    }
-  };
-
-  const handleCustomDateChange = (
-    field: 'start' | 'end',
-    value: string,
-  ): void => {
-    if (field === 'start') {
-      setCustomStartDate(value);
-    } else {
-      setCustomEndDate(value);
-    }
-  };
-
-  const handleNavigate = (direction: 'prev' | 'next'): void => {
-    if (presetPeriod === 'all' || !customStartDate) return;
-
-    const currentStart: Date = new Date(customStartDate + 'T00:00:00');
-    const offset: number = direction === 'prev' ? -1 : 1;
-
-    let newStart: Date;
-    let newEnd: Date;
-
-    switch (presetPeriod) {
-      case 'week': {
-        newStart = new Date(currentStart);
-        newStart.setDate(currentStart.getDate() + offset * 7);
-        newEnd = new Date(newStart);
-        newEnd.setDate(newStart.getDate() + 6);
-        break;
-      }
-      case 'month': {
-        newStart = new Date(
-          currentStart.getFullYear(),
-          currentStart.getMonth() + offset,
-          1,
-        );
-        newEnd = new Date(newStart.getFullYear(), newStart.getMonth() + 1, 0);
-        break;
-      }
-      case 'year': {
-        newStart = new Date(currentStart.getFullYear() + offset, 0, 1);
-        newEnd = new Date(currentStart.getFullYear() + offset, 11, 31);
-        break;
-      }
-      default:
-        return;
-    }
-
-    setCustomStartDate(formatLocalDate(newStart));
-    setCustomEndDate(formatLocalDate(newEnd));
-  };
-
   const toggleAnswerVisibility = (date: string): void => {
     setVisibleAnswers((prev: Set<string>) => {
       const newSet: Set<string> = new Set(prev);
@@ -350,46 +222,15 @@ export const GameMakerPage = (): ReactElement => {
     <div className="gamemaker-page">
       <h2 className="gamemaker-page__title">Gamemaker</h2>
 
-      <div className="gamemaker-page__filter-section">
-        <div className="gamemaker-page__preset-buttons">
-          {(['week', 'month', 'year', 'all'] as PresetPeriod[]).map(
-            (preset) => {
-              const presetRange: DateRange | null = getDateRange(preset);
-              const isActive: boolean =
-                preset === 'all'
-                  ? !customStartDate && !customEndDate
-                  : presetRange?.startDate === customStartDate &&
-                    presetRange?.endDate === customEndDate;
-              return (
-                <button
-                  key={preset}
-                  type="button"
-                  className={`gamemaker-page__preset-button ${
-                    isActive ? 'gamemaker-page__preset-button--active' : ''
-                  }`}
-                  onClick={() => handlePresetClick(preset)}
-                >
-                  {preset.charAt(0).toUpperCase() + preset.slice(1)}
-                </button>
-              );
-            },
-          )}
-        </div>
-        <div className="gamemaker-page__date-pickers">
-          <Input
-            label="From"
-            type="date"
-            value={customStartDate}
-            onChange={(e) => handleCustomDateChange('start', e.target.value)}
-          />
-          <Input
-            label="To"
-            type="date"
-            value={customEndDate}
-            onChange={(e) => handleCustomDateChange('end', e.target.value)}
-          />
-        </div>
-      </div>
+      <DateFilter
+        presetPeriod={presetPeriod}
+        customStartDate={customStartDate}
+        customEndDate={customEndDate}
+        onPresetChange={setPresetPeriod}
+        onStartDateChange={setCustomStartDate}
+        onEndDateChange={setCustomEndDate}
+        showNavigation={false}
+      />
 
       {isLoadingPuzzles ? (
         <div className="gamemaker-page__loading">
@@ -446,7 +287,13 @@ export const GameMakerPage = (): ReactElement => {
             <button
               type="button"
               className="gamemaker-page__nav-button"
-              onClick={() => handleNavigate('prev')}
+              onClick={() => {
+                const newRange: DateRange | null = navigateDateRange(presetPeriod, customStartDate, 'prev');
+                if (newRange) {
+                  setCustomStartDate(newRange.startDate);
+                  setCustomEndDate(newRange.endDate);
+                }
+              }}
               disabled={presetPeriod === 'all'}
             >
               Previous
@@ -454,7 +301,13 @@ export const GameMakerPage = (): ReactElement => {
             <button
               type="button"
               className="gamemaker-page__nav-button"
-              onClick={() => handleNavigate('next')}
+              onClick={() => {
+                const newRange: DateRange | null = navigateDateRange(presetPeriod, customStartDate, 'next');
+                if (newRange) {
+                  setCustomStartDate(newRange.startDate);
+                  setCustomEndDate(newRange.endDate);
+                }
+              }}
               disabled={presetPeriod === 'all'}
             >
               Next

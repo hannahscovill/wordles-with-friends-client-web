@@ -1,4 +1,10 @@
-import { useState, useEffect, type ReactElement } from 'react';
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  type ReactElement,
+} from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import {
   getHistory,
@@ -8,40 +14,17 @@ import {
 import { MiniGameBoard } from '../components/MiniGameBoard';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
+import { DateFilter } from '../components/DateFilter';
+import {
+  type PresetPeriod,
+  type DateRange,
+  formatDateForDisplay,
+  getTodayLocalDate,
+  generateDatesInRange,
+  getDateRange,
+  navigateDateRange,
+} from '../utils/dates';
 import './ScoreHistoryPage.scss';
-
-function formatDateForDisplay(dateStr: string): string {
-  const date: Date = new Date(dateStr + 'T00:00:00');
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function getTodayLocalDate(): string {
-  const now: Date = new Date();
-  const year: number = now.getFullYear();
-  const month: string = String(now.getMonth() + 1).padStart(2, '0');
-  const day: string = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function getLast7Days(): string[] {
-  const dates: string[] = [];
-  const today: Date = new Date();
-
-  for (let i: number = 0; i < 7; i++) {
-    const date: Date = new Date(today);
-    date.setDate(today.getDate() - i);
-    const year: number = date.getFullYear();
-    const month: string = String(date.getMonth() + 1).padStart(2, '0');
-    const day: string = String(date.getDate()).padStart(2, '0');
-    dates.push(`${year}-${month}-${day}`);
-  }
-
-  return dates;
-}
 
 export const ScoreHistoryPage = (): ReactElement => {
   // Router protects this route - we trust we're authenticated if rendering
@@ -50,31 +33,96 @@ export const ScoreHistoryPage = (): ReactElement => {
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Fetch history data on mount
-  useEffect(() => {
-    const fetchHistory = async (): Promise<void> => {
+  // Filter state
+  const [presetPeriod, setPresetPeriod] = useState<PresetPeriod>('week');
+  const initialRange: { startDate: string; endDate: string } | null =
+    getDateRange('week');
+  const [customStartDate, setCustomStartDate] = useState<string>(
+    initialRange?.startDate ?? '',
+  );
+  const [customEndDate, setCustomEndDate] = useState<string>(
+    initialRange?.endDate ?? '',
+  );
+
+  // Check if we should skip date generation (All or Year mode)
+  const isAllSelected: boolean = !customStartDate && !customEndDate;
+  const skipDateGeneration: boolean = isAllSelected || presetPeriod === 'year';
+
+  // Fetch history data
+  const fetchHistory: () => Promise<void> =
+    useCallback(async (): Promise<void> => {
+      setIsLoadingHistory(true);
       try {
         const token: string = await getAccessTokenSilently();
         const response: HistoryResponse = await getHistory(token);
         setHistoryData(response.entries);
+        setError(null);
       } catch (e: unknown) {
         const err: Error = e instanceof Error ? e : new Error(String(e));
         setError(err);
-        // Create placeholder entries for the last 7 days if fetch fails
-        const placeholderEntries: HistoryEntry[] = getLast7Days().map(
-          (date: string) => ({
-            puzzle_date: date,
-            played: false,
-          }),
-        );
-        setHistoryData(placeholderEntries);
+        setHistoryData([]);
       } finally {
         setIsLoadingHistory(false);
       }
-    };
+    }, [getAccessTokenSilently]);
 
+  useEffect(() => {
     fetchHistory();
-  }, [getAccessTokenSilently]);
+  }, [fetchHistory]);
+
+  // Compute display rows: merge all dates in range with history data
+  const displayRows: HistoryEntry[] = useMemo(() => {
+    // For "All" mode, just show data from API
+    if (isAllSelected) {
+      return historyData;
+    }
+
+    // For "Year" mode, skip generation (too many dates) and filter API data
+    if (skipDateGeneration) {
+      return historyData.filter((entry) => {
+        if (!customStartDate && !customEndDate) return true;
+        if (customStartDate && entry.puzzle_date < customStartDate)
+          return false;
+        if (customEndDate && entry.puzzle_date > customEndDate) return false;
+        return true;
+      });
+    }
+
+    // If we don't have both start and end dates, filter API data
+    if (!customStartDate || !customEndDate) {
+      return historyData;
+    }
+
+    // Generate all dates in the range (newest first)
+    const allDatesInRange: string[] = generateDatesInRange(
+      customStartDate,
+      customEndDate,
+      true,
+    );
+
+    // Create a map of history by date
+    const historyByDate: Map<string, HistoryEntry> = new Map(
+      historyData.map((entry) => [entry.puzzle_date, entry]),
+    );
+
+    // Merge: for each date, use existing history or create empty entry
+    return allDatesInRange.map((date) => {
+      const existingEntry: HistoryEntry | undefined = historyByDate.get(date);
+      if (existingEntry) {
+        return existingEntry;
+      }
+      // Create empty entry for date without history
+      return { puzzle_date: date, played: false };
+    });
+  }, [
+    skipDateGeneration,
+    isAllSelected,
+    customStartDate,
+    customEndDate,
+    historyData,
+  ]);
+
+  const today: string = getTodayLocalDate();
 
   if (isLoadingHistory) {
     return (
@@ -86,8 +134,6 @@ export const ScoreHistoryPage = (): ReactElement => {
     );
   }
 
-  const today: string = getTodayLocalDate();
-
   return (
     <div className="score-history-page">
       <h2 className="score-history-page__title">History</h2>
@@ -96,39 +142,101 @@ export const ScoreHistoryPage = (): ReactElement => {
           Could not load history from server
         </p>
       )}
-      <div className="score-history-page__grid">
-        {historyData.map((entry: HistoryEntry) => (
-          <div key={entry.puzzle_date} className="score-history-page__card">
-            <div className="score-history-page__card-header">
-              {formatDateForDisplay(entry.puzzle_date)}
-              {entry.puzzle_date === today && (
-                <span className="score-history-page__today-badge">Today</span>
-              )}
-            </div>
-            <div
-              className={`score-history-page__card-content ${
-                entry.in_progress && entry.guesses
-                  ? 'score-history-page__card-content--stacked'
-                  : ''
-              }`}
-            >
-              {entry.played && entry.guesses ? (
-                <MiniGameBoard guesses={entry.guesses} won={entry.won} />
-              ) : entry.in_progress && entry.guesses ? (
-                <>
-                  <MiniGameBoard guesses={entry.guesses} />
-                  <Button variant="flat" href={`/${entry.puzzle_date}`}>
-                    Continue Game
-                  </Button>
-                </>
-              ) : (
-                <Button variant="flat" href={`/${entry.puzzle_date}`}>
-                  Play
-                </Button>
-              )}
-            </div>
-          </div>
-        ))}
+
+      <DateFilter
+        presetPeriod={presetPeriod}
+        customStartDate={customStartDate}
+        customEndDate={customEndDate}
+        onPresetChange={setPresetPeriod}
+        onStartDateChange={setCustomStartDate}
+        onEndDateChange={setCustomEndDate}
+        showNavigation={false}
+      />
+
+      <table className="score-history-page__table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Game</th>
+          </tr>
+        </thead>
+        <tbody>
+          {displayRows.length === 0 ? (
+            <tr>
+              <td colSpan={2} className="score-history-page__empty">
+                No games found
+              </td>
+            </tr>
+          ) : (
+            displayRows.map((entry: HistoryEntry) => (
+              <tr key={entry.puzzle_date}>
+                <td className="score-history-page__date-cell">
+                  {formatDateForDisplay(entry.puzzle_date)}
+                  {entry.puzzle_date === today && (
+                    <span className="score-history-page__today-badge">
+                      Today
+                    </span>
+                  )}
+                </td>
+                <td className="score-history-page__game-cell">
+                  {entry.played && entry.guesses ? (
+                    <MiniGameBoard guesses={entry.guesses} won={entry.won} />
+                  ) : entry.in_progress && entry.guesses ? (
+                    <div className="score-history-page__in-progress">
+                      <MiniGameBoard guesses={entry.guesses} />
+                      <Button variant="flat" href={`/${entry.puzzle_date}`}>
+                        Continue
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button variant="flat" href={`/${entry.puzzle_date}`}>
+                      Play
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+
+      <div className="score-history-page__navigation">
+        <button
+          type="button"
+          className="score-history-page__nav-button"
+          onClick={() => {
+            const newRange: DateRange | null = navigateDateRange(
+              presetPeriod,
+              customStartDate,
+              'prev',
+            );
+            if (newRange) {
+              setCustomStartDate(newRange.startDate);
+              setCustomEndDate(newRange.endDate);
+            }
+          }}
+          disabled={presetPeriod === 'all'}
+        >
+          Previous
+        </button>
+        <button
+          type="button"
+          className="score-history-page__nav-button"
+          onClick={() => {
+            const newRange: DateRange | null = navigateDateRange(
+              presetPeriod,
+              customStartDate,
+              'next',
+            );
+            if (newRange) {
+              setCustomStartDate(newRange.startDate);
+              setCustomEndDate(newRange.endDate);
+            }
+          }}
+          disabled={presetPeriod === 'all'}
+        >
+          Next
+        </button>
       </div>
     </div>
   );
