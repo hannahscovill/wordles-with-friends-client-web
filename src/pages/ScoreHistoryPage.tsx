@@ -1,12 +1,12 @@
 import { useState, useEffect, type ReactElement } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Link } from '@tanstack/react-router';
 import {
   getHistory,
   type HistoryEntry,
   type HistoryResponse,
 } from '../api/history';
 import { MiniGameBoard } from '../components/MiniGameBoard';
+import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import './ScoreHistoryPage.scss';
@@ -154,7 +154,7 @@ export const ScoreHistoryPage = (): ReactElement => {
 
   return (
     <div className="score-history-page">
-      <h2 className="score-history-page__title">Score History</h2>
+      <h2 className="score-history-page__title">History</h2>
       {error && (
         <p className="score-history-page__error">
           Could not load history from server
@@ -169,17 +169,26 @@ export const ScoreHistoryPage = (): ReactElement => {
                 <span className="score-history-page__today-badge">Today</span>
               )}
             </div>
-            <div className="score-history-page__card-content">
+            <div
+              className={`score-history-page__card-content ${
+                entry.in_progress && entry.guesses
+                  ? 'score-history-page__card-content--stacked'
+                  : ''
+              }`}
+            >
               {entry.played && entry.guesses ? (
                 <MiniGameBoard guesses={entry.guesses} won={entry.won} />
+              ) : entry.in_progress && entry.guesses ? (
+                <>
+                  <MiniGameBoard guesses={entry.guesses} />
+                  <Button variant="flat" href={`/${entry.puzzle_date}`}>
+                    Continue Game
+                  </Button>
+                </>
               ) : (
-                <Link
-                  to="/"
-                  search={{ date: entry.puzzle_date }}
-                  className="score-history-page__play-button"
-                >
+                <Button variant="flat" href={`/${entry.puzzle_date}`}>
                   Play
-                </Link>
+                </Button>
               )}
             </div>
           </div>

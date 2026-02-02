@@ -1,16 +1,18 @@
-import type { GradedMove } from './guess';
+import type { GradedMove, GradedLetter } from './guess';
 
 const API_BASE_URL: string =
   import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8080';
 
-// API response types from backend
+// API response types from backend - matches actual API format
+type GradeString = 'correct' | 'contained' | 'wrong';
+
 interface GameRecord {
-  id: string;
+  game_id: string;
   puzzle_date: string;
-  guess_count: number;
+  guesses_count: number;
   won: boolean;
   in_progress: boolean;
-  guesses?: GradedMove[];
+  graded_guesses?: GradeString[][];
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +23,24 @@ interface HistoryApiResponse {
   games_won: number;
 }
 
+// Convert API grade format to frontend format
+function convertGradesToGuesses(
+  gradedGuesses: GradeString[][] | undefined,
+): GradedMove[] | undefined {
+  if (!gradedGuesses || gradedGuesses.length === 0) {
+    return undefined;
+  }
+
+  return gradedGuesses.map((row: GradeString[]): GradedMove => {
+    return row.map(
+      (grade: GradeString): GradedLetter => ({
+        letter: '', // Letter not needed for MiniGameBoard display
+        grade,
+      }),
+    ) as GradedMove;
+  });
+}
+
 // Client-side types for display
 export interface HistoryEntry {
   puzzle_date: string;
@@ -28,6 +48,7 @@ export interface HistoryEntry {
   won?: boolean;
   guesses?: GradedMove[];
   guess_count?: number;
+  in_progress?: boolean;
 }
 
 export interface HistoryResponse {
@@ -78,13 +99,24 @@ export const getHistory = async (token: string): Promise<HistoryResponse> => {
   const last7Days: string[] = getLast7Days();
   const entries: HistoryEntry[] = last7Days.map((date: string) => {
     const game: GameRecord | undefined = gamesByDate.get(date);
-    if (game && !game.in_progress) {
+    if (game) {
+      if (game.in_progress) {
+        // In-progress game - show progress with continue button
+        return {
+          puzzle_date: date,
+          played: false,
+          in_progress: true,
+          guesses: convertGradesToGuesses(game.graded_guesses),
+          guess_count: game.guesses_count,
+        };
+      }
+      // Completed game
       return {
         puzzle_date: date,
         played: true,
         won: game.won,
-        guesses: game.guesses,
-        guess_count: game.guess_count,
+        guesses: convertGradesToGuesses(game.graded_guesses),
+        guess_count: game.guesses_count,
       };
     }
     return {

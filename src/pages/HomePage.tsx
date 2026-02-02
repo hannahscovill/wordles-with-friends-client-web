@@ -10,9 +10,10 @@ import './HomePage.scss';
 function formatDateForDisplay(dateStr: string): string {
   const date: Date = new Date(dateStr + 'T00:00:00');
   return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
+    weekday: 'long',
+    month: 'long',
     day: 'numeric',
+    year: 'numeric',
   });
 }
 
@@ -31,6 +32,7 @@ export const HomePage = (): ReactElement => {
     isLoading,
     invalidWord,
     error,
+    completedDuringSession,
     onKeyPress,
     onEnter,
     onBackspace,
@@ -63,11 +65,11 @@ export const HomePage = (): ReactElement => {
 
   return (
     <div className="home-page">
-      {status !== 'playing' && (
+      {completedDuringSession && (
         <GameStatusModal won={status === 'won'} answer={answer} />
       )}
       <div className="home-page__game-container">
-        <div className="home-page__puzzle-date">
+        <div className="home-page__date-title">
           {formatDateForDisplay(puzzleDate)}
         </div>
         <GameBoard guesses={guesses} />

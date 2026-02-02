@@ -2,7 +2,7 @@ import type { ReactElement, ReactNode, ButtonHTMLAttributes } from 'react';
 import './Button.scss';
 
 export type ButtonSize = 's' | 'm' | 'l';
-export type ButtonVariant = 'default' | 'onLight';
+export type ButtonVariant = 'default' | 'onLight' | 'flat';
 
 export interface ButtonProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -41,6 +41,7 @@ export const Button = ({
 }: ButtonProps): ReactElement => {
   const baseClass: string = 'button';
   const isImageButton: boolean = Boolean(imageUrl);
+  const isFlatVariant: boolean = variant === 'flat';
   const combinedClassName: string = [
     baseClass,
     `${baseClass}--${size}`,
@@ -52,7 +53,9 @@ export const Button = ({
     .filter(Boolean)
     .join(' ');
 
-  const content: ReactElement = (
+  const content: ReactElement = isFlatVariant ? (
+    <span className="button__frame">{children}</span>
+  ) : (
     <>
       <span className="button__background" aria-hidden="true" />
       {!isImageButton && (

@@ -66,32 +66,10 @@
     justify-content: center;
     align-items: center;
     min-height: 100px;
-  }
 
-  &__play-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 24px;
-    background-color: var(--color-correct);
-    color: white;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
-    text-decoration: none;
-    cursor: pointer;
-    transition:
-      background-color 0.2s,
-      transform 0.1s;
-
-    &:hover {
-      background-color: #4a8b3d;
-      transform: translateY(-1px);
-    }
-
-    &:active {
-      transform: translateY(0);
+    &--stacked {
+      flex-direction: column;
+      gap: 12px;
     }
   }
 }

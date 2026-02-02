@@ -6,6 +6,14 @@
   max-width: 400px;
   margin: 0 auto;
 
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--wordle-text-primary, #1a1a1b);
+    margin: 0 0 24px 0;
+    text-align: center;
+  }
+
   &__loading {
     padding: 48px 16px;
     text-align: center;

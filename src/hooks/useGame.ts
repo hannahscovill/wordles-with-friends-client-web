@@ -738,6 +738,8 @@ interface GameState {
   gameNumber: number;
   puzzleDate: string;
   isSubmitting: boolean;
+  /** True if game was completed during this session (not loaded as already complete) */
+  completedDuringSession: boolean;
 }
 
 type GameAction =
@@ -805,13 +807,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         convertApiMoveToLocal,
       );
       const isLost: boolean = !apiState.won && newGuesses.length >= 6;
+      const newStatus: GameStatus = apiState.won
+        ? 'won'
+        : isLost
+          ? 'lost'
+          : 'playing';
 
       return {
         ...state,
         guesses: newGuesses,
         currentGuess: '',
         isSubmitting: false,
-        status: apiState.won ? 'won' : isLost ? 'lost' : 'playing',
+        status: newStatus,
+        completedDuringSession:
+          state.completedDuringSession || newStatus !== 'playing',
       };
     }
 
@@ -830,6 +839,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         gameNumber: state.gameNumber + 1,
         puzzleDate: getTodayLocalDate(),
         isSubmitting: false,
+        completedDuringSession: false,
       };
 
     case 'LOAD_GAME_PROGRESS': {
@@ -860,6 +870,7 @@ function createInitialState(puzzleDate?: string): GameState {
     gameNumber: 1,
     puzzleDate: puzzleDate ?? getTodayLocalDate(),
     isSubmitting: false,
+    completedDuringSession: false,
   };
 }
 
@@ -878,6 +889,8 @@ interface UseGameReturn {
   isLoading: boolean;
   error: Error | null;
   invalidWord: boolean;
+  /** True if game was completed during this session (not loaded as already complete) */
+  completedDuringSession: boolean;
   onKeyPress: (letter: string) => void;
   onEnter: () => void;
   onBackspace: () => void;
@@ -1099,6 +1112,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     isLoading,
     error,
     invalidWord,
+    completedDuringSession: state.completedDuringSession,
     onKeyPress: addLetter,
     onEnter: submitGuess,
     onBackspace: removeLetter,
