@@ -135,8 +135,10 @@ export const GameMakerPage = (): ReactElement => {
   const hasStoredTokens: boolean =
     authTokens !== null && authTokens.access_token !== '';
 
-  // Check if "All" is selected (no date range)
+  // Check if we should skip date generation (All or Year mode)
+  // Year mode has too many dates (365) so we treat it like All mode
   const isAllSelected: boolean = !customStartDate && !customEndDate;
+  const skipDateGeneration: boolean = isAllSelected || presetPeriod === 'year';
 
   // Check if user has game_admin privilege in app_metadata
   const appMetadata: Record<string, unknown> | undefined = (
@@ -184,10 +186,10 @@ export const GameMakerPage = (): ReactElement => {
     }
   }, [isAuthenticated, isGameAdmin, fetchPuzzles]);
 
-  // Compute display rows: merge all dates in range with API puzzles (except for "All" mode)
+  // Compute display rows: merge all dates in range with API puzzles (except for All/Year mode)
   const displayRows: Puzzle[] = useMemo(() => {
-    // For "All" mode, just show puzzles from API
-    if (isAllSelected) {
+    // For "All" or "Year" mode, just show puzzles from API (no date generation)
+    if (skipDateGeneration) {
       return allPuzzles;
     }
 
@@ -216,7 +218,7 @@ export const GameMakerPage = (): ReactElement => {
       // Create empty puzzle entry for date without a puzzle
       return { date, word: '' };
     });
-  }, [isAllSelected, customStartDate, customEndDate, allPuzzles]);
+  }, [skipDateGeneration, customStartDate, customEndDate, allPuzzles]);
 
   // Start login flow if not authenticated
   useEffect(() => {
