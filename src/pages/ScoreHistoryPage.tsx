@@ -8,13 +8,7 @@ import {
 import { MiniGameBoard } from '../components/MiniGameBoard';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import './ScoreHistoryPage.scss';
-
-interface AuthTokens {
-  access_token: string;
-  id_token: string;
-}
 
 function formatDateForDisplay(dateStr: string): string {
   const date: Date = new Date(dateStr + 'T00:00:00');
@@ -50,32 +44,10 @@ function getLast7Days(): string[] {
 }
 
 export const ScoreHistoryPage = (): ReactElement => {
-  const {
-    isLoading,
-    isAuthenticated,
-    getAccessTokenSilently,
-    loginWithRedirect,
-  } = useAuth0();
-  const [authTokens] = useLocalStorage<AuthTokens>('auth_tokens');
+  const { isLoading, isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [historyData, setHistoryData] = useState<HistoryEntry[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
-
-  const hasStoredTokens: boolean =
-    authTokens !== null && authTokens.access_token !== '';
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!hasStoredTokens && !isAuthenticated) {
-      loginWithRedirect({
-        appState: { returnTo: '/history' },
-      });
-    } else if (!isLoading && !isAuthenticated) {
-      loginWithRedirect({
-        appState: { returnTo: '/history' },
-      });
-    }
-  }, [isLoading, isAuthenticated, loginWithRedirect, hasStoredTokens]);
 
   // Fetch history data
   useEffect(() => {
@@ -109,32 +81,12 @@ export const ScoreHistoryPage = (): ReactElement => {
     }
   }, [isLoading, isAuthenticated, getAccessTokenSilently]);
 
-  // Show spinner while redirecting or loading
-  if (!hasStoredTokens && !isAuthenticated) {
-    return (
-      <div className="score-history-page">
-        <div className="score-history-page__loading">
-          <Spinner size="large" label="Redirecting to login" />
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
+  // Show loading while Auth0 validates (router handles redirect if needed)
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="score-history-page">
         <div className="score-history-page__loading">
           <Spinner size="large" label="Loading" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="score-history-page">
-        <div className="score-history-page__loading">
-          <Spinner size="large" label="Redirecting to login" />
         </div>
       </div>
     );

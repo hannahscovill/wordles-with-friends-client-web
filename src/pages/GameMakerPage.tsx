@@ -16,14 +16,8 @@ import {
   type SetPuzzleResponse,
   type Puzzle,
 } from '../api/puzzle';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import { NotFoundPage } from './NotFoundPage';
 import './GameMakerPage.scss';
-
-interface AuthTokens {
-  access_token: string;
-  id_token: string;
-}
 
 type PresetPeriod = 'week' | 'month' | 'year' | 'all';
 
@@ -87,14 +81,8 @@ const getDateRange = (preset: PresetPeriod): DateRange | null => {
 };
 
 export const GameMakerPage = (): ReactElement => {
-  const {
-    user,
-    isLoading,
-    isAuthenticated,
-    getAccessTokenSilently,
-    loginWithRedirect,
-  } = useAuth0();
-  const [authTokens] = useLocalStorage<AuthTokens>('auth_tokens');
+  const { user, isLoading, isAuthenticated, getAccessTokenSilently } =
+    useAuth0();
 
   // Form state for setting puzzles
   const [modalDate, setModalDate] = useState<string>('');
@@ -118,9 +106,6 @@ export const GameMakerPage = (): ReactElement => {
   // Puzzle data state
   const [allPuzzles, setAllPuzzles] = useState<Puzzle[]>([]);
   const [isLoadingPuzzles, setIsLoadingPuzzles] = useState<boolean>(false);
-
-  const hasStoredTokens: boolean =
-    authTokens !== null && authTokens.access_token !== '';
 
   // Check if user has game_admin privilege in app_metadata
   const appMetadata: Record<string, unknown> | undefined = (
@@ -167,19 +152,6 @@ export const GameMakerPage = (): ReactElement => {
       fetchPuzzles();
     }
   }, [isAuthenticated, isGameAdmin, fetchPuzzles]);
-
-  // Start login flow if not authenticated
-  useEffect(() => {
-    if (!hasStoredTokens && !isAuthenticated) {
-      loginWithRedirect({
-        appState: { returnTo: '/gamemaker' },
-      });
-    } else if (!isLoading && !isAuthenticated) {
-      loginWithRedirect({
-        appState: { returnTo: '/gamemaker' },
-      });
-    }
-  }, [isLoading, isAuthenticated, loginWithRedirect, hasStoredTokens]);
 
   const handlePresetClick = (preset: PresetPeriod): void => {
     setPresetPeriod(preset);
@@ -308,18 +280,8 @@ export const GameMakerPage = (): ReactElement => {
     }
   };
 
-  // Show loading while checking auth
-  if (!hasStoredTokens && !isAuthenticated) {
-    return (
-      <div className="gamemaker-page">
-        <div className="gamemaker-page__loading">
-          <Spinner size="large" label="Redirecting to login" />
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
+  // Show loading while Auth0 validates (router handles redirect if needed)
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="gamemaker-page">
         <div className="gamemaker-page__loading">
@@ -329,17 +291,7 @@ export const GameMakerPage = (): ReactElement => {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="gamemaker-page">
-        <div className="gamemaker-page__loading">
-          <Spinner size="large" label="Redirecting to login" />
-        </div>
-      </div>
-    );
-  }
-
-  // Show 404 for non-admin users
+  // Show 404 for non-admin users (role-based access check)
   if (!isGameAdmin) {
     return <NotFoundPage />;
   }
