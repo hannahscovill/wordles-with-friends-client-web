@@ -939,35 +939,25 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
   }, [effectivePuzzleDate, state.puzzleDate]);
 
   // Load game progress on startup
+  // Wait for auth state to resolve to ensure consistent user identification
   useEffect(() => {
+    // Don't load until auth state is resolved to avoid user identity mismatch
+    if (authLoading) {
+      return;
+    }
+
     let isMounted: boolean = true;
 
     const loadGameProgress = async (): Promise<void> => {
       try {
-        let token: string | undefined;
-
-        // First check for auth token in localStorage
-        const storedTokens: string | null = localStorage.getItem('auth_tokens');
-        if (storedTokens) {
-          try {
-            const parsed: { access_token?: string } = JSON.parse(
-              storedTokens,
-            ) as { access_token?: string };
-            token = parsed.access_token;
-          } catch {
-            // Invalid JSON, ignore
-          }
-        }
-
-        // If authenticated and no cached token, try to get fresh token
-        // Don't block on this - if it fails, proceed without auth
-        if (isAuthenticated && !token && !authLoading) {
-          try {
-            token = await getAccessTokenSilently();
-          } catch {
-            // Token fetch failed, proceed without auth
-          }
-        }
+        // Use the same auth pattern as submitGuess for consistency:
+        // - If authenticated, use Auth0 token (identifies user by Auth0 ID)
+        // - If not authenticated, no token (server uses session cookie)
+        // This prevents the server from seeing different user identities
+        // between loadGameProgress and submitGuess calls.
+        const token: string | undefined = isAuthenticated
+          ? await getAccessTokenSilently()
+          : undefined;
 
         // Fetch game progress (will use cookie if no token)
         const gameProgress: ApiGameState | null = await getGameProgressApi(
