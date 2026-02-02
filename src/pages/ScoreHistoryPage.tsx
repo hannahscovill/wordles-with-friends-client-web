@@ -154,7 +154,7 @@ export const ScoreHistoryPage = (): ReactElement => {
 
   return (
     <div className="score-history-page">
-      <h2 className="score-history-page__title">Score History</h2>
+      <h2 className="score-history-page__title">History</h2>
       {error && (
         <p className="score-history-page__error">
           Could not load history from server
