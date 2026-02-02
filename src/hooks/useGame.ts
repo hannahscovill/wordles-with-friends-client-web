@@ -749,7 +749,8 @@ type GameAction =
   | { type: 'SUBMIT_GUESS_SUCCESS'; payload: ApiGameState }
   | { type: 'SUBMIT_GUESS_ERROR' }
   | { type: 'NEW_GAME' }
-  | { type: 'LOAD_GAME_PROGRESS'; payload: ApiGameState };
+  | { type: 'LOAD_GAME_PROGRESS'; payload: ApiGameState }
+  | { type: 'SET_PUZZLE_DATE'; puzzleDate: string };
 
 function convertApiMoveToLocal(move: GradedMove): GradedGuess {
   return move.map((letter) => ({
@@ -856,6 +857,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'SET_PUZZLE_DATE':
+      // Reset game state for new puzzle date
+      return {
+        answer: getRandomWord(),
+        currentGuess: '',
+        guesses: [],
+        status: 'playing',
+        gameNumber: state.gameNumber,
+        puzzleDate: action.puzzleDate,
+        isSubmitting: false,
+        completedDuringSession: false,
+      };
+
     default:
       return state;
   }
@@ -912,6 +926,17 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     isAuthenticated,
     isLoading: authLoading,
   } = useAuth0();
+
+  // Compute the effective puzzle date (prop or today)
+  const effectivePuzzleDate: string = options.puzzleDate ?? getTodayLocalDate();
+
+  // Reset game state when puzzle date changes (e.g., navigating between dates)
+  useEffect(() => {
+    if (effectivePuzzleDate !== state.puzzleDate) {
+      setIsLoading(true);
+      dispatch({ type: 'SET_PUZZLE_DATE', puzzleDate: effectivePuzzleDate });
+    }
+  }, [effectivePuzzleDate, state.puzzleDate]);
 
   // Load game progress on startup
   useEffect(() => {

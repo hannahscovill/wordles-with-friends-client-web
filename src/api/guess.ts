@@ -116,6 +116,40 @@ export interface GetGameProgressOptions {
   token?: string;
 }
 
+/**
+ * Checks if a puzzle exists for the given date.
+ * This is a lightweight check that doesn't require authentication.
+ * Used by route loaders to validate dates before rendering.
+ */
+export const checkPuzzleExists = async (
+  puzzleDateIsoDay: string,
+): Promise<boolean> => {
+  const response: Response = await fetch(
+    `${API_BASE_URL}/game/${puzzleDateIsoDay}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    },
+  );
+
+  // 404 means no puzzle exists for this date
+  if (response.status === 404) {
+    return false;
+  }
+
+  // Any successful response means puzzle exists
+  if (response.ok) {
+    return true;
+  }
+
+  // For other errors, assume puzzle might exist (don't block navigation)
+  // The actual game component will handle these errors
+  return true;
+};
+
 export const getGameProgress = async (
   puzzleDateIsoDay: string,
   options: GetGameProgressOptions = {},
