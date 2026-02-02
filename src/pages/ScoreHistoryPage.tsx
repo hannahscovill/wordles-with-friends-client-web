@@ -172,11 +172,6 @@ export const ScoreHistoryPage = (): ReactElement => {
               <tr key={entry.puzzle_date}>
                 <td className="score-history-page__date-cell">
                   {formatDateForDisplay(entry.puzzle_date)}
-                  {entry.puzzle_date === today && (
-                    <span className="score-history-page__today-badge">
-                      Today
-                    </span>
-                  )}
                 </td>
                 <td className="score-history-page__game-cell">
                   {entry.played && entry.guesses ? (
@@ -184,12 +179,28 @@ export const ScoreHistoryPage = (): ReactElement => {
                   ) : entry.in_progress && entry.guesses ? (
                     <div className="score-history-page__in-progress">
                       <MiniGameBoard guesses={entry.guesses} />
-                      <Button variant="flat" href={`/${entry.puzzle_date}`}>
+                      <Button
+                        variant="flat"
+                        href={`/${entry.puzzle_date}`}
+                        className={
+                          entry.puzzle_date === today
+                            ? 'score-history-page__today-button'
+                            : ''
+                        }
+                      >
                         Continue
                       </Button>
                     </div>
                   ) : (
-                    <Button variant="flat" href={`/${entry.puzzle_date}`}>
+                    <Button
+                      variant="flat"
+                      href={`/${entry.puzzle_date}`}
+                      className={
+                        entry.puzzle_date === today
+                          ? 'score-history-page__today-button'
+                          : ''
+                      }
+                    >
                       Play
                     </Button>
                   )}

@@ -57,16 +57,10 @@
     vertical-align: middle;
   }
 
-  &__today-badge {
-    background-color: var(--color-correct);
-    color: white;
-    font-size: 0.625rem;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    margin-left: 8px;
-    vertical-align: middle;
+  &__today-button {
+    .button__frame {
+      background-color: var(--color-button-shadow);
+    }
   }
 
   &__game-cell {
