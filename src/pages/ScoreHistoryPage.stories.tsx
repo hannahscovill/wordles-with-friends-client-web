@@ -11,6 +11,7 @@ import {
 import type { GradedMove } from '../api/guess';
 import type { HistoryEntry } from '../api/history';
 import { MiniGameBoard } from '../components/MiniGameBoard';
+import { Button } from '../components/ui/Button';
 import './ScoreHistoryPage.scss';
 
 // Mock data for demonstration
@@ -69,6 +70,23 @@ const mockGuessesLost: GradedMove[] = [
   ],
 ];
 
+const mockGuessesInProgress: GradedMove[] = [
+  [
+    { letter: 'H', grade: 'wrong' },
+    { letter: 'E', grade: 'contained' },
+    { letter: 'L', grade: 'wrong' },
+    { letter: 'L', grade: 'wrong' },
+    { letter: 'O', grade: 'wrong' },
+  ],
+  [
+    { letter: 'W', grade: 'wrong' },
+    { letter: 'O', grade: 'wrong' },
+    { letter: 'R', grade: 'correct' },
+    { letter: 'D', grade: 'wrong' },
+    { letter: 'S', grade: 'wrong' },
+  ],
+];
+
 function getLast7Days(): string[] {
   const dates: string[] = [];
   const today: Date = new Date();
@@ -101,7 +119,12 @@ const ScoreHistoryPageStory = (): ReactElement => {
 
   const historyData: HistoryEntry[] = [
     { puzzle_date: dates[0], played: false }, // Today - not played
-    { puzzle_date: dates[1], played: true, won: true, guesses: mockGuessesWon },
+    {
+      puzzle_date: dates[1],
+      played: false,
+      in_progress: true,
+      guesses: mockGuessesInProgress,
+    }, // In progress
     {
       puzzle_date: dates[2],
       played: true,
@@ -116,7 +139,7 @@ const ScoreHistoryPageStory = (): ReactElement => {
 
   return (
     <div className="score-history-page">
-      <h2 className="score-history-page__title">Score History</h2>
+      <h2 className="score-history-page__title">History</h2>
       <div className="score-history-page__grid">
         {historyData.map((entry: HistoryEntry) => (
           <div key={entry.puzzle_date} className="score-history-page__card">
@@ -126,16 +149,26 @@ const ScoreHistoryPageStory = (): ReactElement => {
                 <span className="score-history-page__today-badge">Today</span>
               )}
             </div>
-            <div className="score-history-page__card-content">
+            <div
+              className={`score-history-page__card-content ${
+                entry.in_progress && entry.guesses
+                  ? 'score-history-page__card-content--stacked'
+                  : ''
+              }`}
+            >
               {entry.played && entry.guesses ? (
                 <MiniGameBoard guesses={entry.guesses} won={entry.won} />
+              ) : entry.in_progress && entry.guesses ? (
+                <>
+                  <MiniGameBoard guesses={entry.guesses} />
+                  <Button variant="flat" href={`/${entry.puzzle_date}`}>
+                    Continue Game
+                  </Button>
+                </>
               ) : (
-                <button
-                  type="button"
-                  className="score-history-page__play-button"
-                >
+                <Button variant="flat" href={`/${entry.puzzle_date}`}>
                   Play
-                </button>
+                </Button>
               )}
             </div>
           </div>

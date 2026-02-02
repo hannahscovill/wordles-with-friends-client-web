@@ -84,6 +84,43 @@
     }
   }
 
+  // Flat variant - simple bordered button without layered effect
+  &--flat {
+    width: auto;
+    height: auto;
+    margin: 0;
+
+    .button__frame {
+      padding: 8px 16px;
+      border-width: 3px;
+      background: #fff;
+    }
+
+    &:hover:not(.button--disabled) {
+      .button__frame {
+        transform: none;
+        background: var(--color-button-shadow);
+      }
+    }
+
+    &:active:not(.button--disabled) {
+      .button__frame {
+        transform: none;
+        background: var(--color-button-shadow);
+      }
+    }
+
+    &.button--s .button__frame {
+      padding: 6px 12px;
+      font-size: 0.75rem;
+    }
+
+    &.button--l .button__frame {
+      padding: 12px 24px;
+      font-size: 1rem;
+    }
+  }
+
   // Size variants
   &--s {
     min-width: 80px;
