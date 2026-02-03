@@ -9,6 +9,7 @@ import { profileRoute } from './routes/profile';
 import { historyRoute } from './routes/history';
 import { puzzleRoute } from './routes/puzzle';
 import { gamemakerRoute } from './routes/gamemaker';
+import { analytics } from './lib/analytics';
 
 const routeTree: AnyRoute = rootRoute.addChildren([
   indexRoute,
@@ -24,6 +25,11 @@ export const router: Router<AnyRoute, 'never', boolean> = createRouter({
   context: {
     auth: undefined!,
   },
+});
+
+// Track page views on route changes
+router.subscribe('onResolved', ({ toLocation }) => {
+  analytics.trackPageView(toLocation.pathname);
 });
 
 declare module '@tanstack/react-router' {

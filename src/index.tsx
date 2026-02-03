@@ -8,6 +8,10 @@ import {
 import { RouterProvider } from '@tanstack/react-router';
 import { router } from './router';
 import { AuthProvider } from './AuthProvider';
+import { initTelemetry } from './lib/telemetry';
+
+// Initialize telemetry BEFORE React renders
+initTelemetry();
 
 export function App(): React.ReactElement {
   const auth: Auth0ContextInterface = useAuth0();
