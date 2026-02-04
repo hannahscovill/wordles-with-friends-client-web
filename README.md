@@ -17,10 +17,10 @@ npm run storybook  # component dev at http://localhost:6006
 
 CDK stacks for the frontend deployment.
 
-| Stack                           | Command        | Purpose                                                               |
-| ------------------------------- | -------------- | --------------------------------------------------------------------- |
-| `WordlesWithFriendsStack`       | (default)      | S3 bucket, CloudFront distribution, ACM certificate for `wordles.dev` |
-| `WordlesGitHubActionsRoleStack` | `-c role=true` | IAM role for GitHub Actions CI/CD                                     |
+| Stack                           | Purpose                                                               |
+| ------------------------------- | --------------------------------------------------------------------- |
+| `WordlesWithFriendsStack`       | S3 bucket, CloudFront distribution, ACM certificate for `wordles.dev` |
+| `WordlesGitHubActionsRoleStack` | IAM role for GitHub Actions CI/CD                                     |
 
 The main stack deploys to **us-east-1** (required for CloudFront ACM certificates). The role stack deploys to us-west-2.
 
@@ -37,10 +37,10 @@ cd infra
 npm install
 
 # GitHub Actions role (once, or when permissions change)
-npx cdk deploy -c role=true WordlesGitHubActionsRoleStack
+npx cdk deploy WordlesGitHubActionsRoleStack
 
 # Main application
-npx cdk deploy
+npx cdk deploy WordlesWithFriendsStack
 ```
 
 ## CI/CD
