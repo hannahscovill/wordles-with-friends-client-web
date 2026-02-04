@@ -93,7 +93,6 @@ export class GitHubActionsRoleStack extends cdk.Stack {
         ],
         resources: [
           `arn:aws:cloudformation:*:${this.account}:stack/WordlesWithFriendsStack/*`,
-          `arn:aws:cloudformation:*:${this.account}:stack/WordlesGitHubActionsRoleStack/*`,
           `arn:aws:cloudformation:*:${this.account}:stack/CDKToolkit/*`,
         ],
       }),
@@ -235,7 +234,6 @@ export class GitHubActionsRoleStack extends cdk.Stack {
         ],
         resources: [
           `arn:aws:iam::${this.account}:role/WordlesWithFriendsStack-*`,
-          `arn:aws:iam::${this.account}:role/WordlesGitHubActionsRoleStack-*`,
           `arn:aws:iam::${this.account}:role/cdk-*`,
         ],
       }),
