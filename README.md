@@ -1,36 +1,54 @@
-# Rsbuild project
+# Wordles with Friends
 
-## Setup
+A multiplayer Wordle game built with React + Rsbuild.
 
-Install the dependencies:
+## Development
 
 ```bash
 npm install
+npm run dev        # dev server at http://localhost:3000
+npm run build      # production build → dist/
+npm run test       # unit tests (rstest)
+npm run test:e2e   # e2e tests (Playwright)
+npm run storybook  # component dev at http://localhost:6006
 ```
 
-## Get started
+## Infrastructure
 
-Start the dev server, and the app will be available at [http://localhost:3000](http://localhost:3000).
+CDK stacks for the frontend deployment.
+
+| Stack                           | Command        | Purpose                                                               |
+| ------------------------------- | -------------- | --------------------------------------------------------------------- |
+| `WordlesWithFriendsStack`       | (default)      | S3 bucket, CloudFront distribution, ACM certificate for `wordles.dev` |
+| `WordlesGitHubActionsRoleStack` | `-c role=true` | IAM role for GitHub Actions CI/CD                                     |
+
+The main stack deploys to **us-east-1** (required for CloudFront ACM certificates). The role stack deploys to us-west-2.
+
+### GitHub Actions Role
+
+The role stack imports `GitHubOidcProviderArn` from [shared-infrastructure](https://github.com/hannahscovill/shared-infrastructure). The shared OIDC provider must be deployed first.
+
+Permissions include: S3, CloudFront, ACM, Lambda (CDK BucketDeployment), IAM, and CloudFormation.
+
+### Deploying
 
 ```bash
-npm run dev
+cd infra
+npm install
+
+# GitHub Actions role (once, or when permissions change)
+npx cdk deploy -c role=true -c githubOrg=hannahscovill WordlesGitHubActionsRoleStack
+
+# Main application
+npx cdk deploy
 ```
 
-Build the app for production:
+## CI/CD
 
-```bash
-npm run build
-```
+Deployment is automated via GitHub Actions (`.github/workflows/deploy.yml`). Triggered on push to `main`.
 
-Preview the production build locally:
-
-```bash
-npm run preview
-```
-
-## Learn more
-
-To learn more about Rsbuild, check out the following resources:
-
-- [Rsbuild documentation](https://rsbuild.rs) - explore Rsbuild features and APIs.
-- [Rsbuild GitHub repository](https://github.com/web-infra-dev/rsbuild) - your feedback and contributions are welcome!
+| Variable            | Description                          |
+| ------------------- | ------------------------------------ |
+| `AWS_ACCOUNT_ID`    | AWS account ID                       |
+| `AWS_REGION`        | AWS region (e.g., `us-west-2`)       |
+| `AWS_OIDC_ROLE_ARN` | IAM role ARN for OIDC authentication |
