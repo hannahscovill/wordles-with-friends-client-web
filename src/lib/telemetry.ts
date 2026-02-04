@@ -14,7 +14,6 @@ import {
   ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import posthog from 'posthog-js';
 import type { SpanExporter } from '@opentelemetry/sdk-trace-base';
 
 export function initTelemetry(): void {
@@ -48,7 +47,6 @@ export function initTelemetry(): void {
           propagateTraceHeaderCorsUrls: [
             /localhost/,
             /api\.wordles\.dev/,
-            // Add your API domain pattern here
             new RegExp(
               import.meta.env.PUBLIC_API_URL?.replace(/https?:\/\//, '') ?? '',
             ),
@@ -59,30 +57,4 @@ export function initTelemetry(): void {
 
     console.log('[telemetry] OpenTelemetry initialized');
   }
-
-  // Initialize PostHog for product analytics (production only)
-  const posthogKey: string | undefined = import.meta.env.PUBLIC_POSTHOG_KEY;
-  if (posthogKey && import.meta.env.MODE === 'production') {
-    posthog.init(posthogKey, {
-      api_host:
-        import.meta.env.PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
-      autocapture: false, // Manual capture for control
-      capture_pageview: false, // Manual for SPA
-      disable_session_recording: true, // Privacy
-    });
-    console.log('[telemetry] PostHog initialized');
-  }
-}
-
-// User identification (call after login)
-export function identifyUser(
-  userId: string,
-  traits?: Record<string, unknown>,
-): void {
-  posthog.identify(userId, traits);
-}
-
-// Clear user (call on logout)
-export function resetUser(): void {
-  posthog.reset();
 }

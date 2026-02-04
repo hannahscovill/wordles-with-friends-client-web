@@ -5,12 +5,14 @@ import {
   useAuth0,
   type Auth0ContextInterface,
 } from '@auth0/auth0-react';
+import { PostHogProvider } from 'posthog-js/react';
+import type { PostHogConfig } from 'posthog-js';
 import { RouterProvider } from '@tanstack/react-router';
 import { router } from './router';
 import { AuthProvider } from './AuthProvider';
 import { initTelemetry } from './lib/telemetry';
 
-// Initialize telemetry BEFORE React renders
+// Initialize OpenTelemetry BEFORE React renders (PostHog is handled by PostHogProvider)
 initTelemetry();
 
 export function App(): React.ReactElement {
@@ -33,25 +35,33 @@ if (!domain || !clientId || !audience) {
   );
 }
 
+const posthogKey: string | undefined = import.meta.env.PUBLIC_POSTHOG_KEY;
+const posthogOptions: Partial<PostHogConfig> = {
+  api_host: import.meta.env.PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
+  defaults: '2025-11-30',
+};
+
 const rootEl: HTMLElement | null = document.getElementById('root');
 if (rootEl) {
   const root: ReactDOM.Root = ReactDOM.createRoot(rootEl);
   root.render(
     <React.StrictMode>
-      <Auth0Provider
-        domain={domain}
-        clientId={clientId}
-        cacheLocation="localstorage"
-        authorizationParams={{
-          redirect_uri: window.location.origin,
-          scope: 'openid profile email read:current_user',
-          audience,
-        }}
-      >
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </Auth0Provider>
+      <PostHogProvider apiKey={posthogKey ?? ''} options={posthogOptions}>
+        <Auth0Provider
+          domain={domain}
+          clientId={clientId}
+          cacheLocation="localstorage"
+          authorizationParams={{
+            redirect_uri: window.location.origin,
+            scope: 'openid profile email read:current_user',
+            audience,
+          }}
+        >
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </Auth0Provider>
+      </PostHogProvider>
     </React.StrictMode>,
   );
 }

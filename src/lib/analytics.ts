@@ -15,13 +15,9 @@ interface GameCompleteEvent {
 interface Analytics {
   trackGuess: (event: GuessEvent) => void;
   trackGameComplete: (event: GameCompleteEvent) => void;
-  trackPageView: (path: string) => void;
 }
 
 export const analytics: Analytics = {
-  /**
-   * Track when a user submits a guess.
-   */
   trackGuess(event: GuessEvent): void {
     posthog.capture('guess_submitted', {
       puzzle_date: event.puzzleDate,
@@ -30,23 +26,11 @@ export const analytics: Analytics = {
     });
   },
 
-  /**
-   * Track when a game is completed (won or lost).
-   */
   trackGameComplete(event: GameCompleteEvent): void {
     posthog.capture('game_completed', {
       puzzle_date: event.puzzleDate,
       won: event.won,
       attempts: event.attempts,
-    });
-  },
-
-  /**
-   * Track page views (for SPA navigation).
-   */
-  trackPageView(path: string): void {
-    posthog.capture('$pageview', {
-      $current_url: window.location.origin + path,
     });
   },
 };
