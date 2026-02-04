@@ -106,7 +106,7 @@ jobs:
 
       - name: CDK deploy
         working-directory: infra
-        run: npx cdk ${{ env.CDK_ACTION }} ${{ env.CDK_ACTION == 'destroy' && '--force' || '' }} --require-approval never
+        run: npx cdk ${{ env.CDK_ACTION }} ${{ env.CDK_ACTION == 'destroy' && '--force' || '' }} WordlesWithFriendsStack --require-approval never
         env:
           CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
           CDK_DEFAULT_REGION: ${{ env.AWS_REGION }}
