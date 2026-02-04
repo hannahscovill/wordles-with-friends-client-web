@@ -11,6 +11,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { router } from './router';
 import { AuthProvider } from './AuthProvider';
 import { initTelemetry } from './lib/telemetry';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Initialize OpenTelemetry BEFORE React renders (PostHog is handled by PostHogProvider)
 initTelemetry();
@@ -46,22 +47,24 @@ if (rootEl) {
   const root: ReactDOM.Root = ReactDOM.createRoot(rootEl);
   root.render(
     <React.StrictMode>
-      <PostHogProvider apiKey={posthogKey ?? ''} options={posthogOptions}>
-        <Auth0Provider
-          domain={domain}
-          clientId={clientId}
-          cacheLocation="localstorage"
-          authorizationParams={{
-            redirect_uri: window.location.origin,
-            scope: 'openid profile email read:current_user',
-            audience,
-          }}
-        >
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </Auth0Provider>
-      </PostHogProvider>
+      <ErrorBoundary>
+        <PostHogProvider apiKey={posthogKey ?? ''} options={posthogOptions}>
+          <Auth0Provider
+            domain={domain}
+            clientId={clientId}
+            cacheLocation="localstorage"
+            authorizationParams={{
+              redirect_uri: window.location.origin,
+              scope: 'openid profile email read:current_user',
+              audience,
+            }}
+          >
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </Auth0Provider>
+        </PostHogProvider>
+      </ErrorBoundary>
     </React.StrictMode>,
   );
 }

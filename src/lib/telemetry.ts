@@ -15,6 +15,12 @@ import {
 } from '@opentelemetry/semantic-conventions';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import type { SpanExporter } from '@opentelemetry/sdk-trace-base';
+import {
+  trace,
+  SpanStatusCode,
+  type Tracer,
+  type Span,
+} from '@opentelemetry/api';
 
 export function initTelemetry(): void {
   const collectorUrl: string | undefined = import.meta.env
@@ -57,4 +63,40 @@ export function initTelemetry(): void {
 
     console.log('[telemetry] OpenTelemetry initialized');
   }
+
+  // Register global error handlers regardless of collector URL
+  // so reportError() calls from ErrorBoundary always work
+  window.addEventListener('error', (event: ErrorEvent) => {
+    reportError(event.error ?? new Error(event.message), {
+      'error.source': 'window.onerror',
+    });
+  });
+
+  window.addEventListener(
+    'unhandledrejection',
+    (event: PromiseRejectionEvent) => {
+      const error: Error =
+        event.reason instanceof Error
+          ? event.reason
+          : new Error(String(event.reason));
+      reportError(error, { 'error.source': 'unhandledrejection' });
+    },
+  );
+}
+
+export function reportError(
+  error: Error,
+  attributes?: Record<string, string>,
+): void {
+  const tracer: Tracer = trace.getTracer('wordles-frontend');
+  const span: Span = tracer.startSpan('error');
+
+  span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+  span.recordException(error);
+
+  if (attributes) {
+    span.setAttributes(attributes);
+  }
+
+  span.end();
 }
