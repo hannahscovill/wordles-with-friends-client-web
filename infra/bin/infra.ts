@@ -15,7 +15,7 @@ const githubOrg = app.node.tryGetContext('githubOrg') || process.env.GITHUB_ORG;
 // SECURITY: Role stack must be deployed manually from a local machine.
 // The GitHub Actions role does NOT have permissions to modify this stack.
 // Prerequisite: Deploy shared-infrastructure/GitHubOidcProviderStack first
-// Deploy with: cdk deploy -c role=true -c githubOrg=your-org WordlesGitHubActionsRoleStack
+// Deploy with: cdk deploy -c role=true WordlesGitHubActionsRoleStack
 if (isRoleStack) {
   if (!githubOrg) {
     throw new Error(

@@ -37,7 +37,7 @@ cd infra
 npm install
 
 # GitHub Actions role (once, or when permissions change)
-npx cdk deploy -c role=true -c githubOrg=hannahscovill WordlesGitHubActionsRoleStack
+npx cdk deploy -c role=true WordlesGitHubActionsRoleStack
 
 # Main application
 npx cdk deploy
