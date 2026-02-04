@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useAuth0, type Auth0ContextInterface } from '@auth0/auth0-react';
+import { usePostHog } from 'posthog-js/react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 interface AuthTokens {
@@ -27,6 +28,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
     getIdTokenClaims,
     loginWithRedirect,
   } = auth;
+  const posthog: ReturnType<typeof usePostHog> = usePostHog();
 
   const [, setAuthTokens] = useLocalStorage<AuthTokens>('auth_tokens');
   const hasRedirected: MutableRefObject<boolean> = useRef(false);
@@ -48,6 +50,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
 
       if (!isAuthenticated) {
         setAuthTokens(null);
+        posthog.reset();
         return;
       }
 
@@ -61,6 +64,13 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
           access_token: accessToken ?? '',
           id_token: idTokenClaims?.__raw ?? '',
         });
+
+        if (idTokenClaims?.sub) {
+          posthog.identify(idTokenClaims.sub, {
+            email: idTokenClaims.email,
+            name: idTokenClaims.name,
+          });
+        }
       } catch (error) {
         console.error('Failed to store auth tokens:', error);
         setAuthTokens(null);
@@ -77,6 +87,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): ReactElement => {
     getIdTokenClaims,
     setAuthTokens,
     loginWithRedirect,
+    posthog,
   ]);
 
   return <>{children}</>;

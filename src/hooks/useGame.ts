@@ -8,6 +8,7 @@ import {
   type GameState as ApiGameState,
   type GradedMove,
 } from '../api/guess';
+import { analytics } from '../lib/analytics';
 
 // Common 5-letter words for the game
 const WORDS: string[] = [
@@ -1029,6 +1030,24 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
         );
 
         dispatch({ type: 'SUBMIT_GUESS_SUCCESS', payload: response });
+
+        // Track analytics
+        const attemptNumber: number = response.moves.length;
+        const isCorrect: boolean = response.won;
+        analytics.trackGuess({
+          puzzleDate: state.puzzleDate,
+          attemptNumber,
+          isCorrect,
+        });
+
+        // Track game completion
+        if (isCorrect || attemptNumber >= 6) {
+          analytics.trackGameComplete({
+            puzzleDate: state.puzzleDate,
+            won: isCorrect,
+            attempts: attemptNumber,
+          });
+        }
       } catch (e: unknown) {
         const err: Error = e instanceof Error ? e : new Error(String(e));
         setError(err);
