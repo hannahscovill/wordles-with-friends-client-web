@@ -1,0 +1,60 @@
+import {
+  WebTracerProvider,
+  BatchSpanProcessor,
+} from '@opentelemetry/sdk-trace-web';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
+import { ZoneContextManager } from '@opentelemetry/context-zone';
+import {
+  resourceFromAttributes,
+  type Resource,
+} from '@opentelemetry/resources';
+import {
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
+} from '@opentelemetry/semantic-conventions';
+import { registerInstrumentations } from '@opentelemetry/instrumentation';
+import type { SpanExporter } from '@opentelemetry/sdk-trace-base';
+
+export function initTelemetry(): void {
+  const collectorUrl: string | undefined = import.meta.env
+    .PUBLIC_OTEL_COLLECTOR_URL;
+
+  // Initialize OpenTelemetry if collector URL is configured
+  if (collectorUrl) {
+    const resource: Resource = resourceFromAttributes({
+      [ATTR_SERVICE_NAME]: 'wordles-frontend',
+      [ATTR_SERVICE_VERSION]: import.meta.env.PUBLIC_APP_VERSION ?? 'dev',
+      'deployment.environment': import.meta.env.MODE,
+    });
+
+    const exporter: SpanExporter = new OTLPTraceExporter({
+      url: `${collectorUrl}/v1/traces`,
+    });
+
+    const provider: WebTracerProvider = new WebTracerProvider({
+      resource,
+      spanProcessors: [new BatchSpanProcessor(exporter)],
+    });
+    provider.register({
+      contextManager: new ZoneContextManager(),
+    });
+
+    // Auto-instrument fetch - adds traceparent header automatically
+    registerInstrumentations({
+      instrumentations: [
+        new FetchInstrumentation({
+          propagateTraceHeaderCorsUrls: [
+            /localhost/,
+            /api\.wordles\.dev/,
+            new RegExp(
+              import.meta.env.PUBLIC_API_URL?.replace(/https?:\/\//, '') ?? '',
+            ),
+          ],
+        }),
+      ],
+    });
+
+    console.log('[telemetry] OpenTelemetry initialized');
+  }
+}
