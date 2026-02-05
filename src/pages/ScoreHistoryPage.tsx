@@ -171,6 +171,45 @@ export const ScoreHistoryPage = (): ReactElement => {
         showNavigation={false}
       />
 
+      <div className="score-history-page__navigation">
+        <button
+          type="button"
+          className="score-history-page__nav-button"
+          onClick={() => {
+            const newRange: DateRange | null = navigateDateRange(
+              presetPeriod,
+              customStartDate,
+              'prev',
+            );
+            if (newRange) {
+              setCustomStartDate(newRange.startDate);
+              setCustomEndDate(newRange.endDate);
+            }
+          }}
+          disabled={presetPeriod === 'all'}
+        >
+          Previous
+        </button>
+        <button
+          type="button"
+          className="score-history-page__nav-button"
+          onClick={() => {
+            const newRange: DateRange | null = navigateDateRange(
+              presetPeriod,
+              customStartDate,
+              'next',
+            );
+            if (newRange) {
+              setCustomStartDate(newRange.startDate);
+              setCustomEndDate(newRange.endDate);
+            }
+          }}
+          disabled={presetPeriod === 'all'}
+        >
+          Next
+        </button>
+      </div>
+
       <table className="score-history-page__table">
         <thead>
           <tr>
@@ -228,45 +267,6 @@ export const ScoreHistoryPage = (): ReactElement => {
           )}
         </tbody>
       </table>
-
-      <div className="score-history-page__navigation">
-        <button
-          type="button"
-          className="score-history-page__nav-button"
-          onClick={() => {
-            const newRange: DateRange | null = navigateDateRange(
-              presetPeriod,
-              customStartDate,
-              'prev',
-            );
-            if (newRange) {
-              setCustomStartDate(newRange.startDate);
-              setCustomEndDate(newRange.endDate);
-            }
-          }}
-          disabled={presetPeriod === 'all'}
-        >
-          Previous
-        </button>
-        <button
-          type="button"
-          className="score-history-page__nav-button"
-          onClick={() => {
-            const newRange: DateRange | null = navigateDateRange(
-              presetPeriod,
-              customStartDate,
-              'next',
-            );
-            if (newRange) {
-              setCustomStartDate(newRange.startDate);
-              setCustomEndDate(newRange.endDate);
-            }
-          }}
-          disabled={presetPeriod === 'all'}
-        >
-          Next
-        </button>
-      </div>
     </div>
   );
 };

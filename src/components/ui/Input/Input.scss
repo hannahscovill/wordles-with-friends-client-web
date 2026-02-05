@@ -47,3 +47,16 @@
     color: #dc3545;
   }
 }
+
+@media (max-width: 399px) {
+  .input-wrapper__input[type='date'] {
+    &::-webkit-calendar-picker-indicator {
+      display: none;
+      -webkit-appearance: none;
+    }
+
+    &::-webkit-date-and-time-value {
+      text-align: left;
+    }
+  }
+}

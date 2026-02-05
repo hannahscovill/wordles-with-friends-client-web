@@ -266,6 +266,45 @@ export const GameMakerPage = (): ReactElement => {
         </div>
       ) : (
         <>
+          <div className="gamemaker-page__navigation">
+            <button
+              type="button"
+              className="gamemaker-page__nav-button"
+              onClick={() => {
+                const newRange: DateRange | null = navigateDateRange(
+                  presetPeriod,
+                  customStartDate,
+                  'prev',
+                );
+                if (newRange) {
+                  setCustomStartDate(newRange.startDate);
+                  setCustomEndDate(newRange.endDate);
+                }
+              }}
+              disabled={presetPeriod === 'all'}
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              className="gamemaker-page__nav-button"
+              onClick={() => {
+                const newRange: DateRange | null = navigateDateRange(
+                  presetPeriod,
+                  customStartDate,
+                  'next',
+                );
+                if (newRange) {
+                  setCustomStartDate(newRange.startDate);
+                  setCustomEndDate(newRange.endDate);
+                }
+              }}
+              disabled={presetPeriod === 'all'}
+            >
+              Next
+            </button>
+          </div>
+
           <table className="gamemaker-page__table">
             <thead>
               <tr>
@@ -323,45 +362,6 @@ export const GameMakerPage = (): ReactElement => {
               )}
             </tbody>
           </table>
-
-          <div className="gamemaker-page__navigation">
-            <button
-              type="button"
-              className="gamemaker-page__nav-button"
-              onClick={() => {
-                const newRange: DateRange | null = navigateDateRange(
-                  presetPeriod,
-                  customStartDate,
-                  'prev',
-                );
-                if (newRange) {
-                  setCustomStartDate(newRange.startDate);
-                  setCustomEndDate(newRange.endDate);
-                }
-              }}
-              disabled={presetPeriod === 'all'}
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              className="gamemaker-page__nav-button"
-              onClick={() => {
-                const newRange: DateRange | null = navigateDateRange(
-                  presetPeriod,
-                  customStartDate,
-                  'next',
-                );
-                if (newRange) {
-                  setCustomStartDate(newRange.startDate);
-                  setCustomEndDate(newRange.endDate);
-                }
-              }}
-              disabled={presetPeriod === 'all'}
-            >
-              Next
-            </button>
-          </div>
         </>
       )}
 
