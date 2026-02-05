@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { GradedMove } from '../api/guess';
+import type { GradedMove } from '../api';
 import './MiniGameBoard.scss';
 
 export interface MiniGameBoardProps {

@@ -10,7 +10,7 @@ import {
   uploadAvatar,
   type UserProfile,
   type UploadAvatarResponse,
-} from '../api/profile';
+} from '../api';
 import './ProfilePage.scss';
 
 export const ProfilePage = (): ReactElement => {

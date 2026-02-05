@@ -2,7 +2,7 @@ import { createRoute, notFound, type AnyRoute } from '@tanstack/react-router';
 import { rootRoute } from './__root';
 import { PuzzlePageWrapper } from '../pages/PuzzlePageWrapper';
 import { NotFoundPage } from '../pages/NotFoundPage';
-import { checkPuzzleExists } from '../api/guess';
+import { checkPuzzleExists } from '../api';
 
 const ISO_DATE_REGEX: RegExp = /^\d{4}-\d{2}-\d{2}$/;
 

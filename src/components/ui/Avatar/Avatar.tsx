@@ -1,4 +1,5 @@
 import { useState, type ReactElement } from 'react';
+import { reportError } from '../../../lib/telemetry';
 import './Avatar.scss';
 
 export type AvatarSize = 's' | 'm' | 'l';
@@ -40,6 +41,10 @@ export const Avatar = ({
   const handleError = (): void => {
     if (!hasError) {
       setHasError(true);
+      reportError(new Error(`Avatar image failed to load: ${src}`), {
+        'error.source': 'Avatar',
+        'avatar.src': src,
+      });
     }
   };
 

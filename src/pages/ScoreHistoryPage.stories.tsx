@@ -8,8 +8,7 @@ import {
   createRoute,
   type AnyRouter,
 } from '@tanstack/react-router';
-import type { GradedMove } from '../api/guess';
-import type { HistoryEntry } from '../api/history';
+import type { GradedMove, HistoryEntry } from '../api';
 import { MiniGameBoard } from '../components/MiniGameBoard';
 import { Button } from '../components/ui/Button';
 import './ScoreHistoryPage.scss';

@@ -18,7 +18,7 @@ import {
   type Puzzle,
   type SetPuzzleRequestCustom,
   type SetPuzzleRequestRandom,
-} from '../api/puzzle';
+} from '../api';
 import { NotFoundPage } from './NotFoundPage';
 import {
   type PresetPeriod,

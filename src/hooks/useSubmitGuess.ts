@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { submitGuess as submitGuessApi, type GameState } from '../api/guess';
+import { submitGuess as submitGuessApi, type GameState } from '../api';
 
 interface UseSubmitGuessReturn {
   submit: (guess: string) => Promise<GameState | null>;

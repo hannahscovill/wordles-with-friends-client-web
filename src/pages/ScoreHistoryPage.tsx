@@ -8,10 +8,11 @@ import {
 import { useAuth0 } from '@auth0/auth0-react';
 import {
   getHistory,
+  getPuzzles,
   type HistoryEntry,
   type HistoryResponse,
-} from '../api/history';
-import { getPuzzles, type Puzzle } from '../api/puzzle';
+  type Puzzle,
+} from '../api';
 import { MiniGameBoard } from '../components/MiniGameBoard';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
