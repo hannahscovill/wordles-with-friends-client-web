@@ -6,77 +6,51 @@ import {
 } from '../components/features/ProfileForm';
 import {
   updateUserProfile,
-  getUserProfile,
   uploadAvatar,
-  type UserProfile,
   type UploadAvatarResponse,
 } from '../api';
+import { useUserProfile } from '../contexts/UserProfileContext';
 import './ProfilePage.scss';
 
 export const ProfilePage = (): ReactElement => {
   // Router protects this route - we trust we're authenticated if rendering
   const { user, getAccessTokenSilently } = useAuth0();
+  const {
+    profile,
+    isLoading: isLoadingProfile,
+    refreshProfile,
+  } = useUserProfile();
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
   const [profileData, setProfileData] = useState<ProfileFormData>({
     email: '',
     displayName: '',
     avatarUrl: '',
   });
 
-  // Load user profile data when user becomes available
+  // Sync profile data from context when it loads
   useEffect(() => {
-    const loadProfile = async (): Promise<void> => {
-      if (!user) {
-        return;
-      }
+    if (isLoadingProfile || !user) {
+      return;
+    }
 
-      try {
-        const token: string = await getAccessTokenSilently();
-        const profile: UserProfile | null = await getUserProfile(token);
+    // Get display_name from token's user_metadata
+    const tokenDisplayName: string | undefined =
+      (user as Record<string, unknown>).user_metadata &&
+      typeof (user as Record<string, unknown>).user_metadata === 'object'
+        ? ((
+            (user as Record<string, unknown>).user_metadata as Record<
+              string,
+              unknown
+            >
+          ).display_name as string | undefined)
+        : undefined;
 
-        // Get display_name from token's user_metadata
-        const tokenDisplayName: string | undefined =
-          (user as Record<string, unknown>).user_metadata &&
-          typeof (user as Record<string, unknown>).user_metadata === 'object'
-            ? ((
-                (user as Record<string, unknown>).user_metadata as Record<
-                  string,
-                  unknown
-                >
-              ).display_name as string | undefined)
-            : undefined;
-
-        setProfileData({
-          email: user.email ?? '',
-          displayName: tokenDisplayName ?? profile?.displayName ?? '',
-          avatarUrl: profile?.avatarUrl ?? user.picture ?? '',
-        });
-      } catch {
-        // Fallback to Auth0 user data if profile fetch fails
-        const tokenDisplayName: string | undefined =
-          (user as Record<string, unknown>).user_metadata &&
-          typeof (user as Record<string, unknown>).user_metadata === 'object'
-            ? ((
-                (user as Record<string, unknown>).user_metadata as Record<
-                  string,
-                  unknown
-                >
-              ).display_name as string | undefined)
-            : undefined;
-
-        setProfileData({
-          email: user.email ?? '',
-          displayName: tokenDisplayName ?? '',
-          avatarUrl: user.picture ?? '',
-        });
-      } finally {
-        setIsLoadingProfile(false);
-      }
-    };
-
-    loadProfile();
-  }, [user, getAccessTokenSilently]);
+    setProfileData({
+      email: user.email ?? '',
+      displayName: tokenDisplayName ?? profile?.displayName ?? '',
+      avatarUrl: profile?.avatarUrl ?? user.picture ?? '',
+    });
+  }, [isLoadingProfile, user, profile]);
 
   const handleSubmit = async (data: {
     displayName: string;
@@ -87,28 +61,36 @@ export const ProfilePage = (): ReactElement => {
     try {
       const token: string = await getAccessTokenSilently();
 
-      let finalAvatarUrl: string = data.avatarUrl;
-
       // If there's a new avatar file, upload it first
       if (data.avatarFile) {
         const uploadResponse: UploadAvatarResponse = await uploadAvatar(
           token,
           data.avatarFile,
         );
-        finalAvatarUrl = uploadResponse.avatarUrl;
+        // Upload endpoint stores the key server-side; no need to send avatarUrl
+        await updateUserProfile(token, {
+          displayName: data.displayName,
+        });
+
+        // Update local form state with the new presigned URL
+        setProfileData({
+          ...profileData,
+          displayName: data.displayName,
+          avatarUrl: uploadResponse.avatarUrl,
+        });
+      } else {
+        await updateUserProfile(token, {
+          displayName: data.displayName,
+        });
+
+        setProfileData({
+          ...profileData,
+          displayName: data.displayName,
+        });
       }
 
-      await updateUserProfile(token, {
-        displayName: data.displayName,
-        avatarUrl: finalAvatarUrl,
-      });
-
-      // Update local profile data to reflect the saved changes
-      setProfileData({
-        ...profileData,
-        displayName: data.displayName,
-        avatarUrl: finalAvatarUrl,
-      });
+      // Refresh the shared profile context so the header avatar updates immediately
+      await refreshProfile();
     } finally {
       setIsSaving(false);
     }
