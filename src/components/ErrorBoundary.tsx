@@ -27,6 +27,7 @@ export class ErrorBoundary extends React.Component<
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     reportError(error, {
       'error.source': 'error-boundary',
+      'error.severity': 'critical',
       'error.component_stack': errorInfo.componentStack ?? '',
     });
   }
