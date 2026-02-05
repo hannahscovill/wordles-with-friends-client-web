@@ -50,11 +50,15 @@ A full local observability stack for testing the frontend error pipeline end-to-
 ### Architecture
 
 ```
-React App (OTel SDK)
+Browser (localhost:3000)
     │
-    │  OTLP HTTP POST /v1/traces
+    │  POST /v1/traces (same-origin)
     ▼
-OTel Collector (localhost:4318)
+Nginx (app container)  ──  serves static assets + proxies traces
+    │
+    │  proxy_pass to otel-collector:4318
+    ▼
+OTel Collector
     │
     │  OTLP HTTP forward
     ▼
@@ -65,6 +69,8 @@ Grafana Tempo (tempo:4318)  ──  stores traces locally
 Grafana UI (localhost:3001)
 ```
 
+The app is containerized and served by nginx, which also reverse-proxies `/v1/traces` to the OTel Collector. This avoids CORS issues entirely since the browser sends traces to the same origin it loaded the page from.
+
 Three error sources feed into this pipeline:
 
 - **React ErrorBoundary** (`error.source: error-boundary`) - catches component render errors
@@ -74,16 +80,15 @@ Three error sources feed into this pipeline:
 ### Quick Start
 
 ```bash
-# 1. Start the observability stack
-docker compose -f observability/docker-compose.yml up -d
+# 1. Start everything (builds the app + starts observability stack)
+docker compose -f observability/docker-compose.yml up -d --build
 
-# 2. Start the dev server (OTel collector URL is already set in .env)
-npm run dev
+# 2. Open the app and click around
+open http://localhost:3000
 
-# 3. Open Grafana
+# 3. Open Grafana and view traces
 open http://localhost:3001
-
-# 4. Trigger an error in the app, then check Grafana > Explore > Tempo
+# Navigate to Explore > Tempo to see traces from the app
 ```
 
 To stop the stack:
@@ -103,7 +108,7 @@ SPAN_ID=$(python3 -c "import secrets; print(secrets.token_hex(8))")
 NOW_NS=$(python3 -c "import time; print(int(time.time() * 1e9))")
 END_NS=$(python3 -c "import time; print(int((time.time() + 0.5) * 1e9))")
 
-curl -X POST http://localhost:4318/v1/traces \
+curl -X POST http://localhost:3000/v1/traces \
   -H 'Content-Type: application/json' \
   -d "{
     \"resourceSpans\": [{
@@ -182,16 +187,23 @@ ingester:
 
 When crafting test traces with curl, if the IDs are the wrong length, Tempo returns a 400 with a cryptic `"ID.UnmarshalJSONIter: length mismatch"` error. Use `secrets.token_hex(16)` for trace IDs and `secrets.token_hex(8)` for span IDs.
 
+**CORS blocks browser-to-collector requests**
+
+The OTel SDK sends traces via `fetch()` with `credentials: 'include'`. When the collector is on a different port, CORS kicks in. The collector's `allowed_origins: ['*']` won't work because `Access-Control-Allow-Origin: *` is forbidden with credentials. Specific origins like `http://localhost:3000` also failed to match in our collector version. The fix: proxy `/v1/traces` through the same nginx that serves the app, making it a same-origin request that bypasses CORS entirely.
+
 ### Files
 
-| File                                       | Purpose                                                        |
-| ------------------------------------------ | -------------------------------------------------------------- |
-| `observability/docker-compose.yml`         | Defines the three services: OTel Collector, Tempo, Grafana     |
-| `observability/otel-collector-config.yaml` | Collector receives OTLP on :4318, exports to Tempo + debug log |
-| `observability/tempo-config.yaml`          | Tempo trace storage config for single-binary local mode        |
-| `observability/grafana/datasources.yaml`   | Auto-provisions Tempo as the default Grafana datasource        |
-| `src/lib/telemetry.ts`                     | OTel SDK init, fetch instrumentation, `reportError()` helper   |
-| `src/components/ErrorBoundary.tsx`         | React error boundary that calls `reportError()` on catch       |
+| File                                       | Purpose                                                            |
+| ------------------------------------------ | ------------------------------------------------------------------ |
+| `observability/docker-compose.yml`         | All four services: app, OTel Collector, Tempo, Grafana             |
+| `observability/Dockerfile`                 | Multi-stage build: node build → nginx serve with OTel proxy        |
+| `observability/nginx.conf`                 | Serves SPA, proxies `/v1/traces` to collector (avoids CORS)        |
+| `observability/otel-collector-config.yaml` | Collector receives OTLP on :4318, exports to Tempo + debug log     |
+| `observability/tempo-config.yaml`          | Tempo trace storage config for single-binary local mode            |
+| `observability/grafana/datasources.yaml`   | Auto-provisions Tempo as the default Grafana datasource            |
+| `.dockerignore`                            | Excludes node_modules, dist, infra, .git from Docker build context |
+| `src/lib/telemetry.ts`                     | OTel SDK init, fetch instrumentation, `reportError()` helper       |
+| `src/components/ErrorBoundary.tsx`         | React error boundary that calls `reportError()` on catch           |
 
 ## CI/CD
 

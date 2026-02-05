@@ -1,10 +1,17 @@
 services:
+  app:
+    build:
+      context: ..
+      dockerfile: observability/Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - otel-collector
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
-    ports:
-      - '4318:4318' # OTLP HTTP (browser sends traces here)
     depends_on:
       - tempo
 
