@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from 'react';
+import { useState, useEffect, type ReactElement } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import {
   Link,
@@ -8,6 +8,7 @@ import {
 import { AvatarMenu } from './AvatarMenu';
 import { IssueReportModal } from './IssueReportModal';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { getUserProfile, type UserProfile } from '../api';
 import './AppHeader.scss';
 
 interface AuthTokens {
@@ -23,11 +24,18 @@ export interface AppHeaderProps {
 export const AppHeader = ({
   title = 'Wordles with Friends',
 }: AppHeaderProps): ReactElement => {
-  const { isAuthenticated, isLoading, user, loginWithRedirect, logout } =
-    useAuth0();
+  const {
+    isAuthenticated,
+    isLoading,
+    user,
+    loginWithRedirect,
+    logout,
+    getAccessTokenSilently,
+  } = useAuth0();
   const navigate: UseNavigateResult<string> = useNavigate();
   const [isIssueModalOpen, setIsIssueModalOpen] = useState<boolean>(false);
   const [authTokens] = useLocalStorage<AuthTokens>('auth_tokens');
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   // Check if we have stored tokens - used to show logged-in UI while Auth0 validates
   const hasStoredTokens: boolean =
@@ -37,15 +45,28 @@ export const AppHeader = ({
   // but we have stored tokens (optimistic UI to avoid flash of logged-out state)
   const isLoggedIn: boolean = isAuthenticated || (isLoading && hasStoredTokens);
 
-  // Use avatar_url from user_metadata if available, otherwise fall back to Auth0 picture
-  const userMetadata: Record<string, unknown> | undefined = (
-    user as Record<string, unknown> | undefined
-  )?.user_metadata as Record<string, unknown> | undefined;
+  // Fetch profile from API to get pre-signed avatar URL
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+    const fetchProfile = async (): Promise<void> => {
+      try {
+        const token: string = await getAccessTokenSilently();
+        const result: UserProfile | null = await getUserProfile(token);
+        setProfile(result);
+      } catch {
+        // Silently fall back to Auth0 picture
+      }
+    };
+    fetchProfile();
+  }, [isAuthenticated, getAccessTokenSilently]);
+
   const appMetadata: Record<string, unknown> | undefined = (
     user as Record<string, unknown> | undefined
   )?.['wordles.dev/app_metadata'] as Record<string, unknown> | undefined;
   const avatarSrc: string =
-    (userMetadata?.avatar_url as string | undefined) ??
+    profile?.avatarUrl ??
     user?.picture ??
     'https://www.gravatar.com/avatar/?d=mp';
   const avatarAlt: string = user?.email ?? user?.name ?? 'User avatar';

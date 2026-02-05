@@ -100,7 +100,6 @@ export const ProfilePage = (): ReactElement => {
 
       await updateUserProfile(token, {
         displayName: data.displayName,
-        avatarUrl: finalAvatarUrl,
       });
 
       // Update local profile data to reflect the saved changes
