@@ -70,7 +70,7 @@ export interface UserProfile {
 
 export interface UpdateProfileRequest {
   displayName: string;
-  avatarUrl: string;
+  avatarUrl?: string;
 }
 
 export interface UploadAvatarResponse {

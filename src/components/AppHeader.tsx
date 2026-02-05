@@ -8,6 +8,7 @@ import {
 import { AvatarMenu } from './AvatarMenu';
 import { IssueReportModal } from './IssueReportModal';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useUserProfile } from '../contexts/UserProfileContext';
 import './AppHeader.scss';
 
 interface AuthTokens {
@@ -25,6 +26,7 @@ export const AppHeader = ({
 }: AppHeaderProps): ReactElement => {
   const { isAuthenticated, isLoading, user, loginWithRedirect, logout } =
     useAuth0();
+  const { profile } = useUserProfile();
   const navigate: UseNavigateResult<string> = useNavigate();
   const [isIssueModalOpen, setIsIssueModalOpen] = useState<boolean>(false);
   const [authTokens] = useLocalStorage<AuthTokens>('auth_tokens');
@@ -37,15 +39,11 @@ export const AppHeader = ({
   // but we have stored tokens (optimistic UI to avoid flash of logged-out state)
   const isLoggedIn: boolean = isAuthenticated || (isLoading && hasStoredTokens);
 
-  // Use avatar_url from user_metadata if available, otherwise fall back to Auth0 picture
-  const userMetadata: Record<string, unknown> | undefined = (
-    user as Record<string, unknown> | undefined
-  )?.user_metadata as Record<string, unknown> | undefined;
   const appMetadata: Record<string, unknown> | undefined = (
     user as Record<string, unknown> | undefined
   )?.['wordles.dev/app_metadata'] as Record<string, unknown> | undefined;
   const avatarSrc: string =
-    (userMetadata?.avatar_url as string | undefined) ??
+    profile?.avatarUrl ??
     user?.picture ??
     'https://www.gravatar.com/avatar/?d=mp';
   const avatarAlt: string = user?.email ?? user?.name ?? 'User avatar';
