@@ -55,8 +55,11 @@
       -webkit-appearance: none;
     }
 
-    &::-webkit-date-and-time-value {
-      text-align: left;
+    &::-webkit-datetime-edit {
+      width: 100%;
+      text-align: center;
     }
+
+    text-align: center;
   }
 }
