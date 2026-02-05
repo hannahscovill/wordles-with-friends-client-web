@@ -88,8 +88,12 @@ open http://localhost:3000
 
 # 3. Open Grafana and view traces
 open http://localhost:3001
-# Navigate to Explore > Tempo to see traces from the app
+# Navigate to Explore > Tempo, enter {} in the TraceQL editor, and click Run query
 ```
+
+> **Note:** Grafana's Explore view shows "No data" until you run a query.
+> Enter `{}` in the TraceQL editor to see all traces, or use a filter like
+> `{resource.service.name="wordles-frontend"}` to scope to frontend traces.
 
 To stop the stack:
 

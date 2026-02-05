@@ -16,9 +16,22 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 // Initialize OpenTelemetry BEFORE React renders (PostHog is handled by PostHogProvider)
 initTelemetry();
 
+/** Dev-only: throws during render when ?error=1 is in the URL, for testing the ErrorBoundary. */
+function ErrorTrigger(): null {
+  if (new URLSearchParams(window.location.search).has('error')) {
+    throw new Error('Intentional error triggered via ?error query param');
+  }
+  return null;
+}
+
 export function App(): React.ReactElement {
   const auth: Auth0ContextInterface = useAuth0();
-  return <RouterProvider router={router} context={{ auth }} />;
+  return (
+    <>
+      <ErrorTrigger />
+      <RouterProvider router={router} context={{ auth }} />
+    </>
+  );
 }
 
 const domain: string | undefined = import.meta.env.PUBLIC_AUTH0_DOMAIN;

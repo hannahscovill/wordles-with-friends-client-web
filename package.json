@@ -31,6 +31,7 @@
     "@opentelemetry/sdk-trace-web": "^2.5.0",
     "@opentelemetry/semantic-conventions": "^1.39.0",
     "@tanstack/react-router": "^1.154.7",
+    "axios": "^1.13.4",
     "posthog-js": "^1.337.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"

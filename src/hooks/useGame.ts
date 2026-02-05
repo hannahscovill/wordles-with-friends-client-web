@@ -7,7 +7,7 @@ import {
   getGameProgress as getGameProgressApi,
   type GameState as ApiGameState,
   type GradedMove,
-} from '../api/guess';
+} from '../api';
 import { analytics } from '../lib/analytics';
 
 // Common 5-letter words for the game

@@ -1,5 +1,6 @@
 import { useRef, type ReactElement, type RefObject } from 'react';
 import { Popover } from './Popover';
+import { Avatar } from './ui/Avatar';
 import './AvatarMenu.scss';
 
 export interface AvatarMenuProps {
@@ -72,7 +73,7 @@ export const AvatarMenu = ({
       aria-label="User menu"
       aria-haspopup="menu"
     >
-      <img src={avatarSrc} alt={avatarAlt} className="avatar-menu__image" />
+      <Avatar src={avatarSrc} alt={avatarAlt} size="s" />
     </button>
   );
 
