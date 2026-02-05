@@ -22,6 +22,49 @@ import type {
   SetPuzzleResponse,
 } from './types';
 
+// ── Helpers ─────────────────────────────────────────────────────────
+
+/** Extract a user-facing message from a scorekeeper API error response. */
+function extractUserMessage(error: ApiError): string {
+  if (!error.responseBody) {
+    return error.message;
+  }
+
+  try {
+    const body: Record<string, unknown> = JSON.parse(
+      error.responseBody,
+    ) as Record<string, unknown>;
+
+    // { error: "message" }
+    if (typeof body.error === 'string') {
+      return body.error;
+    }
+    // { error: { message: "message" } }
+    if (
+      body.error !== null &&
+      typeof body.error === 'object' &&
+      typeof (body.error as Record<string, unknown>).message === 'string'
+    ) {
+      return (body.error as Record<string, unknown>).message as string;
+    }
+    // { message: "message" }
+    if (typeof body.message === 'string') {
+      return body.message;
+    }
+    // { detail: "message" }
+    if (typeof body.detail === 'string') {
+      return body.detail;
+    }
+  } catch {
+    // Not JSON — use the raw body if it looks like a short readable message
+    if (error.responseBody.length > 0 && error.responseBody.length < 500) {
+      return error.responseBody;
+    }
+  }
+
+  return error.message;
+}
+
 // ── Guess / Game ────────────────────────────────────────────────────
 
 export const submitGuess = async (
@@ -43,27 +86,13 @@ export const submitGuess = async (
     return response.data;
   } catch (e: unknown) {
     if (e instanceof ApiError) {
-      // Try to extract a human-readable message from the response body
-      let errorMessage: string = `Failed to submit guess: ${e.status}`;
-      try {
-        const errorBody: {
-          error?: { code?: string; message?: string } | string;
-        } = JSON.parse(e.responseBody ?? '{}') as {
-          error?: { code?: string; message?: string } | string;
-        };
-        if (errorBody.error) {
-          if (typeof errorBody.error === 'string') {
-            errorMessage = errorBody.error;
-          } else if (errorBody.error.message) {
-            errorMessage = errorBody.error.message;
-          }
-        }
-      } catch {
-        // If we can't parse the response body, use the default message
-      }
-      throw new Error(errorMessage);
+      throw new Error(extractUserMessage(e));
     }
-    throw e;
+    // CORS or network error — provide a helpful message instead of raw
+    // "Network Error" / "Failed to fetch" which is meaningless to users.
+    throw new Error(
+      'Unable to reach the server. Please check your connection and try again.',
+    );
   }
 };
 
