@@ -1,6 +1,10 @@
 import type { AxiosResponse } from 'axios';
 import { apiClient, authHeaders } from './client';
-import { ApiError } from './errors';
+import {
+  ScorekeeperApiError,
+  isAxiosError,
+  toScorekeeperApiError,
+} from './errors';
 import { ensureSessionCookie, getSessionCookie } from './session';
 import type {
   GuessRequest,
@@ -22,49 +26,6 @@ import type {
   SetPuzzleResponse,
 } from './types';
 
-// ── Helpers ─────────────────────────────────────────────────────────
-
-/** Extract a user-facing message from a scorekeeper API error response. */
-function extractUserMessage(error: ApiError): string {
-  if (!error.responseBody) {
-    return error.message;
-  }
-
-  try {
-    const body: Record<string, unknown> = JSON.parse(
-      error.responseBody,
-    ) as Record<string, unknown>;
-
-    // { error: "message" }
-    if (typeof body.error === 'string') {
-      return body.error;
-    }
-    // { error: { message: "message" } }
-    if (
-      body.error !== null &&
-      typeof body.error === 'object' &&
-      typeof (body.error as Record<string, unknown>).message === 'string'
-    ) {
-      return (body.error as Record<string, unknown>).message as string;
-    }
-    // { message: "message" }
-    if (typeof body.message === 'string') {
-      return body.message;
-    }
-    // { detail: "message" }
-    if (typeof body.detail === 'string') {
-      return body.detail;
-    }
-  } catch {
-    // Not JSON — use the raw body if it looks like a short readable message
-    if (error.responseBody.length > 0 && error.responseBody.length < 500) {
-      return error.responseBody;
-    }
-  }
-
-  return error.message;
-}
-
 // ── Guess / Game ────────────────────────────────────────────────────
 
 export const submitGuess = async (
@@ -85,14 +46,16 @@ export const submitGuess = async (
     );
     return response.data;
   } catch (e: unknown) {
-    if (e instanceof ApiError) {
-      throw new Error(extractUserMessage(e));
+    // Server responded with an error status
+    if (isAxiosError(e)) {
+      const apiError: ScorekeeperApiError | null = toScorekeeperApiError(e);
+      if (apiError) {
+        throw new Error(apiError.userMessage);
+      }
     }
-    // CORS or network error — provide a helpful message instead of raw
-    // "Network Error" / "Failed to fetch" which is meaningless to users.
-    throw new Error(
-      'Unable to reach the server. Please check your connection and try again.',
-    );
+
+    // Network error (CORS, timeout, no connection, etc.)
+    throw new Error('Network error');
   }
 };
 
@@ -116,7 +79,7 @@ export const getGameProgress = async (
     );
     return response.data;
   } catch (e: unknown) {
-    if (e instanceof ApiError && e.status === 404) {
+    if (isAxiosError(e) && e.response?.status === 404) {
       return null;
     }
     throw e;
@@ -135,7 +98,7 @@ export const checkPuzzleExists = async (
     await apiClient.get(`/game/${puzzleDateIsoDay}`);
     return true;
   } catch (e: unknown) {
-    if (e instanceof ApiError && e.status === 404) {
+    if (isAxiosError(e) && e.response?.status === 404) {
       return false;
     }
     // For other errors, assume puzzle might exist (don't block navigation)
@@ -216,7 +179,7 @@ export const getUserProfile = async (
       });
     return response.data;
   } catch (e: unknown) {
-    if (e instanceof ApiError && e.status === 404) {
+    if (isAxiosError(e) && e.response?.status === 404) {
       return null;
     }
     console.error('Error fetching profile:', e);
@@ -304,11 +267,11 @@ export const getPuzzles = async (
     console.error('Unexpected API response format:', data);
     return [];
   } catch (e: unknown) {
-    if (e instanceof ApiError) {
-      if (e.status === 401) {
+    if (isAxiosError(e) && e.response) {
+      if (e.response.status === 401) {
         throw new Error('Unauthorized: Please log in again.');
       }
-      if (e.status === 403) {
+      if (e.response.status === 403) {
         throw new Error('Forbidden: You do not have admin privileges.');
       }
     }
@@ -327,14 +290,14 @@ export const setPuzzle = async (
       });
     return response.data;
   } catch (e: unknown) {
-    if (e instanceof ApiError) {
-      if (e.status === 401) {
+    if (isAxiosError(e) && e.response) {
+      if (e.response.status === 401) {
         throw new Error('Unauthorized: Please log in again.');
       }
-      if (e.status === 403) {
+      if (e.response.status === 403) {
         throw new Error('Forbidden: You do not have admin privileges.');
       }
-      if (e.status === 404) {
+      if (e.response.status === 404) {
         throw new Error(
           'Word not found: The word does not exist in the word list.',
         );

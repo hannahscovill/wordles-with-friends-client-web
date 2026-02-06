@@ -1,6 +1,5 @@
-import axios, { type AxiosInstance, type AxiosError } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import { reportError } from '../lib/telemetry';
-import { ApiError } from './errors';
 
 const API_BASE_URL: string = import.meta.env.PUBLIC_API_URL as string;
 
@@ -17,25 +16,17 @@ if (!API_BASE_URL) {
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  adapter: 'fetch',
-  withCredentials: true,
 });
 
-// Convert non-2xx responses into ApiError
-apiClient.interceptors.response.use(undefined, async (error: AxiosError) => {
-  if (error.response) {
-    const body: string =
-      typeof error.response.data === 'string'
-        ? error.response.data
-        : JSON.stringify(error.response.data);
-
-    throw new ApiError(
-      `Request failed: ${error.response.status}`,
-      error.response.status,
-      body,
-    );
-  }
-  throw error;
+// Set withCredentials conditionally based on whether we're using token auth.
+// Global withCredentials: true forces strict CORS for all requests, which can
+// cause the browser to block error responses if the server's CORS headers
+// don't fully support credentials mode.
+apiClient.interceptors.request.use((config) => {
+  // Only send cookies when NOT using token-based auth
+  const hasAuthHeader: boolean = Boolean(config.headers?.Authorization);
+  config.withCredentials = !hasAuthHeader;
+  return config;
 });
 
 export function authHeaders(token?: string): Record<string, string> {
