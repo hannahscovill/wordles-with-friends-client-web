@@ -28,21 +28,6 @@ describe('toScorekeeperApiError', () => {
     expect(result?.userMessage).toBe('Word not in dictionary');
   });
 
-  test('returns null for 5xx server errors', () => {
-    const axiosError: AxiosError = {
-      isAxiosError: true,
-      response: {
-        status: 500,
-        data: { error: { message: 'Internal server error' } },
-      },
-    } as AxiosError;
-
-    const result: ScorekeeperApiError | null =
-      toScorekeeperApiError(axiosError);
-
-    expect(result).toBeNull();
-  });
-
   test('returns null for network errors (no response)', () => {
     const axiosError: AxiosError = {
       isAxiosError: true,

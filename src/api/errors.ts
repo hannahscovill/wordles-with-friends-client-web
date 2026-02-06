@@ -31,15 +31,8 @@ export function toScorekeeperApiError(
   if (!error.response) {
     return null;
   }
-
   const statusCode: number = error.response.status;
-
-  // Only wrap 4xx client errors - 5xx server errors should bubble up
-  if (statusCode < 400 || statusCode >= 500) {
-    return null;
-  }
-
-  const fallback: string = `Request failed with status ${statusCode}`;
+  const fallback: string = `Request failed: ${statusCode}`;
   const userMessage: string = parseApiErrorMessage(
     error.response.data,
     fallback,

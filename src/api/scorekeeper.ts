@@ -55,9 +55,7 @@ export const submitGuess = async (
     }
 
     // Network error (CORS, timeout, no connection, etc.)
-    throw new Error(
-      'Unable to reach the server. Please check your connection and try again.',
-    );
+    throw new Error('Network error');
   }
 };
 
