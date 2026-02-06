@@ -20,6 +20,7 @@ export interface GameState {
   moves_qty: number;
   won: boolean;
   moves: GradedMove[];
+  answer?: string;
 }
 
 export interface SubmitGuessOptions {

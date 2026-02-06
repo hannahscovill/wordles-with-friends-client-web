@@ -7,7 +7,7 @@ export interface GameStatusModalProps {
   /** Whether the player won */
   won: boolean;
   /** The answer word (shown on loss) */
-  answer: string;
+  answer: string | undefined;
 }
 
 export const GameStatusModal = ({
@@ -23,7 +23,7 @@ export const GameStatusModal = ({
   return (
     <Modal>
       <p className="game-status-modal__message">
-        {won ? 'You won!' : `The word was: ${answer}`}
+        {won ? 'You won!' : answer ? `The word was: ${answer}` : 'Game over'}
       </p>
       <Button size="s" variant="onLight" onClick={handlePlayOtherGames}>
         Play Other Games
