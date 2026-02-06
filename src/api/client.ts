@@ -1,6 +1,5 @@
-import axios, { type AxiosInstance, type AxiosError } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import { reportError } from '../lib/telemetry';
-import { ApiError } from './errors';
 
 const API_BASE_URL: string = import.meta.env.PUBLIC_API_URL as string;
 
@@ -28,26 +27,6 @@ apiClient.interceptors.request.use((config) => {
   const hasAuthHeader: boolean = Boolean(config.headers?.Authorization);
   config.withCredentials = !hasAuthHeader;
   return config;
-});
-
-// Convert non-2xx responses into ApiError
-apiClient.interceptors.response.use(undefined, (error: AxiosError) => {
-  // Check for response data - indicates server responded with an error status
-  if (error.response) {
-    const body: string =
-      typeof error.response.data === 'string'
-        ? error.response.data
-        : JSON.stringify(error.response.data);
-
-    return Promise.reject(
-      new ApiError(
-        `Request failed: ${error.response.status}`,
-        error.response.status,
-        body,
-      ),
-    );
-  }
-  return Promise.reject(error);
 });
 
 export function authHeaders(token?: string): Record<string, string> {

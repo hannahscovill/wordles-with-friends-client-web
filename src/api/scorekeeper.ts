@@ -1,6 +1,21 @@
-import type { AxiosResponse } from 'axios';
+import type { AxiosResponse, AxiosError } from 'axios';
 import { apiClient, authHeaders } from './client';
 import { ApiError } from './errors';
+
+/** Check if an error is an AxiosError with a response */
+export function isAxiosErrorWithResponse(
+  error: unknown,
+): error is AxiosError<unknown> & {
+  response: NonNullable<AxiosError['response']>;
+} {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'isAxiosError' in error &&
+    (error as AxiosError).isAxiosError === true &&
+    (error as AxiosError).response !== undefined
+  );
+}
 import { ensureSessionCookie, getSessionCookie } from './session';
 import type {
   GuessRequest,
@@ -25,7 +40,7 @@ import type {
 // ── Helpers ─────────────────────────────────────────────────────────
 
 /** Extract a user-facing message from a scorekeeper API error response. */
-function extractUserMessage(error: ApiError): string {
+export function extractUserMessage(error: ApiError): string {
   if (!error.responseBody) {
     return error.message;
   }
@@ -85,9 +100,25 @@ export const submitGuess = async (
     );
     return response.data;
   } catch (e: unknown) {
+    // Handle ApiError (from interceptor if present)
     if (e instanceof ApiError) {
       throw new Error(extractUserMessage(e));
     }
+
+    // Handle AxiosError with response directly (no interceptor dependency)
+    if (isAxiosErrorWithResponse(e)) {
+      const body: string =
+        typeof e.response.data === 'string'
+          ? e.response.data
+          : JSON.stringify(e.response.data);
+      const apiError: ApiError = new ApiError(
+        `Request failed: ${e.response.status}`,
+        e.response.status,
+        body,
+      );
+      throw new Error(extractUserMessage(apiError));
+    }
+
     // CORS or network error — provide a helpful message instead of raw
     // "Network Error" / "Failed to fetch" which is meaningless to users.
     throw new Error(
