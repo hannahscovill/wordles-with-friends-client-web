@@ -24,7 +24,7 @@ export function isAxiosError(error: unknown): error is AxiosError {
   );
 }
 
-/** Convert an AxiosError with response to ScorekeeperApiError */
+/** Convert a 4xx AxiosError to ScorekeeperApiError. Returns null for 5xx or network errors. */
 export function toScorekeeperApiError(
   error: AxiosError,
 ): ScorekeeperApiError | null {
@@ -33,6 +33,12 @@ export function toScorekeeperApiError(
   }
 
   const statusCode: number = error.response.status;
+
+  // Only wrap 4xx client errors - 5xx server errors should bubble up
+  if (statusCode < 400 || statusCode >= 500) {
+    return null;
+  }
+
   const fallback: string = `Request failed with status ${statusCode}`;
   const userMessage: string = parseApiErrorMessage(
     error.response.data,
@@ -43,68 +49,27 @@ export function toScorekeeperApiError(
 }
 
 /**
- * Parse the response body from the API and extract a user-friendly message.
- * Supports multiple response formats:
- * - { error: { message: "..." } }
- * - { error: "..." }
- * - { message: "..." }
- * - { detail: "..." }
+ * Parse the response body from the Scorekeeper API and extract the user message.
+ * Expects format: { error: { message: "..." } }
  */
 export function parseApiErrorMessage(
   responseBody: unknown,
   fallback: string,
 ): string {
-  if (responseBody === null || responseBody === undefined) {
-    return fallback;
-  }
-
-  // If it's a string, try to parse as JSON
-  if (typeof responseBody === 'string') {
-    const stringBody: string = responseBody;
-    if (stringBody.length === 0) {
-      return fallback;
-    }
-    try {
-      const parsed: unknown = JSON.parse(stringBody);
-      if (typeof parsed === 'object' && parsed !== null) {
-        responseBody = parsed;
-      } else {
-        return stringBody.length < 500 ? stringBody : fallback;
-      }
-    } catch {
-      // Not JSON - use as-is if short enough
-      return stringBody.length < 500 ? stringBody : fallback;
-    }
-  }
-
-  if (typeof responseBody !== 'object') {
-    return fallback;
-  }
-
-  const body: Record<string, unknown> = responseBody as Record<string, unknown>;
-
-  // { error: "message" }
-  if (typeof body.error === 'string') {
-    return body.error;
-  }
-
-  // { error: { message: "message" } }
   if (
-    body.error !== null &&
-    typeof body.error === 'object' &&
-    typeof (body.error as Record<string, unknown>).message === 'string'
+    responseBody !== null &&
+    typeof responseBody === 'object' &&
+    'error' in responseBody
   ) {
-    return (body.error as Record<string, unknown>).message as string;
-  }
-
-  // { message: "message" }
-  if (typeof body.message === 'string') {
-    return body.message;
-  }
-
-  // { detail: "message" }
-  if (typeof body.detail === 'string') {
-    return body.detail;
+    const body: { error: unknown } = responseBody as { error: unknown };
+    if (
+      body.error !== null &&
+      typeof body.error === 'object' &&
+      'message' in body.error &&
+      typeof (body.error as { message: unknown }).message === 'string'
+    ) {
+      return (body.error as { message: string }).message;
+    }
   }
 
   return fallback;
