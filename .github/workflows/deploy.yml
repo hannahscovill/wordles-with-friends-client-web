@@ -93,6 +93,12 @@ jobs:
       - name: Build app
         if: ${{ env.CDK_ACTION != 'destroy' }}
         run: npm run build
+        env:
+          PUBLIC_API_URL: https://api.wordles.dev
+          PUBLIC_AUTH0_DOMAIN: dev-g32naui5mvpwnsg7.us.auth0.com
+          PUBLIC_AUTH0_CLIENT_ID: 4AGUSKMPWgc4jMKUFIJzbS7GBY9IDZob
+          PUBLIC_AUTH0_AUDIENCE: com.hannahscovill.scorekeeper
+          PUBLIC_TURNSTILE_SITE_KEY: 0x4AAAAAACYia9jZUYJ6vUvr
 
       - name: Install CDK dependencies
         working-directory: infra
