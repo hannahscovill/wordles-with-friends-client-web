@@ -26,7 +26,7 @@ declare global {
     readonly PUBLIC_OTEL_COLLECTOR_URL?: string;
     readonly PUBLIC_POSTHOG_KEY?: string;
     readonly PUBLIC_POSTHOG_HOST?: string;
-    readonly PUBLIC_APP_VERSION?: string;
+    readonly PUBLIC_COMMIT_HASH?: string;
   }
 }
 

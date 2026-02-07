@@ -120,6 +120,7 @@ jobs:
           echo "PUBLIC_ENVIRONMENT_NAME=$(ssm /wordles/frontend/environment-name)" >> "$GITHUB_ENV"
           echo "PUBLIC_OTEL_COLLECTOR_URL=$(ssm /wordles/frontend/otel-collector-url)" >> "$GITHUB_ENV"
           echo "PUBLIC_POSTHOG_KEY=$(ssm /wordles/frontend/posthog-key)" >> "$GITHUB_ENV"
+          echo "PUBLIC_COMMIT_HASH=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
 
       - name: Build app
         if: ${{ env.CDK_ACTION != 'destroy' }}

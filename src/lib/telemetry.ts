@@ -235,7 +235,7 @@ export function initTelemetry(): void {
   if (collectorUrl) {
     const resource: Resource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: 'wordles-frontend',
-      [ATTR_SERVICE_VERSION]: import.meta.env.PUBLIC_APP_VERSION ?? 'dev',
+      [ATTR_SERVICE_VERSION]: import.meta.env.PUBLIC_COMMIT_HASH ?? 'dev-0000000',
       'deployment.environment': environmentName,
     });
 
