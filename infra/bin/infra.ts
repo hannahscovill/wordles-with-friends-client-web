@@ -21,10 +21,8 @@ new GitHubActionsRoleStack(app, 'WordlesGitHubActionsRoleStack', {
   description: 'GitHub Actions IAM role for wordles-with-friends',
 });
 
-// Issue report proxy Lambda — no dependencies on other stacks
+// Issue report proxy Lambda — config read from cdk.json context
 new IssueReportProxyStack(app, 'IssueReportProxyStack', {
-  githubRepo: 'hannahscovill/wordles-with-friends-client-web',
-  allowedOrigins: ['https://wordles.dev', 'http://localhost:3000'],
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: 'us-east-1',

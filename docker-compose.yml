@@ -27,5 +27,6 @@ services:
       - GITHUB_PRIVATE_KEY_FILE=/run/secrets/github_private_key
       - GITHUB_REPO=hannahscovill/wordles-with-friends-client-web
       - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}
+      - TURNSTILE_VERIFY_URL=https://challenges.cloudflare.com/turnstile/v0/siteverify
     volumes:
       - ./.github-app-key.pem:/run/secrets/github_private_key:ro

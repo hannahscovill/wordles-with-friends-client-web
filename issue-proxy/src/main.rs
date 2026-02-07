@@ -109,10 +109,10 @@ struct TurnstileVerifyResponse {
     success: bool,
 }
 
-async fn verify_turnstile(token: &str, secret: &str) -> Result<bool, reqwest::Error> {
+async fn verify_turnstile(token: &str, secret: &str, verify_url: &str) -> Result<bool, reqwest::Error> {
     let client = reqwest::Client::new();
     let resp = client
-        .post("https://challenges.cloudflare.com/turnstile/v0/siteverify")
+        .post(verify_url)
         .form(&[("secret", secret), ("response", token)])
         .send()
         .await?
@@ -199,36 +199,66 @@ struct GitHubIssueResponse {
     html_url: String,
 }
 
-fn build_issue_body(issue_type: &str, description: &str) -> String {
-    let body = match issue_type {
-        "bug" => format!(
-            "## Description\n{}\n\n## Steps to Reproduce\n1. \n2. \n3. \n\n## Expected Behavior\n\n\n## Actual Behavior\n\n",
-            description
-        ),
-        "feature" => format!(
-            "## Feature Description\n{}\n\n## Use Case\n\n\n## Proposed Solution\n\n",
-            description
-        ),
-        _ => format!("## Question\n{}", description),
+// Issue templates (embedded at compile time from templates/*.md)
+const TEMPLATE_BUG: &str = include_str!("../templates/bug.md");
+const TEMPLATE_FEATURE: &str = include_str!("../templates/feature.md");
+const TEMPLATE_QUESTION: &str = include_str!("../templates/question.md");
+const TEMPLATE_FOOTER: &str = include_str!("../templates/footer.md");
+
+struct IssueTemplate {
+    title_prefix: String,
+    label: String,
+    body: String,
+}
+
+fn parse_template(raw: &str) -> IssueTemplate {
+    let mut title_prefix = String::new();
+    let mut label = String::new();
+    let mut body = raw.to_string();
+
+    // Parse YAML frontmatter (between --- delimiters)
+    if raw.starts_with("---") {
+        if let Some(end) = raw[3..].find("---") {
+            let frontmatter = &raw[3..3 + end];
+            body = raw[3 + end + 3..].trim_start().to_string();
+
+            for line in frontmatter.lines() {
+                if let Some((key, value)) = line.split_once(':') {
+                    let value = value.trim().trim_matches('"');
+                    match key.trim() {
+                        "title_prefix" => title_prefix = value.to_string(),
+                        "label" => label = value.to_string(),
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
+    IssueTemplate { title_prefix, label, body }
+}
+
+fn get_template(issue_type: &str) -> IssueTemplate {
+    let raw = match issue_type {
+        "bug" => TEMPLATE_BUG,
+        "feature" => TEMPLATE_FEATURE,
+        _ => TEMPLATE_QUESTION,
     };
-    format!("{}\n\n---\n_Submitted anonymously via [Wordles with Friends](https://wordles.dev)_", body)
+    parse_template(raw)
 }
 
-fn issue_label(issue_type: &str) -> &str {
-    match issue_type {
-        "bug" => "bug",
-        "feature" => "enhancement",
-        _ => "question",
-    }
+fn build_issue_body(issue_type: &str, description: &str) -> String {
+    let template = get_template(issue_type);
+    let body = template.body.replace("{description}", description);
+    format!("{}{}", body.trim_end(), TEMPLATE_FOOTER)
 }
 
-fn issue_title_prefix(issue_type: &str) -> &str {
-    match issue_type {
-        "bug" => "[Bug Report] ",
-        "feature" => "[Feature Request] ",
-        "question" => "[Question] ",
-        _ => "",
-    }
+fn issue_label(issue_type: &str) -> String {
+    get_template(issue_type).label
+}
+
+fn issue_title_prefix(issue_type: &str) -> String {
+    get_template(issue_type).title_prefix
 }
 
 // ── Rate limiting (in-memory, per Lambda instance) ──────────────────
@@ -353,8 +383,10 @@ async fn handler(
     let secrets = get_secrets(ssm).await?;
 
     // Verify Turnstile token
+    let turnstile_verify_url = std::env::var("TURNSTILE_VERIFY_URL")
+        .unwrap_or_else(|_| "https://challenges.cloudflare.com/turnstile/v0/siteverify".to_string());
     if !secrets.turnstile_secret_key.is_empty() {
-        match verify_turnstile(&body.turnstile_token, &secrets.turnstile_secret_key).await {
+        match verify_turnstile(&body.turnstile_token, &secrets.turnstile_secret_key, &turnstile_verify_url).await {
             Ok(true) => {}
             Ok(false) => {
                 return Ok(json_response(
@@ -477,4 +509,64 @@ async fn main() -> Result<(), Error> {
         handler(event, &rate_limiter, &ssm).await
     }))
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bug_template_has_required_fields() {
+        let template = get_template("bug");
+        assert!(!template.title_prefix.is_empty(), "bug template missing title_prefix");
+        assert!(!template.label.is_empty(), "bug template missing label");
+        assert!(template.body.contains("{description}"), "bug template missing {{description}} placeholder");
+    }
+
+    #[test]
+    fn feature_template_has_required_fields() {
+        let template = get_template("feature");
+        assert!(!template.title_prefix.is_empty(), "feature template missing title_prefix");
+        assert!(!template.label.is_empty(), "feature template missing label");
+        assert!(template.body.contains("{description}"), "feature template missing {{description}} placeholder");
+    }
+
+    #[test]
+    fn question_template_has_required_fields() {
+        let template = get_template("question");
+        assert!(!template.title_prefix.is_empty(), "question template missing title_prefix");
+        assert!(!template.label.is_empty(), "question template missing label");
+        assert!(template.body.contains("{description}"), "question template missing {{description}} placeholder");
+    }
+
+    #[test]
+    fn build_issue_body_replaces_description() {
+        let body = build_issue_body("bug", "Test description here");
+        assert!(body.contains("Test description here"), "description not inserted into body");
+        assert!(!body.contains("{description}"), "placeholder not replaced");
+    }
+
+    #[test]
+    fn build_issue_body_includes_footer() {
+        let body = build_issue_body("bug", "Test");
+        assert!(body.contains("Submitted anonymously"), "footer not appended");
+    }
+
+    #[test]
+    fn parse_template_handles_frontmatter() {
+        let raw = "---\ntitle_prefix: \"[Test] \"\nlabel: test-label\n---\n\nBody content";
+        let template = parse_template(raw);
+        assert_eq!(template.title_prefix, "[Test] ");
+        assert_eq!(template.label, "test-label");
+        assert_eq!(template.body, "Body content");
+    }
+
+    #[test]
+    fn parse_template_handles_missing_frontmatter() {
+        let raw = "Just a body without frontmatter";
+        let template = parse_template(raw);
+        assert!(template.title_prefix.is_empty());
+        assert!(template.label.is_empty());
+        assert_eq!(template.body, raw);
+    }
 }
