@@ -227,7 +227,8 @@ export function initTelemetry(): void {
     const resource: Resource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: 'wordles-frontend',
       [ATTR_SERVICE_VERSION]: import.meta.env.PUBLIC_APP_VERSION ?? 'dev',
-      'deployment.environment': import.meta.env.MODE,
+      'deployment.environment':
+        import.meta.env.MODE === 'production' ? 'production' : 'local',
     });
 
     const exporter: SpanExporter = new OTLPTraceExporter({
