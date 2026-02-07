@@ -10,6 +10,16 @@
 # AWS_OIDC_ROLE_ARN: The ARN of the IAM role for GitHub OIDC authentication
 #                    (e.g., arn:aws:iam::123456789012:role/GitHubActions-wordles)
 #
+# Required AWS SSM Parameters (String, not SecureString — these are public keys):
+# ---------------------------------------------------------------------------------
+# /wordles/frontend/api-url
+# /wordles/frontend/auth0-domain
+# /wordles/frontend/auth0-client-id
+# /wordles/frontend/auth0-audience
+# /wordles/frontend/turnstile-site-key
+# /wordles/frontend/otel-collector-url
+# /wordles/frontend/posthog-key
+#
 # AWS OIDC Setup:
 # ---------------
 # 1. Create an OIDC identity provider in AWS IAM (if not already exists):
@@ -43,6 +53,7 @@
 #    - S3 full access (for bucket and assets)
 #    - CloudFront full access (for distribution)
 #    - IAM limited access (for CDK to create/update roles)
+#    - ssm:GetParameter on /wordles/frontend/*
 
 name: Deploy
 
@@ -87,30 +98,34 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build app
-        if: ${{ env.CDK_ACTION != 'destroy' }}
-        run: npm run build
-        env:
-          PUBLIC_API_URL: https://api.wordles.dev
-          PUBLIC_AUTH0_DOMAIN: dev-g32naui5mvpwnsg7.us.auth0.com
-          PUBLIC_AUTH0_CLIENT_ID: 4AGUSKMPWgc4jMKUFIJzbS7GBY9IDZob
-          PUBLIC_AUTH0_AUDIENCE: com.hannahscovill.scorekeeper
-          PUBLIC_TURNSTILE_SITE_KEY: 0x4AAAAAACYia9jZUYJ6vUvr
-          PUBLIC_POSTHOG_KEY: phc_t9J5OgfBeGFAolYcy4dvGhprHRV9YccG19VNQPhcYmD
-          PUBLIC_OTEL_COLLECTOR_URL: https://api.wordles.dev/v1/traces
-
-      - name: Install CDK dependencies
-        working-directory: infra
-        run: npm ci
-
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch frontend config from SSM
+        if: ${{ env.CDK_ACTION != 'destroy' }}
+        run: |
+          ssm() { aws ssm get-parameter --name "$1" --query Parameter.Value --output text; }
+          echo "PUBLIC_API_URL=$(ssm /wordles/frontend/api-url)" >> "$GITHUB_ENV"
+          echo "PUBLIC_AUTH0_DOMAIN=$(ssm /wordles/frontend/auth0-domain)" >> "$GITHUB_ENV"
+          echo "PUBLIC_AUTH0_CLIENT_ID=$(ssm /wordles/frontend/auth0-client-id)" >> "$GITHUB_ENV"
+          echo "PUBLIC_AUTH0_AUDIENCE=$(ssm /wordles/frontend/auth0-audience)" >> "$GITHUB_ENV"
+          echo "PUBLIC_TURNSTILE_SITE_KEY=$(ssm /wordles/frontend/turnstile-site-key)" >> "$GITHUB_ENV"
+          echo "PUBLIC_OTEL_COLLECTOR_URL=$(ssm /wordles/frontend/otel-collector-url)" >> "$GITHUB_ENV"
+          echo "PUBLIC_POSTHOG_KEY=$(ssm /wordles/frontend/posthog-key)" >> "$GITHUB_ENV"
+
+      - name: Build app
+        if: ${{ env.CDK_ACTION != 'destroy' }}
+        run: npm run build
+
+      - name: Install CDK dependencies
+        working-directory: infra
+        run: npm ci
 
       - name: CDK deploy WordlesWithFriendsStack
         working-directory: infra

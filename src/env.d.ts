@@ -19,7 +19,6 @@ declare global {
     readonly PUBLIC_API_URL?: string;
 
     // Issue reporting
-    readonly PUBLIC_ISSUE_PROXY_URL?: string;
     readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
 
     // Telemetry configuration
