@@ -114,6 +114,8 @@ export const IssueReportModal = ({
           description,
           turnstileToken,
           website,
+          userAgent: navigator.userAgent,
+          pageUrl: window.location.href,
         },
         token,
       );

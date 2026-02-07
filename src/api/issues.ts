@@ -11,6 +11,8 @@ export interface IssueReport {
   turnstileToken: string;
   /** Honeypot field — should always be empty for real users */
   website?: string;
+  userAgent?: string;
+  pageUrl?: string;
 }
 
 export interface IssueReportResponse {
