@@ -51,6 +51,11 @@ if (!domain || !clientId || !audience) {
 }
 
 const posthogKey: string | undefined = import.meta.env.PUBLIC_POSTHOG_KEY;
+if (!posthogKey) {
+  throw new Error(
+    'PUBLIC_POSTHOG_KEY is not set. Configure it in .env or .env.local.',
+  );
+}
 const posthogOptions: Partial<PostHogConfig> = {
   api_host: import.meta.env.PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
   defaults: '2025-11-30',
@@ -62,7 +67,7 @@ if (rootEl) {
   root.render(
     <React.StrictMode>
       <ErrorBoundary>
-        <PostHogProvider apiKey={posthogKey ?? ''} options={posthogOptions}>
+        <PostHogProvider apiKey={posthogKey} options={posthogOptions}>
           <Auth0Provider
             domain={domain}
             clientId={clientId}
