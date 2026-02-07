@@ -50,6 +50,21 @@ if (!domain || !clientId || !audience) {
   );
 }
 
+const apiUrl: string | undefined = import.meta.env.PUBLIC_API_URL;
+if (!apiUrl) {
+  throw new Error(
+    'PUBLIC_API_URL is not set. Configure it in .env or .env.local.',
+  );
+}
+
+const turnstileSiteKey: string | undefined = import.meta.env
+  .PUBLIC_TURNSTILE_SITE_KEY;
+if (!turnstileSiteKey) {
+  throw new Error(
+    'PUBLIC_TURNSTILE_SITE_KEY is not set. Configure it in .env or .env.local.',
+  );
+}
+
 const posthogKey: string | undefined = import.meta.env.PUBLIC_POSTHOG_KEY;
 if (!posthogKey) {
   throw new Error(
