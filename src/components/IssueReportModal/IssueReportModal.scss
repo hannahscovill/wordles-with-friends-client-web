@@ -29,10 +29,12 @@
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-text);
+    text-align: center;
   }
 
   &__type-options {
     display: flex;
+    justify-content: center;
     gap: 8px;
     flex-wrap: wrap;
   }
@@ -128,7 +130,6 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    margin-top: 8px;
 
     &--center {
       justify-content: center;

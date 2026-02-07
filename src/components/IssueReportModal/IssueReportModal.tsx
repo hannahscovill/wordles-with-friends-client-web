@@ -172,14 +172,13 @@ export const IssueReportModal = ({
     <div className="issue-report-modal-backdrop" onClick={handleBackdropClick}>
       <Modal>
         <form onSubmit={handleSubmit} className="issue-report-modal">
-          <h2 className="issue-report-modal__title">Report an Issue</h2>
+          <h2 className="issue-report-modal__title">Send Feedback</h2>
 
           {submission.status === 'error' && (
             <p className="issue-report-modal__error">{submission.message}</p>
           )}
 
           <div className="issue-report-modal__type-selector">
-            <span className="issue-report-modal__type-label">Issue Type</span>
             <div className="issue-report-modal__type-options">
               {ISSUE_TYPES.map((type) => (
                 <button
@@ -193,9 +192,11 @@ export const IssueReportModal = ({
                   onClick={() => setIssueType(type.value)}
                   aria-pressed={issueType === type.value}
                 >
-                  <span className="issue-report-modal__type-emoji">
-                    {type.emoji}
-                  </span>
+                  {type.emoji && (
+                    <span className="issue-report-modal__type-emoji">
+                      {type.emoji}
+                    </span>
+                  )}
                   {type.label}
                 </button>
               ))}
@@ -204,9 +205,13 @@ export const IssueReportModal = ({
 
           <Input
             label="Title"
-            placeholder="Brief summary of the issue"
+            placeholder="Brief summary"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (errors.title)
+                setErrors((prev) => ({ ...prev, title: undefined }));
+            }}
             error={errors.title}
             fullWidth
           />
@@ -221,7 +226,11 @@ export const IssueReportModal = ({
                   : 'What would you like to know?'
             }
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              if (errors.description)
+                setErrors((prev) => ({ ...prev, description: undefined }));
+            }}
             error={errors.description}
             rows={5}
             fullWidth

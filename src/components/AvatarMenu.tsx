@@ -124,6 +124,16 @@ export const AvatarMenu = ({
                 type="button"
                 className="avatar-menu__item"
                 role="menuitem"
+                onClick={onReportIssueClick}
+              >
+                Send Feedback
+              </button>
+            </li>
+            <li role="none">
+              <button
+                type="button"
+                className="avatar-menu__item"
+                role="menuitem"
                 onClick={onLogOutClick}
               >
                 Log out
@@ -142,16 +152,6 @@ export const AvatarMenu = ({
             </button>
           </li>
         )}
-        <li role="none">
-          <button
-            type="button"
-            className="avatar-menu__item"
-            role="menuitem"
-            onClick={onReportIssueClick}
-          >
-            Report Issue
-          </button>
-        </li>
       </ul>
     </Popover>
   );
