@@ -126,7 +126,7 @@ export const AvatarMenu = ({
                 role="menuitem"
                 onClick={onReportIssueClick}
               >
-                Send Feedback
+                Feedback
               </button>
             </li>
             <li role="none">

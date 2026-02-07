@@ -22,7 +22,3 @@ storybook-static
 .playwright-mcp
 TEST_CREDENTIALS.txt
 zzLocalDev/
-
-# Rust (issue-proxy Lambda)
-issue-proxy/target/
-target/

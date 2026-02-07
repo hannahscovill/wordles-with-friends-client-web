@@ -87,12 +87,6 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Setup cargo-lambda
-        uses: cargo-lambda/cargo-lambda-action@v1
-
       - name: Install dependencies
         run: npm ci
 
@@ -109,22 +103,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Build Rust Lambda
-        if: ${{ env.CDK_ACTION != 'destroy' }}
-        working-directory: issue-proxy
-        run: |
-          cargo lambda build --release --arm64
-        env:
-          # Ensure consistent builds
-          CARGO_INCREMENTAL: 0
-
-      - name: CDK deploy IssueReportProxyStack
-        working-directory: infra
-        run: npx cdk ${{ env.CDK_ACTION }} ${{ env.CDK_ACTION == 'destroy' && '--force' || '' }} IssueReportProxyStack --require-approval never
-        env:
-          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
-          CDK_DEFAULT_REGION: ${{ env.AWS_REGION }}
 
       - name: CDK deploy WordlesWithFriendsStack
         working-directory: infra

@@ -31,23 +31,6 @@
     "@aws-cdk/custom-resources:logApiResponseDataPropertyTrueDefault": false,
     "@aws-cdk/aws-iam:minimizePolicies": true,
     "@aws-cdk/aws-ec2:restrictDefaultSecurityGroup": true,
-    "githubOrg": "hannahscovill",
-
-    "issueProxy": {
-      "ssmPrefix": "/wordles/issue-proxy",
-      "ssmParams": {
-        "githubAppId": "github-app-id",
-        "githubPrivateKey": "github-app-private-key",
-        "githubInstallationId": "github-installation-id",
-        "turnstileSecretKey": "turnstile-secret-key"
-      },
-      "functionName": "wordles-issue-proxy",
-      "githubRepo": "hannahscovill/wordles-with-friends-client-web",
-      "allowedOrigins": ["https://wordles.dev", "http://localhost:3000"],
-      "turnstileVerifyUrl": "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      "memorySize": 128,
-      "timeoutSeconds": 10,
-      "rustLogLevel": "info"
-    }
+    "githubOrg": "hannahscovill"
   }
 }
