@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiClient, authHeaders } from './client';
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -20,13 +20,13 @@ export interface IssueReportResponse {
 
 // ── Client ──────────────────────────────────────────────────────────
 
-const ISSUE_PROXY_URL: string = import.meta.env
-  .PUBLIC_ISSUE_PROXY_URL as string;
-
 export const submitIssueReport = async (
   report: IssueReport,
+  token: string,
 ): Promise<IssueReportResponse> => {
   const response: { data: IssueReportResponse } =
-    await axios.post<IssueReportResponse>(`${ISSUE_PROXY_URL}`, report);
+    await apiClient.post<IssueReportResponse>('/issues', report, {
+      headers: authHeaders(token),
+    });
   return response.data;
 };

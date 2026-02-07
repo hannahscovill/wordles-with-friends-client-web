@@ -2,7 +2,6 @@
 import * as cdk from 'aws-cdk-lib/core';
 import { InfraStack } from '../lib/infra-stack';
 import { GitHubActionsRoleStack } from '../lib/github-actions-role-stack';
-import { IssueReportProxyStack } from '../lib/issue-report-proxy-stack';
 
 const app: cdk.App = new cdk.App();
 
@@ -19,15 +18,6 @@ new GitHubActionsRoleStack(app, 'WordlesGitHubActionsRoleStack', {
     region: process.env.CDK_DEFAULT_REGION,
   },
   description: 'GitHub Actions IAM role for wordles-with-friends',
-});
-
-// Issue report proxy Lambda — config read from cdk.json context
-new IssueReportProxyStack(app, 'IssueReportProxyStack', {
-  env: {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: 'us-east-1',
-  },
-  description: 'Lambda proxy for anonymous GitHub issue reporting',
 });
 
 new InfraStack(app, 'WordlesWithFriendsStack', {

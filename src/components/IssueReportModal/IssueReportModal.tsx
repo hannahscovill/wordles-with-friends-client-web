@@ -1,4 +1,5 @@
 import { useState, useEffect, type ReactElement, type FormEvent } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { Modal, Button, Input, Textarea, Spinner } from '../ui';
 import { Turnstile } from '../Turnstile';
 import { submitIssueReport, type IssueReportResponse } from '../../api/issues';
@@ -35,6 +36,7 @@ const TURNSTILE_SITE_KEY: string = import.meta.env
 export const IssueReportModal = ({
   onClose,
 }: IssueReportModalProps): ReactElement => {
+  const { getAccessTokenSilently } = useAuth0();
   const [issueType, setIssueType] = useState<IssueType>('bug');
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
@@ -96,6 +98,8 @@ export const IssueReportModal = ({
     setSubmission({ status: 'submitting' });
 
     try {
+      const token: string = await getAccessTokenSilently();
+
       // Read the honeypot value directly from the form
       const form: HTMLFormElement = event.target as HTMLFormElement;
       const honeypotInput: HTMLInputElement | null = form.elements.namedItem(
@@ -103,13 +107,16 @@ export const IssueReportModal = ({
       ) as HTMLInputElement | null;
       const website: string = honeypotInput?.value ?? '';
 
-      const response: IssueReportResponse = await submitIssueReport({
-        issueType,
-        title,
-        description,
-        turnstileToken,
-        website,
-      });
+      const response: IssueReportResponse = await submitIssueReport(
+        {
+          issueType,
+          title,
+          description,
+          turnstileToken,
+          website,
+        },
+        token,
+      );
 
       setSubmission({
         status: 'success',
