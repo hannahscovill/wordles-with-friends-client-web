@@ -232,7 +232,7 @@ export function initTelemetry(): void {
     });
 
     const exporter: SpanExporter = new OTLPTraceExporter({
-      url: `${collectorUrl}/v1/traces`,
+      url: collectorUrl,
     });
 
     const provider: WebTracerProvider = new WebTracerProvider({
