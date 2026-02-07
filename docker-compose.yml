@@ -11,8 +11,7 @@ services:
       - PUBLIC_AUTH0_AUDIENCE=com.hannahscovill.scorekeeper
       - PUBLIC_API_URL=https://api.wordles.dev
       - PUBLIC_ISSUE_PROXY_URL=http://localhost:9000/issues
-      # Turnstile test key — always passes
-      - PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA
+      - PUBLIC_TURNSTILE_SITE_KEY=${PUBLIC_TURNSTILE_SITE_KEY}
     depends_on:
       - issue-proxy
 
@@ -23,7 +22,10 @@ services:
     ports:
       - '9000:9000'
     environment:
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_APP_ID=${GITHUB_APP_ID}
+      - GITHUB_INSTALLATION_ID=${GITHUB_INSTALLATION_ID}
+      - GITHUB_PRIVATE_KEY_FILE=/run/secrets/github_private_key
       - GITHUB_REPO=hannahscovill/wordles-with-friends-client-web
-      # Turnstile test secret — always passes
-      - TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}
+    volumes:
+      - ./.github-app-key.pem:/run/secrets/github_private_key:ro

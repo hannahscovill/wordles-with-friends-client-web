@@ -152,7 +152,7 @@ export const IssueReportModal = ({
                 View Issue #{submission.issueNumber}
               </a>
             </div>
-            <div className="issue-report-modal__actions">
+            <div className="issue-report-modal__actions issue-report-modal__actions--center">
               <Button
                 type="button"
                 size="s"
@@ -239,10 +239,12 @@ export const IssueReportModal = ({
             />
           </div>
 
-          <Turnstile
-            siteKey={TURNSTILE_SITE_KEY}
-            onVerify={setTurnstileToken}
-          />
+          <div className="issue-report-modal__turnstile">
+            <Turnstile
+              siteKey={TURNSTILE_SITE_KEY}
+              onVerify={setTurnstileToken}
+            />
+          </div>
 
           <div className="issue-report-modal__actions">
             <Button

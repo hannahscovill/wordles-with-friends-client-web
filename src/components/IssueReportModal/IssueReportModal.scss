@@ -119,10 +119,19 @@
     pointer-events: none;
   }
 
+  &__turnstile {
+    display: flex;
+    justify-content: center;
+  }
+
   &__actions {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
     margin-top: 8px;
+
+    &--center {
+      justify-content: center;
+    }
   }
 }

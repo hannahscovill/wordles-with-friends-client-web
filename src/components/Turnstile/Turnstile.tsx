@@ -10,7 +10,6 @@ declare global {
           callback: (token: string) => void;
           'error-callback'?: () => void;
           'expired-callback'?: () => void;
-          size?: 'invisible' | 'normal' | 'compact';
           theme?: 'light' | 'dark' | 'auto';
         },
       ) => string;
@@ -64,7 +63,6 @@ export const Turnstile = ({
       callback: (token: string) => onVerifyRef.current(token),
       'error-callback': () => onErrorRef.current?.(),
       'expired-callback': () => onExpireRef.current?.(),
-      size: 'invisible',
     });
   }, [siteKey]);
 

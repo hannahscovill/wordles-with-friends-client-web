@@ -26,12 +26,24 @@ async fn get_secrets(ssm: &SsmClient) -> Result<&'static Secrets, Error> {
             let turnstile_param =
                 std::env::var("TURNSTILE_SECRET_KEY_PARAM").unwrap_or_default();
 
+            // Check for direct env var first, then file, then SSM param (production)
+            let github_private_key = std::env::var("GITHUB_PRIVATE_KEY")
+                .ok()
+                .filter(|s| !s.is_empty())
+                .or_else(|| {
+                    std::env::var("GITHUB_PRIVATE_KEY_FILE")
+                        .ok()
+                        .and_then(|path| std::fs::read_to_string(&path).ok())
+                })
+                .unwrap_or_default();
+
             let mut secrets = Secrets {
-                github_private_key: String::new(),
-                turnstile_secret_key: String::new(),
+                github_private_key,
+                turnstile_secret_key: std::env::var("TURNSTILE_SECRET_KEY").unwrap_or_default(),
             };
 
-            if !private_key_param.is_empty() {
+            // Only fetch from SSM if not already set via direct env var
+            if secrets.github_private_key.is_empty() && !private_key_param.is_empty() {
                 let resp = ssm
                     .get_parameter()
                     .name(&private_key_param)
@@ -45,7 +57,8 @@ async fn get_secrets(ssm: &SsmClient) -> Result<&'static Secrets, Error> {
                     .to_string();
             }
 
-            if !turnstile_param.is_empty() {
+            // Only fetch from SSM if not already set via direct env var
+            if secrets.turnstile_secret_key.is_empty() && !turnstile_param.is_empty() {
                 let resp = ssm
                     .get_parameter()
                     .name(&turnstile_param)
