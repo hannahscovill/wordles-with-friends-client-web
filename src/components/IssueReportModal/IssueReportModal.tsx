@@ -1,5 +1,7 @@
 import { useState, useEffect, type ReactElement, type FormEvent } from 'react';
-import { Modal, Button, Input, Textarea } from '../ui';
+import { Modal, Button, Input, Textarea, Spinner } from '../ui';
+import { Turnstile } from '../Turnstile';
+import { submitIssueReport, type IssueReportResponse } from '../../api/issues';
 import './IssueReportModal.scss';
 
 export interface IssueReportModalProps {
@@ -8,6 +10,12 @@ export interface IssueReportModalProps {
 }
 
 type IssueType = 'bug' | 'feature' | 'question';
+
+type SubmissionState =
+  | { status: 'idle' }
+  | { status: 'submitting' }
+  | { status: 'success'; issueUrl: string; issueNumber: number }
+  | { status: 'error'; message: string };
 
 interface IssueTypeOption {
   value: IssueType;
@@ -21,68 +29,8 @@ const ISSUE_TYPES: IssueTypeOption[] = [
   { value: 'question', label: 'Question', emoji: '' },
 ];
 
-const GITHUB_REPO_URL: string =
-  'https://github.com/hannahscovill/wordles-with-friends-client-web';
-
-const buildIssueUrl = (
-  issueType: IssueType,
-  title: string,
-  description: string,
-): string => {
-  const typeOption: IssueTypeOption | undefined = ISSUE_TYPES.find(
-    (t: IssueTypeOption): boolean => t.value === issueType,
-  );
-  const prefix: string = typeOption ? `[${typeOption.label}] ` : '';
-  const fullTitle: string = `${prefix}${title}`;
-
-  const bodyParts: string[] = [];
-
-  if (issueType === 'bug') {
-    bodyParts.push('## Description');
-    bodyParts.push(description);
-    bodyParts.push('');
-    bodyParts.push('## Steps to Reproduce');
-    bodyParts.push('1. ');
-    bodyParts.push('2. ');
-    bodyParts.push('3. ');
-    bodyParts.push('');
-    bodyParts.push('## Expected Behavior');
-    bodyParts.push('');
-    bodyParts.push('## Actual Behavior');
-    bodyParts.push('');
-    bodyParts.push('## Environment');
-    bodyParts.push(`- Browser: ${navigator.userAgent}`);
-    bodyParts.push(`- URL: ${window.location.href}`);
-  } else if (issueType === 'feature') {
-    bodyParts.push('## Feature Description');
-    bodyParts.push(description);
-    bodyParts.push('');
-    bodyParts.push('## Use Case');
-    bodyParts.push('');
-    bodyParts.push('## Proposed Solution');
-    bodyParts.push('');
-  } else {
-    bodyParts.push('## Question');
-    bodyParts.push(description);
-  }
-
-  const body: string = bodyParts.join('\n');
-
-  const params: URLSearchParams = new URLSearchParams({
-    title: fullTitle,
-    body: body,
-  });
-
-  if (issueType === 'bug') {
-    params.append('labels', 'bug');
-  } else if (issueType === 'feature') {
-    params.append('labels', 'enhancement');
-  } else {
-    params.append('labels', 'question');
-  }
-
-  return `${GITHUB_REPO_URL}/issues/new?${params.toString()}`;
-};
+const TURNSTILE_SITE_KEY: string = import.meta.env
+  .PUBLIC_TURNSTILE_SITE_KEY as string;
 
 export const IssueReportModal = ({
   onClose,
@@ -90,6 +38,10 @@ export const IssueReportModal = ({
   const [issueType, setIssueType] = useState<IssueType>('bug');
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [submission, setSubmission] = useState<SubmissionState>({
+    status: 'idle',
+  });
   const [errors, setErrors] = useState<{
     title?: string;
     description?: string;
@@ -134,16 +86,42 @@ export const IssueReportModal = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (event: FormEvent): void => {
+  const handleSubmit = async (event: FormEvent): Promise<void> => {
     event.preventDefault();
 
     if (!validate()) {
       return;
     }
 
-    const issueUrl: string = buildIssueUrl(issueType, title, description);
-    window.open(issueUrl, '_blank', 'noopener,noreferrer');
-    onClose();
+    setSubmission({ status: 'submitting' });
+
+    try {
+      // Read the honeypot value directly from the form
+      const form: HTMLFormElement = event.target as HTMLFormElement;
+      const honeypotInput: HTMLInputElement | null = form.elements.namedItem(
+        'website',
+      ) as HTMLInputElement | null;
+      const website: string = honeypotInput?.value ?? '';
+
+      const response: IssueReportResponse = await submitIssueReport({
+        issueType,
+        title,
+        description,
+        turnstileToken,
+        website,
+      });
+
+      setSubmission({
+        status: 'success',
+        issueUrl: response.issueUrl,
+        issueNumber: response.issueNumber,
+      });
+    } catch {
+      setSubmission({
+        status: 'error',
+        message: 'Failed to submit your report. Please try again.',
+      });
+    }
   };
 
   const handleBackdropClick = (
@@ -154,15 +132,51 @@ export const IssueReportModal = ({
     }
   };
 
+  if (submission.status === 'success') {
+    return (
+      <div
+        className="issue-report-modal-backdrop"
+        onClick={handleBackdropClick}
+      >
+        <Modal>
+          <div className="issue-report-modal">
+            <div className="issue-report-modal__success">
+              <h2 className="issue-report-modal__title">Thank you!</h2>
+              <p>Your issue has been submitted successfully.</p>
+              <a
+                href={submission.issueUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="issue-report-modal__issue-link"
+              >
+                View Issue #{submission.issueNumber}
+              </a>
+            </div>
+            <div className="issue-report-modal__actions">
+              <Button
+                type="button"
+                size="s"
+                variant="onLight"
+                onClick={onClose}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      </div>
+    );
+  }
+
   return (
     <div className="issue-report-modal-backdrop" onClick={handleBackdropClick}>
       <Modal>
         <form onSubmit={handleSubmit} className="issue-report-modal">
           <h2 className="issue-report-modal__title">Report an Issue</h2>
 
-          <p className="issue-report-modal__github-account">
-            Requires a GitHub account
-          </p>
+          {submission.status === 'error' && (
+            <p className="issue-report-modal__error">{submission.message}</p>
+          )}
 
           <div className="issue-report-modal__type-selector">
             <span className="issue-report-modal__type-label">Issue Type</span>
@@ -213,12 +227,44 @@ export const IssueReportModal = ({
             fullWidth
           />
 
+          {/* Honeypot field — hidden from real users, bots will fill it */}
+          <div className="issue-report-modal__honeypot" aria-hidden="true">
+            <label htmlFor="website">Website</label>
+            <input
+              type="text"
+              id="website"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+
+          <Turnstile
+            siteKey={TURNSTILE_SITE_KEY}
+            onVerify={setTurnstileToken}
+          />
+
           <div className="issue-report-modal__actions">
-            <Button type="button" size="s" variant="onLight" onClick={onClose}>
+            <Button
+              type="button"
+              size="s"
+              variant="onLight"
+              onClick={onClose}
+              disabled={submission.status === 'submitting'}
+            >
               Cancel
             </Button>
-            <Button type="submit" size="s" variant="onLight">
-              Continue to GitHub
+            <Button
+              type="submit"
+              size="s"
+              variant="onLight"
+              disabled={submission.status === 'submitting'}
+            >
+              {submission.status === 'submitting' ? (
+                <Spinner size="small" label="Submitting" />
+              ) : (
+                'Submit'
+              )}
             </Button>
           </div>
         </form>

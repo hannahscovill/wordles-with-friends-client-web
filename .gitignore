@@ -17,7 +17,10 @@ dist/
 
 *storybook.log
 storybook-static
-.env
+.env*
 .playwright-mcp
 TEST_CREDENTIALS.txt
 zzLocalDev/
+
+# Rust (issue-proxy Lambda)
+issue-proxy/target/

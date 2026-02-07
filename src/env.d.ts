@@ -18,6 +18,10 @@ declare global {
     readonly PUBLIC_AUTH0_AUDIENCE?: string;
     readonly PUBLIC_API_URL?: string;
 
+    // Issue reporting
+    readonly PUBLIC_ISSUE_PROXY_URL?: string;
+    readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
+
     // Telemetry configuration
     readonly PUBLIC_OTEL_COLLECTOR_URL?: string;
     readonly PUBLIC_POSTHOG_KEY?: string;
