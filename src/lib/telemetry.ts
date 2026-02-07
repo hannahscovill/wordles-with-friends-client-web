@@ -218,6 +218,15 @@ class BodyCaptureSpanProcessor implements SpanProcessor {
 export function initTelemetry(): void {
   const collectorUrl: string | undefined = import.meta.env
     .PUBLIC_OTEL_COLLECTOR_URL;
+  const environmentName: string | undefined = import.meta.env
+    .PUBLIC_ENVIRONMENT_NAME;
+
+  if (!environmentName) {
+    throw new Error(
+      'PUBLIC_ENVIRONMENT_NAME is not set. ' +
+        'Set it in .env for local development or via SSM for production builds.',
+    );
+  }
 
   // Wrap fetch before OTel instrumentation to capture request/response bodies
   wrapFetchForBodyCapture();
@@ -226,12 +235,12 @@ export function initTelemetry(): void {
   if (collectorUrl) {
     const resource: Resource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: 'wordles-frontend',
-      [ATTR_SERVICE_VERSION]: import.meta.env.PUBLIC_APP_VERSION ?? 'dev',
-      'deployment.environment': import.meta.env.MODE,
+      [ATTR_SERVICE_VERSION]: import.meta.env.PUBLIC_COMMIT_HASH ?? 'dev-0000000',
+      'deployment.environment': environmentName,
     });
 
     const exporter: SpanExporter = new OTLPTraceExporter({
-      url: `${collectorUrl}/v1/traces`,
+      url: collectorUrl,
     });
 
     const provider: WebTracerProvider = new WebTracerProvider({

@@ -19,14 +19,14 @@ declare global {
     readonly PUBLIC_API_URL?: string;
 
     // Issue reporting
-    readonly PUBLIC_ISSUE_PROXY_URL?: string;
     readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
 
     // Telemetry configuration
+    readonly PUBLIC_ENVIRONMENT_NAME?: string;
     readonly PUBLIC_OTEL_COLLECTOR_URL?: string;
     readonly PUBLIC_POSTHOG_KEY?: string;
     readonly PUBLIC_POSTHOG_HOST?: string;
-    readonly PUBLIC_APP_VERSION?: string;
+    readonly PUBLIC_COMMIT_HASH?: string;
   }
 }
 

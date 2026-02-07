@@ -5,9 +5,5 @@ services:
       dockerfile: Dockerfile
     ports:
       - '3000:3000'
-    environment:
-      - PUBLIC_AUTH0_DOMAIN=dev-g32naui5mvpwnsg7.us.auth0.com
-      - PUBLIC_AUTH0_CLIENT_ID=4AGUSKMPWgc4jMKUFIJzbS7GBY9IDZob
-      - PUBLIC_AUTH0_AUDIENCE=com.hannahscovill.scorekeeper
-      - PUBLIC_API_URL=https://api.wordles.dev
-      - PUBLIC_TURNSTILE_SITE_KEY=${PUBLIC_TURNSTILE_SITE_KEY}
+    env_file:
+      - .env
