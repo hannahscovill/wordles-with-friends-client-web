@@ -51,9 +51,21 @@ if (!domain || !clientId || !audience) {
 }
 
 const posthogKey: string | undefined = import.meta.env.PUBLIC_POSTHOG_KEY;
+if (!posthogKey) {
+  throw new Error(
+    'PUBLIC_POSTHOG_KEY is not set. Configure it in .env or .env.local.',
+  );
+}
+const isLocal: boolean = window.location.hostname === 'localhost';
 const posthogOptions: Partial<PostHogConfig> = {
   api_host: import.meta.env.PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
   defaults: '2025-11-30',
+  bootstrap: {
+    distinctID: undefined,
+  },
+  loaded: (ph) => {
+    ph.register({ environment: isLocal ? 'local' : 'prod' });
+  },
 };
 
 const rootEl: HTMLElement | null = document.getElementById('root');
@@ -62,7 +74,7 @@ if (rootEl) {
   root.render(
     <React.StrictMode>
       <ErrorBoundary>
-        <PostHogProvider apiKey={posthogKey ?? ''} options={posthogOptions}>
+        <PostHogProvider apiKey={posthogKey} options={posthogOptions}>
           <Auth0Provider
             domain={domain}
             clientId={clientId}
