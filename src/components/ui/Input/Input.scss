@@ -1,7 +1,9 @@
 .input-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-bottom: 1rem;
 
   &--full-width {
     width: 100%;
@@ -43,6 +45,9 @@
   }
 
   &__error {
+    position: absolute;
+    bottom: 0;
+    left: 0;
     font-size: 0.75rem;
     color: #dc3545;
   }

@@ -1,0 +1,32 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - PUBLIC_AUTH0_DOMAIN=dev-g32naui5mvpwnsg7.us.auth0.com
+      - PUBLIC_AUTH0_CLIENT_ID=4AGUSKMPWgc4jMKUFIJzbS7GBY9IDZob
+      - PUBLIC_AUTH0_AUDIENCE=com.hannahscovill.scorekeeper
+      - PUBLIC_API_URL=https://api.wordles.dev
+      - PUBLIC_ISSUE_PROXY_URL=http://localhost:9000/issues
+      - PUBLIC_TURNSTILE_SITE_KEY=${PUBLIC_TURNSTILE_SITE_KEY}
+    depends_on:
+      - issue-proxy
+
+  issue-proxy:
+    build:
+      context: ./issue-proxy
+      dockerfile: Dockerfile
+    ports:
+      - '9000:9000'
+    environment:
+      - GITHUB_APP_ID=${GITHUB_APP_ID}
+      - GITHUB_INSTALLATION_ID=${GITHUB_INSTALLATION_ID}
+      - GITHUB_PRIVATE_KEY_FILE=/run/secrets/github_private_key
+      - GITHUB_REPO=hannahscovill/wordles-with-friends-client-web
+      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}
+      - TURNSTILE_VERIFY_URL=https://challenges.cloudflare.com/turnstile/v0/siteverify
+    volumes:
+      - ./.github-app-key.pem:/run/secrets/github_private_key:ro

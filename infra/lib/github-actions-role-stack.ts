@@ -93,6 +93,7 @@ export class GitHubActionsRoleStack extends cdk.Stack {
         ],
         resources: [
           `arn:aws:cloudformation:*:${this.account}:stack/WordlesWithFriendsStack/*`,
+          `arn:aws:cloudformation:*:${this.account}:stack/IssueReportProxyStack/*`,
           `arn:aws:cloudformation:*:${this.account}:stack/CDKToolkit/*`,
         ],
       }),
@@ -234,6 +235,7 @@ export class GitHubActionsRoleStack extends cdk.Stack {
         ],
         resources: [
           `arn:aws:iam::${this.account}:role/WordlesWithFriendsStack-*`,
+          `arn:aws:iam::${this.account}:role/IssueReportProxyStack-*`,
           `arn:aws:iam::${this.account}:role/cdk-*`,
         ],
       }),
@@ -254,17 +256,20 @@ export class GitHubActionsRoleStack extends cdk.Stack {
       }),
     );
 
-    // SSM Parameter Store - CDK bootstrap
+    // SSM Parameter Store - CDK bootstrap and issue proxy secrets
     role.addToPolicy(
       new iam.PolicyStatement({
         sid: 'SSM',
         effect: iam.Effect.ALLOW,
         actions: ['ssm:GetParameter', 'ssm:GetParameters'],
-        resources: [`arn:aws:ssm:*:${this.account}:parameter/cdk-bootstrap/*`],
+        resources: [
+          `arn:aws:ssm:*:${this.account}:parameter/cdk-bootstrap/*`,
+          `arn:aws:ssm:*:${this.account}:parameter/wordles/issue-proxy/*`,
+        ],
       }),
     );
 
-    // Lambda permissions for CDK BucketDeployment custom resource
+    // Lambda permissions for CDK BucketDeployment custom resource and issue proxy
     role.addToPolicy(
       new iam.PolicyStatement({
         sid: 'Lambda',
@@ -282,9 +287,34 @@ export class GitHubActionsRoleStack extends cdk.Stack {
           'lambda:TagResource',
           'lambda:UntagResource',
           'lambda:ListTags',
+          'lambda:CreateFunctionUrlConfig',
+          'lambda:DeleteFunctionUrlConfig',
+          'lambda:GetFunctionUrlConfig',
+          'lambda:UpdateFunctionUrlConfig',
         ],
         resources: [
           `arn:aws:lambda:*:${this.account}:function:WordlesWithFriendsStack-*`,
+          `arn:aws:lambda:*:${this.account}:function:wordles-issue-proxy`,
+        ],
+      }),
+    );
+
+    // CloudWatch Logs permissions for Lambda
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: 'CloudWatchLogs',
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'logs:CreateLogGroup',
+          'logs:DeleteLogGroup',
+          'logs:PutRetentionPolicy',
+          'logs:DeleteRetentionPolicy',
+          'logs:TagResource',
+          'logs:UntagResource',
+          'logs:ListTagsForResource',
+        ],
+        resources: [
+          `arn:aws:logs:*:${this.account}:log-group:/aws/lambda/wordles-issue-proxy:*`,
         ],
       }),
     );
