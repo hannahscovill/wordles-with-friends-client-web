@@ -181,7 +181,7 @@ export const IssueReportModal = ({
     <div className="issue-report-modal-backdrop" onClick={handleBackdropClick}>
       <Modal>
         <form onSubmit={handleSubmit} className="issue-report-modal">
-          <h2 className="issue-report-modal__title">Send Feedback</h2>
+          <h2 className="issue-report-modal__title">Feedback</h2>
 
           {submission.status === 'error' && (
             <p className="issue-report-modal__error">{submission.message}</p>
