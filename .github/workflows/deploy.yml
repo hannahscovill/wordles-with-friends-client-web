@@ -90,12 +90,8 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install cargo-lambda
-        uses: jaxxstorm/action-install-gh-release@v1.14.0
-        with:
-          repo: cargo-lambda/cargo-lambda
-          tag: v1.8.6
-          cache: enable
+      - name: Setup cargo-lambda
+        uses: cargo-lambda/cargo-lambda-action@v1
 
       - name: Install dependencies
         run: npm ci
