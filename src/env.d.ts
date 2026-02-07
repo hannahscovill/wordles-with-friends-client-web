@@ -22,6 +22,7 @@ declare global {
     readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
 
     // Telemetry configuration
+    readonly PUBLIC_ENVIRONMENT_NAME?: string;
     readonly PUBLIC_OTEL_COLLECTOR_URL?: string;
     readonly PUBLIC_POSTHOG_KEY?: string;
     readonly PUBLIC_POSTHOG_HOST?: string;
