@@ -5,8 +5,12 @@
   "type": "module",
   "scripts": {
     "prepare": "husky",
+    "validate-env": "node scripts/validate-env.js",
+    "prebuild": "npm run validate-env",
     "build": "rsbuild build",
+    "predev": "npm run validate-env",
     "dev": "rsbuild dev --open",
+    "predev:prod-api": "npm run validate-env",
     "dev:prod-api": "rsbuild dev --open --env-mode production",
     "format:write": "prettier --write .",
     "format:check": "prettier --check .",
