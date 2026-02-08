@@ -100,9 +100,15 @@ function recordApiSpan(response: AxiosResponse, error?: Error): void {
   }
 
   if (response.config.headers) {
+    const headers: Record<string, unknown> = {
+      ...response.config.headers,
+    };
+    if (headers['Authorization']) {
+      headers['Authorization'] = '[REDACTED]';
+    }
     span.setAttribute(
       'http.request.headers',
-      truncate(JSON.stringify(response.config.headers), MAX_ATTR_LENGTH),
+      truncate(JSON.stringify(headers), MAX_ATTR_LENGTH),
     );
   }
 
