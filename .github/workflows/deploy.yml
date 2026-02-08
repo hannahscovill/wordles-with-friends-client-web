@@ -100,6 +100,7 @@ jobs:
           PUBLIC_AUTH0_AUDIENCE: com.hannahscovill.scorekeeper
           PUBLIC_TURNSTILE_SITE_KEY: 0x4AAAAAACYia9jZUYJ6vUvr
           PUBLIC_POSTHOG_KEY: phc_t9J5OgfBeGFAolYcy4dvGhprHRV9YccG19VNQPhcYmD
+          PUBLIC_ENVIRONMENT_NAME: production
 
       - name: Install CDK dependencies
         working-directory: infra
