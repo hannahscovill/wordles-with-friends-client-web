@@ -90,12 +90,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Set short SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
-
       - name: Build app
         if: ${{ env.CDK_ACTION != 'destroy' }}
-        run: npm run build
+        run: PUBLIC_APP_VERSION=${GITHUB_SHA::7} npm run build
         env:
           PUBLIC_API_URL: https://api.wordles.dev
           PUBLIC_AUTH0_DOMAIN: scovill.us.auth0.com
@@ -104,7 +101,6 @@ jobs:
           PUBLIC_TURNSTILE_SITE_KEY: 0x4AAAAAACYia9jZUYJ6vUvr
           PUBLIC_POSTHOG_KEY: phc_t9J5OgfBeGFAolYcy4dvGhprHRV9YccG19VNQPhcYmD
           PUBLIC_ENVIRONMENT_NAME: production
-          PUBLIC_APP_VERSION: ${{ env.SHORT_SHA }}
 
       - name: Install CDK dependencies
         working-directory: infra
