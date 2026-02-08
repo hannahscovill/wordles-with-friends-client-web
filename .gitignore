@@ -18,6 +18,7 @@ dist/
 *storybook.log
 storybook-static
 .env*
+!.env.example
 *.pem
 .playwright-mcp
 TEST_CREDENTIALS.txt

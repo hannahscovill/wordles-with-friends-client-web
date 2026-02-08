@@ -5,6 +5,7 @@ import {
   type Tracer,
   type Span,
 } from '@opentelemetry/api';
+import posthog from 'posthog-js';
 import { reportError, truncate, MAX_ATTR_LENGTH } from '../lib/telemetry';
 
 const API_BASE_URL: string = import.meta.env.PUBLIC_API_URL as string;
@@ -81,10 +82,12 @@ function recordApiSpan(response: AxiosResponse, error?: Error): void {
   const tracer: Tracer = trace.getTracer('wordles-frontend');
   const span: Span = tracer.startSpan(getSpanName(method, path));
 
+  const sessionId: string | undefined = posthog.get_session_id();
   span.setAttributes({
     'http.method': method,
     'http.url': `${response.config.baseURL ?? ''}${path}`,
     'http.status_code': response.status,
+    ...(sessionId && { 'posthog.session_id': sessionId }),
   });
 
   if (response.config.data) {

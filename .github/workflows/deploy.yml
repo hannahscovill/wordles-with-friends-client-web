@@ -10,6 +10,13 @@
 # AWS_OIDC_ROLE_ARN: The ARN of the IAM role for GitHub OIDC authentication
 #                    (e.g., arn:aws:iam::123456789012:role/GitHubActions-wordles)
 #
+# Required AWS Secrets Manager secrets (us-west-2):
+# ---------------------------------------------------------------------------------
+# wordles/frontend/auth0        → { domain, clientId, audience }
+# wordles/frontend/api-url      → { api-base-url, otel-collector-url }
+# wordles/frontend/posthog      → { key, host }
+# wordles/frontend/turnstile-site-key → { site-key }
+#
 # AWS OIDC Setup:
 # ---------------
 # 1. Create an OIDC identity provider in AWS IAM (if not already exists):
@@ -43,6 +50,7 @@
 #    - S3 full access (for bucket and assets)
 #    - CloudFront full access (for distribution)
 #    - IAM limited access (for CDK to create/update roles)
+#    - secretsmanager:GetSecretValue on wordles/frontend/*
 
 name: Deploy
 
@@ -87,30 +95,47 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build app
-        if: ${{ env.CDK_ACTION != 'destroy' }}
-        run: PUBLIC_APP_VERSION=${GITHUB_SHA::7} npm run build
-        env:
-          PUBLIC_API_URL: https://api.wordles.dev
-          PUBLIC_AUTH0_DOMAIN: scovill.us.auth0.com
-          PUBLIC_AUTH0_CLIENT_ID: rfOhK9PWhnGBv3yXR4OShUigAJEUXZQ3
-          PUBLIC_AUTH0_AUDIENCE: com.hannahscovill.scorekeeper
-          PUBLIC_TURNSTILE_SITE_KEY: 0x4AAAAAACYia9jZUYJ6vUvr
-          PUBLIC_POSTHOG_KEY: phc_t9J5OgfBeGFAolYcy4dvGhprHRV9YccG19VNQPhcYmD
-          PUBLIC_ENVIRONMENT_NAME: production
-
-      - name: Install CDK dependencies
-        working-directory: infra
-        run: npm ci
-
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch frontend config from Secrets Manager
+        if: ${{ env.CDK_ACTION != 'destroy' }}
+        run: |
+          sm() { aws secretsmanager get-secret-value --secret-id "$1" --query SecretString --output text; }
+          field() { echo "$1" | python3 -c "import sys,json; print(json.load(sys.stdin)['$2'])"; }
+
+          AUTH0=$(sm wordles/frontend/auth0)
+          echo "PUBLIC_AUTH0_DOMAIN=$(field "$AUTH0" domain)" >> "$GITHUB_ENV"
+          echo "PUBLIC_AUTH0_CLIENT_ID=$(field "$AUTH0" clientId)" >> "$GITHUB_ENV"
+          echo "PUBLIC_AUTH0_AUDIENCE=$(field "$AUTH0" audience)" >> "$GITHUB_ENV"
+
+          URLS=$(sm wordles/frontend/api-url)
+          echo "PUBLIC_API_URL=$(field "$URLS" api-base-url)" >> "$GITHUB_ENV"
+          echo "PUBLIC_OTEL_COLLECTOR_URL=$(field "$URLS" otel-collector-url)" >> "$GITHUB_ENV"
+
+          POSTHOG=$(sm wordles/frontend/posthog)
+          echo "PUBLIC_POSTHOG_KEY=$(field "$POSTHOG" key)" >> "$GITHUB_ENV"
+          echo "PUBLIC_POSTHOG_HOST=$(field "$POSTHOG" host)" >> "$GITHUB_ENV"
+
+          TURNSTILE=$(sm wordles/frontend/turnstile-site-key)
+          echo "PUBLIC_TURNSTILE_SITE_KEY=$(field "$TURNSTILE" site-key)" >> "$GITHUB_ENV"
+
+          echo "PUBLIC_ENVIRONMENT_NAME=production" >> "$GITHUB_ENV"
+          echo "PUBLIC_COMMIT_HASH=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Build app
+        if: ${{ env.CDK_ACTION != 'destroy' }}
+        run: npm run build
+
+      - name: Install CDK dependencies
+        working-directory: infra
+        run: npm ci
 
       - name: CDK deploy WordlesWithFriendsStack
         working-directory: infra

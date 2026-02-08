@@ -21,6 +21,7 @@ import {
   type Tracer,
   type Span,
 } from '@opentelemetry/api';
+import posthog from 'posthog-js';
 
 export const MAX_ATTR_LENGTH: number = 4096;
 
@@ -32,17 +33,26 @@ export function truncate(str: string, maxLength: number): string {
 export function initTelemetry(): void {
   const collectorUrl: string | undefined = import.meta.env
     .PUBLIC_OTEL_COLLECTOR_URL;
+  const environmentName: string | undefined = import.meta.env
+    .PUBLIC_ENVIRONMENT_NAME;
+
+  if (!environmentName) {
+    throw new Error(
+      'PUBLIC_ENVIRONMENT_NAME is not set. ' +
+        'Set it in .env for local development or via SSM for production builds.',
+    );
+  }
 
   if (collectorUrl) {
     const resource: Resource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: 'wordles-frontend',
       [ATTR_SERVICE_VERSION]:
-        import.meta.env.PUBLIC_APP_VERSION ?? 'dev-0000000',
-      'deployment.environment': import.meta.env.PUBLIC_ENVIRONMENT_NAME,
+        import.meta.env.PUBLIC_COMMIT_HASH ?? 'dev-0000000',
+      'deployment.environment': environmentName,
     });
 
     const exporter: SpanExporter = new OTLPTraceExporter({
-      url: `${collectorUrl}/v1/traces`,
+      url: collectorUrl,
     });
 
     const provider: WebTracerProvider = new WebTracerProvider({
@@ -95,9 +105,13 @@ export function reportError(
   const tracer: Tracer = trace.getTracer('wordles-frontend');
   const span: Span = tracer.startSpan('error');
 
+  const sessionId: string | undefined = posthog.get_session_id();
   span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
   span.recordException(error);
 
+  if (sessionId) {
+    span.setAttribute('posthog.session_id', sessionId);
+  }
   if (attributes) {
     span.setAttributes(attributes);
   }
