@@ -10,16 +10,12 @@
 # AWS_OIDC_ROLE_ARN: The ARN of the IAM role for GitHub OIDC authentication
 #                    (e.g., arn:aws:iam::123456789012:role/GitHubActions-wordles)
 #
-# Required AWS SSM Parameters (String, not SecureString — these are public keys):
+# Required AWS Secrets Manager secrets (us-west-2):
 # ---------------------------------------------------------------------------------
-# /wordles/frontend/api-url
-# /wordles/frontend/auth0-domain
-# /wordles/frontend/auth0-client-id
-# /wordles/frontend/auth0-audience
-# /wordles/frontend/turnstile-site-key
-# /wordles/frontend/environment-name
-# /wordles/frontend/otel-collector-url
-# /wordles/frontend/posthog-key
+# wordles/frontend/auth0        → { domain, clientId, audience }
+# wordles/frontend/api-url      → { api-base-url, otel-collector-url }
+# wordles/frontend/posthog      → { key, host }
+# wordles/frontend/turnstile-site-key → { site-key }
 #
 # AWS OIDC Setup:
 # ---------------
@@ -54,7 +50,7 @@
 #    - S3 full access (for bucket and assets)
 #    - CloudFront full access (for distribution)
 #    - IAM limited access (for CDK to create/update roles)
-#    - ssm:GetParameter on /wordles/frontend/*
+#    - secretsmanager:GetSecretValue on wordles/frontend/*
 
 name: Deploy
 
@@ -108,18 +104,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Fetch frontend config from SSM
+      - name: Fetch frontend config from Secrets Manager
         if: ${{ env.CDK_ACTION != 'destroy' }}
         run: |
-          ssm() { aws ssm get-parameter --name "$1" --query Parameter.Value --output text; }
-          echo "PUBLIC_API_URL=$(ssm /wordles/frontend/api-url)" >> "$GITHUB_ENV"
-          echo "PUBLIC_AUTH0_DOMAIN=$(ssm /wordles/frontend/auth0-domain)" >> "$GITHUB_ENV"
-          echo "PUBLIC_AUTH0_CLIENT_ID=$(ssm /wordles/frontend/auth0-client-id)" >> "$GITHUB_ENV"
-          echo "PUBLIC_AUTH0_AUDIENCE=$(ssm /wordles/frontend/auth0-audience)" >> "$GITHUB_ENV"
-          echo "PUBLIC_TURNSTILE_SITE_KEY=$(ssm /wordles/frontend/turnstile-site-key)" >> "$GITHUB_ENV"
-          echo "PUBLIC_ENVIRONMENT_NAME=$(ssm /wordles/frontend/environment-name)" >> "$GITHUB_ENV"
-          echo "PUBLIC_OTEL_COLLECTOR_URL=$(ssm /wordles/frontend/otel-collector-url)" >> "$GITHUB_ENV"
-          echo "PUBLIC_POSTHOG_KEY=$(ssm /wordles/frontend/posthog-key)" >> "$GITHUB_ENV"
+          sm() { aws secretsmanager get-secret-value --secret-id "$1" --query SecretString --output text; }
+          field() { echo "$1" | python3 -c "import sys,json; print(json.load(sys.stdin)['$2'])"; }
+
+          AUTH0=$(sm wordles/frontend/auth0)
+          echo "PUBLIC_AUTH0_DOMAIN=$(field "$AUTH0" domain)" >> "$GITHUB_ENV"
+          echo "PUBLIC_AUTH0_CLIENT_ID=$(field "$AUTH0" clientId)" >> "$GITHUB_ENV"
+          echo "PUBLIC_AUTH0_AUDIENCE=$(field "$AUTH0" audience)" >> "$GITHUB_ENV"
+
+          URLS=$(sm wordles/frontend/api-url)
+          echo "PUBLIC_API_URL=$(field "$URLS" api-base-url)" >> "$GITHUB_ENV"
+          echo "PUBLIC_OTEL_COLLECTOR_URL=$(field "$URLS" otel-collector-url)" >> "$GITHUB_ENV"
+
+          POSTHOG=$(sm wordles/frontend/posthog)
+          echo "PUBLIC_POSTHOG_KEY=$(field "$POSTHOG" key)" >> "$GITHUB_ENV"
+          echo "PUBLIC_POSTHOG_HOST=$(field "$POSTHOG" host)" >> "$GITHUB_ENV"
+
+          TURNSTILE=$(sm wordles/frontend/turnstile-site-key)
+          echo "PUBLIC_TURNSTILE_SITE_KEY=$(field "$TURNSTILE" site-key)" >> "$GITHUB_ENV"
+
+          echo "PUBLIC_ENVIRONMENT_NAME=production" >> "$GITHUB_ENV"
           echo "PUBLIC_COMMIT_HASH=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
 
       - name: Build app

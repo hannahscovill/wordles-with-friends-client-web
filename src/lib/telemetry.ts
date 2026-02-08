@@ -21,6 +21,7 @@ import {
   type Tracer,
   type Span,
 } from '@opentelemetry/api';
+import posthog from 'posthog-js';
 
 export const MAX_ATTR_LENGTH: number = 4096;
 
@@ -104,9 +105,13 @@ export function reportError(
   const tracer: Tracer = trace.getTracer('wordles-frontend');
   const span: Span = tracer.startSpan('error');
 
+  const sessionId: string | undefined = posthog.get_session_id();
   span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
   span.recordException(error);
 
+  if (sessionId) {
+    span.setAttribute('posthog.session_id', sessionId);
+  }
   if (attributes) {
     span.setAttributes(attributes);
   }
