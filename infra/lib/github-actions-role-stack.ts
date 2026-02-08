@@ -264,6 +264,18 @@ export class GitHubActionsRoleStack extends cdk.Stack {
       }),
     );
 
+    // Secrets Manager - frontend build config (wordles/frontend/*)
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: 'SecretsManagerFrontend',
+        effect: iam.Effect.ALLOW,
+        actions: ['secretsmanager:GetSecretValue'],
+        resources: [
+          `arn:aws:secretsmanager:us-west-2:${this.account}:secret:wordles/frontend/*`,
+        ],
+      }),
+    );
+
     // Lambda permissions for CDK BucketDeployment custom resource
     role.addToPolicy(
       new iam.PolicyStatement({
