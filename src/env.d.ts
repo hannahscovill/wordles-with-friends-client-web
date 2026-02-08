@@ -12,21 +12,19 @@ declare module '*.svg?react' {
 
 declare global {
   interface ImportMetaEnv {
-    // Auth0 configuration
+    // Required — validated by scripts/validate-env.js before build/dev
     readonly PUBLIC_AUTH0_DOMAIN: string;
     readonly PUBLIC_AUTH0_CLIENT_ID: string;
-    readonly PUBLIC_AUTH0_AUDIENCE?: string;
-    readonly PUBLIC_API_URL?: string;
+    readonly PUBLIC_AUTH0_AUDIENCE: string;
+    readonly PUBLIC_POSTHOG_KEY: string;
+    readonly PUBLIC_ENVIRONMENT_NAME: string;
 
-    // Issue reporting
-    readonly PUBLIC_ISSUE_PROXY_URL?: string;
-    readonly PUBLIC_TURNSTILE_SITE_KEY?: string;
-
-    // Telemetry configuration
-    readonly PUBLIC_OTEL_COLLECTOR_URL?: string;
-    readonly PUBLIC_POSTHOG_KEY?: string;
-    readonly PUBLIC_POSTHOG_HOST?: string;
-    readonly PUBLIC_APP_VERSION?: string;
+    readonly PUBLIC_API_URL: string;
+    readonly PUBLIC_ISSUE_PROXY_URL: string;
+    readonly PUBLIC_TURNSTILE_SITE_KEY: string;
+    readonly PUBLIC_OTEL_COLLECTOR_URL: string;
+    readonly PUBLIC_POSTHOG_HOST: string;
+    readonly PUBLIC_APP_VERSION: string;
   }
 }
 

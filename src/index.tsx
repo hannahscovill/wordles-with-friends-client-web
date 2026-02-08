@@ -35,36 +35,30 @@ export function App(): React.ReactElement {
   );
 }
 
-const domain: string | undefined = import.meta.env.PUBLIC_AUTH0_DOMAIN;
-const clientId: string | undefined = import.meta.env.PUBLIC_AUTH0_CLIENT_ID;
-const audience: string | undefined = import.meta.env.PUBLIC_AUTH0_AUDIENCE;
+const domain: string = import.meta.env.PUBLIC_AUTH0_DOMAIN;
+const clientId: string = import.meta.env.PUBLIC_AUTH0_CLIENT_ID;
+const audience: string = import.meta.env.PUBLIC_AUTH0_AUDIENCE;
+const posthogKey: string = import.meta.env.PUBLIC_POSTHOG_KEY;
 
-if (!domain || !clientId || !audience) {
-  console.error('Auth0 configuration missing. Please check your .env file.');
-  console.error('Required environment variables:');
-  console.error('- PUBLIC_AUTH0_DOMAIN');
-  console.error('- PUBLIC_AUTH0_CLIENT_ID');
-  console.error('- PUBLIC_AUTH0_AUDIENCE');
-  throw new Error(
-    'Auth0 domain, client ID, and audience must be set in .env file',
-  );
-}
-
-const posthogKey: string | undefined = import.meta.env.PUBLIC_POSTHOG_KEY;
-if (!posthogKey) {
-  throw new Error(
-    'PUBLIC_POSTHOG_KEY is not set. Configure it in .env or .env.local.',
-  );
-}
-const isLocal: boolean = window.location.hostname === 'localhost';
+// https://posthog.com/docs/libraries/js/config
 const posthogOptions: Partial<PostHogConfig> = {
-  api_host: import.meta.env.PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
-  defaults: '2025-11-30',
+  // Endpoint where events are sent (e.g. US or EU cloud).
+  api_host: import.meta.env.PUBLIC_POSTHOG_HOST,
+  // Date-based versioning that opts into all default behavior changes up to this
+  // date. '2026-01-30' enables: history-change pageview capture, strict minimum
+  // session recording duration, content-aware rage-click detection, and <head>
+  // script injection.
+  defaults: '2026-01-30',
+  // Pre-populate SDK state before it finishes initializing (feature flags, etc.).
+  // distinctID: undefined lets PostHog generate an anonymous ID.
+  // TODO: once pairwise identifiers are set up, call posthog.identify(pairwiseId)
+  // after Auth0 resolves to link anonymous events to the identified user.
   bootstrap: {
     distinctID: undefined,
   },
+  // Callback fired once the SDK has fully initialized.
   loaded: (ph) => {
-    ph.register({ environment: isLocal ? 'local' : 'prod' });
+    ph.register({ environment: import.meta.env.PUBLIC_ENVIRONMENT_NAME });
   },
 };
 
