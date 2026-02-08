@@ -36,8 +36,9 @@ export function initTelemetry(): void {
   if (collectorUrl) {
     const resource: Resource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: 'wordles-frontend',
-      [ATTR_SERVICE_VERSION]: import.meta.env.PUBLIC_APP_VERSION ?? 'dev',
-      'deployment.environment': import.meta.env.MODE,
+      [ATTR_SERVICE_VERSION]:
+        import.meta.env.PUBLIC_APP_VERSION ?? 'dev-0000000',
+      'deployment.environment': import.meta.env.PUBLIC_ENVIRONMENT_NAME,
     });
 
     const exporter: SpanExporter = new OTLPTraceExporter({
