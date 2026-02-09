@@ -24,6 +24,7 @@ import type {
   Puzzle,
   SetPuzzleRequest,
   SetPuzzleResponse,
+  ConvertSessionResponse,
 } from './types';
 
 // ── Guess / Game ────────────────────────────────────────────────────
@@ -305,4 +306,19 @@ export const setPuzzle = async (
     }
     throw e;
   }
+};
+
+// ── Session conversion ──────────────────────────────────────────────
+
+export const convertSession = async (
+  sessionId: string,
+  token: string,
+): Promise<ConvertSessionResponse> => {
+  const response: AxiosResponse<ConvertSessionResponse> =
+    await apiClient.post<ConvertSessionResponse>(
+      '/convert-session',
+      { session_id: sessionId },
+      { headers: authHeaders(token) },
+    );
+  return response.data;
 };

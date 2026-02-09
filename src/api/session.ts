@@ -12,9 +12,9 @@ export function getSessionCookie(): string | null {
 }
 
 function setSessionCookie(sessionId: string): void {
-  // Set cookie to expire in 1 year
+  // Set cookie to expire in 24 hours
   const expires: Date = new Date();
-  expires.setFullYear(expires.getFullYear() + 1);
+  expires.setTime(expires.getTime() + 24 * 60 * 60 * 1000);
   // Use SameSite=None; Secure for cross-origin API requests, and Domain for subdomain access
   const isSecure: boolean = window.location.protocol === 'https:';
   const sameSite: string = isSecure ? 'None' : 'Lax';
@@ -33,4 +33,11 @@ export function ensureSessionCookie(): string {
     setSessionCookie(sessionId);
   }
   return sessionId;
+}
+
+export function clearSessionCookie(): void {
+  const domain: string = window.location.hostname.includes('wordles.dev')
+    ? '; Domain=.wordles.dev'
+    : '';
+  document.cookie = `${SESSION_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domain}`;
 }
