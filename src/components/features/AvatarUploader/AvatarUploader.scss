@@ -1,5 +1,7 @@
 .avatar-uploader {
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
 
   &__dropzone {
     position: relative;
