@@ -3,6 +3,7 @@ import { Spinner } from '../../ui/Spinner';
 import { compressImage } from './compressImage';
 import './AvatarUploader.scss';
 
+const MAX_FILE_SIZE: number = 4 * 1024 * 1024; // 4MB
 const MIN_DIMENSION: number = 500;
 const ALLOWED_TYPES: string[] = ['image/jpeg', 'image/png'];
 const FALLBACK_IMAGE: string = 'https://www.gravatar.com/avatar/?d=mp';
@@ -17,7 +18,7 @@ export interface AvatarUploaderProps {
 }
 
 interface ValidationError {
-  type: 'type' | 'dimensions';
+  type: 'size' | 'type' | 'dimensions';
   message: string;
 }
 
@@ -28,6 +29,15 @@ const validateFile = (file: File): Promise<ValidationError | null> => {
       resolve({
         type: 'type',
         message: 'Please select a JPEG or PNG image.',
+      });
+      return;
+    }
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      resolve({
+        type: 'size',
+        message: 'Image must be less than 4MB.',
       });
       return;
     }
