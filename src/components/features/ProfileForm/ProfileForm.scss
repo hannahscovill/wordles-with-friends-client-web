@@ -37,6 +37,26 @@
     color: #666;
   }
 
+  &__revert-avatar {
+    margin-top: 8px;
+    padding: 4px 8px;
+    background: none;
+    border: 1px solid #666;
+    color: #666;
+    font-size: 0.75rem;
+    cursor: pointer;
+
+    &:hover {
+      color: #333;
+      border-color: #333;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
   &__error {
     margin: 0;
     padding: 8px 12px;

@@ -4,12 +4,7 @@ import './AvatarUploader.scss';
 
 const MAX_FILE_SIZE: number = 2 * 1024 * 1024; // 2MB
 const MIN_DIMENSION: number = 500;
-const ALLOWED_TYPES: string[] = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-];
+const ALLOWED_TYPES: string[] = ['image/jpeg', 'image/png'];
 
 export interface AvatarUploaderProps {
   /** Current avatar URL (optional - shows placeholder if not provided) */
@@ -31,7 +26,7 @@ const validateFile = (file: File): Promise<ValidationError | null> => {
     if (!ALLOWED_TYPES.includes(file.type)) {
       resolve({
         type: 'type',
-        message: 'Please select a JPEG, PNG, GIF, or WebP image.',
+        message: 'Please select a JPEG or PNG image.',
       });
       return;
     }
@@ -152,7 +147,7 @@ export const AvatarUploader = ({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png"
         onChange={handleInputChange}
         className="avatar-uploader__input"
         aria-label="Upload avatar image"

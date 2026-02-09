@@ -67,11 +67,16 @@ export interface UserProfile {
   userId: string;
   displayName: string;
   avatarUrl: string;
+  name?: string;
+  pronouns?: string;
+  email?: string;
 }
 
 export interface UpdateProfileRequest {
-  displayName: string;
+  displayName?: string;
   avatarUrl?: string;
+  name?: string;
+  pronouns?: string;
 }
 
 export interface UploadAvatarResponse {

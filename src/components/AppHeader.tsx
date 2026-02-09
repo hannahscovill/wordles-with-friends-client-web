@@ -43,9 +43,7 @@ export const AppHeader = ({
     user as Record<string, unknown> | undefined
   )?.['wordles.dev/app_metadata'] as Record<string, unknown> | undefined;
   const avatarSrc: string =
-    profile?.avatarUrl ??
-    user?.picture ??
-    'https://www.gravatar.com/avatar/?d=mp';
+    profile?.avatarUrl ?? 'https://www.gravatar.com/avatar/?d=mp';
   const avatarAlt: string = user?.email ?? user?.name ?? 'User avatar';
   const isGameAdmin: boolean = appMetadata?.game_admin === true;
 

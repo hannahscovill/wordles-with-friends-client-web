@@ -15,10 +15,11 @@ export interface AvatarProps {
   editable?: boolean;
   /** Callback when edit overlay is clicked */
   onEditClick?: () => void;
+  /** Callback to refresh the image source (e.g. fetch a fresh presigned URL) */
+  onRefreshSrc?: () => Promise<void>;
 }
 
-const FALLBACK_IMAGE: string =
-  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23ccc"/%3E%3Ccircle cx="50" cy="40" r="18" fill="%23fff"/%3E%3Cellipse cx="50" cy="85" rx="30" ry="25" fill="%23fff"/%3E%3C/svg%3E';
+const FALLBACK_IMAGE: string = 'https://www.gravatar.com/avatar/?d=mp';
 
 export const Avatar = ({
   src,
@@ -26,19 +27,32 @@ export const Avatar = ({
   size = 'm',
   editable = false,
   onEditClick,
+  onRefreshSrc,
 }: AvatarProps): ReactElement => {
   const [hasError, setHasError] = useState<boolean>(false);
+  const [hasTriedRefresh, setHasTriedRefresh] = useState<boolean>(false);
   const [prevSrc, setPrevSrc] = useState<string>(src);
 
   // Reset error state when src changes (during render, not in effect)
   if (src !== prevSrc) {
     setPrevSrc(src);
     setHasError(false);
+    setHasTriedRefresh(false);
   }
 
   const imgSrc: string = hasError ? FALLBACK_IMAGE : src;
 
   const handleError = (): void => {
+    // If we haven't tried refreshing yet and a refresh callback is provided,
+    // attempt to get a fresh presigned URL before falling back to gravatar
+    if (!hasTriedRefresh && onRefreshSrc) {
+      setHasTriedRefresh(true);
+      onRefreshSrc().catch(() => {
+        setHasError(true);
+      });
+      return;
+    }
+
     if (!hasError) {
       setHasError(true);
       reportError(new Error(`Avatar image failed to load: ${src}`), {

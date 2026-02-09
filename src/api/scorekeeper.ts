@@ -221,6 +221,16 @@ export const uploadAvatar = async (
   return response.data;
 };
 
+export const revertAvatar = async (
+  token: string,
+): Promise<UploadAvatarResponse> => {
+  const response: AxiosResponse<UploadAvatarResponse> =
+    await apiClient.post<UploadAvatarResponse>('/profile/avatar/revert', null, {
+      headers: authHeaders(token),
+    });
+  return response.data;
+};
+
 // ── Puzzles (admin) ─────────────────────────────────────────────────
 
 interface GetPuzzlesResponse {
