@@ -13,6 +13,9 @@ export interface IssueReport {
   website?: string;
   userAgent?: string;
   pageUrl?: string;
+  posthogSessionId?: string;
+  clientEnvironmentName?: string;
+  clientCommitHash?: string;
 }
 
 export interface IssueReportResponse {

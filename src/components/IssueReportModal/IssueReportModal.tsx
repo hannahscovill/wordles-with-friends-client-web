@@ -1,5 +1,6 @@
 import { useState, useEffect, type ReactElement, type FormEvent } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
+import posthog from 'posthog-js';
 import { Modal, Button, Input, Textarea, Spinner } from '../ui';
 import { Turnstile } from '../Turnstile';
 import { submitIssueReport, type IssueReportResponse } from '../../api/issues';
@@ -116,6 +117,9 @@ export const IssueReportModal = ({
           website,
           userAgent: navigator.userAgent,
           pageUrl: window.location.href,
+          posthogSessionId: posthog.get_session_id(),
+          clientEnvironmentName: import.meta.env.PUBLIC_ENVIRONMENT_NAME,
+          clientCommitHash: import.meta.env.PUBLIC_COMMIT_HASH,
         },
         token,
       );
