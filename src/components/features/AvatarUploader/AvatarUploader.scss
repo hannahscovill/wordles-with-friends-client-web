@@ -99,7 +99,8 @@
   &__error {
     margin: 8px 0 0;
     padding: 8px 12px;
-    max-width: 128px;
+    width: 100%;
+    box-sizing: border-box;
     background: #fee2e2;
     border: 2px solid #dc3545;
     color: #dc3545;
