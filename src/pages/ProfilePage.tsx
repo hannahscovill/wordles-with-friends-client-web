@@ -7,7 +7,6 @@ import {
 import {
   updateUserProfile,
   uploadAvatar,
-  revertAvatar,
   type UploadAvatarResponse,
 } from '../api';
 import { useUserProfile } from '../contexts/UserProfileContext';
@@ -78,10 +77,13 @@ export const ProfilePage = (): ReactElement => {
           avatarUrl: uploadResponse.avatarUrl,
         });
       } else {
+        // Include avatarUrl if it changed (e.g. staged revert to Gravatar)
+        const avatarChanged: boolean = data.avatarUrl !== profileData.avatarUrl;
         await updateUserProfile(token, {
           displayName: data.displayName,
           name: data.name,
           pronouns: data.pronouns,
+          ...(avatarChanged ? { avatarUrl: data.avatarUrl } : {}),
         });
 
         setProfileData({
@@ -89,6 +91,7 @@ export const ProfilePage = (): ReactElement => {
           displayName: data.displayName,
           name: data.name,
           pronouns: data.pronouns,
+          ...(avatarChanged ? { avatarUrl: data.avatarUrl } : {}),
         });
       }
 
@@ -99,16 +102,6 @@ export const ProfilePage = (): ReactElement => {
     }
   };
 
-  const handleRevertAvatar = async (): Promise<void> => {
-    const token: string = await getAccessTokenSilently();
-    const response: UploadAvatarResponse = await revertAvatar(token);
-    setProfileData({
-      ...profileData,
-      avatarUrl: response.avatarUrl,
-    });
-    await refreshProfile();
-  };
-
   // Router protects this route, so we always render the form
   // ProfileForm handles its own loading state via isLoading prop
   return (
@@ -117,7 +110,7 @@ export const ProfilePage = (): ReactElement => {
       <ProfileForm
         initialData={profileData}
         onSubmit={handleSubmit}
-        onRevertAvatar={handleRevertAvatar}
+        revertPreviewUrl={user?.picture}
         isLoading={isLoadingProfile}
         isSaving={isSaving}
       />

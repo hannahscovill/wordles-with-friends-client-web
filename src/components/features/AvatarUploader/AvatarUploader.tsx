@@ -5,6 +5,7 @@ import './AvatarUploader.scss';
 const MAX_FILE_SIZE: number = 2 * 1024 * 1024; // 2MB
 const MIN_DIMENSION: number = 500;
 const ALLOWED_TYPES: string[] = ['image/jpeg', 'image/png'];
+const FALLBACK_IMAGE: string = 'https://www.gravatar.com/avatar/?d=mp';
 
 export interface AvatarUploaderProps {
   /** Current avatar URL (optional - shows placeholder if not provided) */
@@ -70,12 +71,14 @@ export const AvatarUploader = ({
   isUploading = false,
 }: AvatarUploaderProps): ReactElement => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imgError, setImgError] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const inputRef: React.RefObject<HTMLInputElement | null> =
     useRef<HTMLInputElement>(null);
 
-  const displaySrc: string | null = previewUrl ?? currentSrc ?? null;
+  const rawSrc: string | null = previewUrl ?? currentSrc ?? null;
+  const displaySrc: string | null = imgError ? FALLBACK_IMAGE : rawSrc;
 
   const handleFileSelect = async (file: File): Promise<void> => {
     setError(null);
@@ -95,10 +98,6 @@ export const AvatarUploader = ({
     const url: string = URL.createObjectURL(file);
     setPreviewUrl(url);
     onImageSelect(file);
-  };
-
-  const handleClick = (): void => {
-    inputRef.current?.click();
   };
 
   const handleInputChange = (
@@ -135,45 +134,68 @@ export const AvatarUploader = ({
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent): void => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleClick();
-    }
+  const handleDropzoneClick = (): void => {
+    inputRef.current?.click();
   };
 
   return (
     <div className="avatar-uploader">
+      {/* Visually hidden but DOM-present file input. Programmatic .click()
+          works in all browsers (including Safari) when triggered from a
+          user gesture — which the onClick on the dropzone div provides. */}
       <input
         ref={inputRef}
         type="file"
         accept="image/jpeg,image/png"
         onChange={handleInputChange}
-        className="avatar-uploader__input"
+        className="avatar-uploader__hidden-input"
         aria-label="Upload avatar image"
+        tabIndex={-1}
       />
 
       <div
         className={`avatar-uploader__dropzone ${isDragging ? 'avatar-uploader__dropzone--dragging' : ''} ${displaySrc ? 'avatar-uploader__dropzone--has-image' : ''}`}
-        onClick={handleClick}
+        role="button"
+        tabIndex={0}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onKeyDown={handleKeyDown}
-        role="button"
-        tabIndex={0}
-        aria-label="Click or drag to upload avatar image"
+        onClick={handleDropzoneClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleDropzoneClick();
+          }
+        }}
       >
         {isUploading ? (
           <div className="avatar-uploader__loading">
             <Spinner size="medium" label="Uploading avatar" />
           </div>
         ) : displaySrc ? (
-          <img
-            src={displaySrc}
-            alt="Avatar preview"
-            className="avatar-uploader__preview-image"
-          />
+          <>
+            <img
+              src={displaySrc}
+              alt="Avatar preview"
+              className="avatar-uploader__preview-image"
+              onError={(): void => setImgError(true)}
+            />
+            <div className="avatar-uploader__pencil-overlay" aria-hidden="true">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                <path d="m15 5 4 4" />
+              </svg>
+            </div>
+          </>
         ) : (
           <span className="avatar-uploader__placeholder">
             Click or drag to upload

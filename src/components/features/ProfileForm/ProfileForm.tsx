@@ -28,8 +28,8 @@ export interface ProfileFormProps {
     avatarUrl: string;
     avatarFile?: File;
   }) => Promise<void>;
-  /** Callback to revert avatar to Gravatar */
-  onRevertAvatar?: () => Promise<void>;
+  /** URL to revert avatar to (user.picture from Auth0 token) */
+  revertPreviewUrl?: string;
   /** Whether profile data is loading */
   isLoading?: boolean;
   /** Whether form is currently saving */
@@ -46,7 +46,7 @@ const isCustomAvatar = (url: string): boolean => {
 export const ProfileForm = ({
   initialData,
   onSubmit,
-  onRevertAvatar,
+  revertPreviewUrl,
   isLoading = false,
   isSaving = false,
 }: ProfileFormProps): ReactElement => {
@@ -118,13 +118,11 @@ export const ProfileForm = ({
     setError(null);
   };
 
-  const handleRevertAvatar = async (): Promise<void> => {
-    if (!onRevertAvatar) return;
-    try {
-      await onRevertAvatar();
-    } catch {
-      setError('Failed to revert avatar. Please try again.');
-    }
+  const handleRevertAvatar = (): void => {
+    if (!revertPreviewUrl) return;
+    setAvatarUrl(revertPreviewUrl);
+    setPendingAvatarFile(null);
+    setError(null);
   };
 
   const handleCancel = (): void => {
@@ -216,7 +214,10 @@ export const ProfileForm = ({
           onImageSelect={handleAvatarSelect}
           isUploading={isAvatarUploading}
         />
-        {onRevertAvatar && isCustomAvatar(initialData.avatarUrl) && (
+      </div>
+
+      {revertPreviewUrl && isCustomAvatar(avatarUrl) && (
+        <div className="profile-form__revert-wrapper">
           <button
             type="button"
             className="profile-form__revert-avatar"
@@ -225,8 +226,17 @@ export const ProfileForm = ({
           >
             Revert to Gravatar
           </button>
-        )}
-      </div>
+          {revertPreviewUrl && (
+            <div className="profile-form__revert-preview">
+              <img
+                src={revertPreviewUrl}
+                alt="Gravatar preview"
+                className="profile-form__revert-preview-img"
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="profile-form__field">
         <Input
