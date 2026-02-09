@@ -272,9 +272,11 @@ export const ProfileForm = ({
           fullWidth
           disabled={isLoading || isSaving}
         />
-        <span className="profile-form__char-count">
-          {displayName.length}/{MAX_DISPLAY_NAME_LENGTH}
-        </span>
+        {displayName.length >= 80 && (
+          <span className="profile-form__char-count">
+            {displayName.length}/{MAX_DISPLAY_NAME_LENGTH}
+          </span>
+        )}
       </div>
 
       <div className="profile-form__field">
