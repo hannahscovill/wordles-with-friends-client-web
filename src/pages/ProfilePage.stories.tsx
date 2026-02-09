@@ -11,18 +11,22 @@ const ProfilePageStory = ({
   email,
   displayName,
   avatarUrl,
+  name,
+  pronouns,
   isSaving,
 }: {
   email: string;
   displayName: string;
   avatarUrl: string;
+  name: string;
+  pronouns: string;
   isSaving?: boolean;
 }): ReactElement => {
   return (
     <div className="profile-page">
       <h1 className="profile-page__title">Profile</h1>
       <ProfileForm
-        initialData={{ email, displayName, avatarUrl }}
+        initialData={{ email, displayName, avatarUrl, name, pronouns }}
         onSubmit={async (): Promise<void> => {}}
         isSaving={isSaving}
       />
@@ -40,6 +44,8 @@ const meta: Meta<typeof ProfilePageStory> = {
     email: { control: 'text' },
     displayName: { control: 'text' },
     avatarUrl: { control: 'text' },
+    name: { control: 'text' },
+    pronouns: { control: 'text' },
     isSaving: { control: 'boolean' },
   },
 };
@@ -52,6 +58,8 @@ export const Default: Story = {
     email: 'user@example.com',
     displayName: 'John Doe',
     avatarUrl: 'https://www.gravatar.com/avatar/?d=mp',
+    name: 'John Doe',
+    pronouns: 'he/him',
     isSaving: false,
   },
 };
@@ -61,6 +69,8 @@ export const NewUser: Story = {
     email: 'newuser@example.com',
     displayName: '',
     avatarUrl: 'https://www.gravatar.com/avatar/?d=mp',
+    name: '',
+    pronouns: '',
     isSaving: false,
   },
 };
@@ -70,6 +80,8 @@ export const Saving: Story = {
     email: 'user@example.com',
     displayName: 'John Doe',
     avatarUrl: 'https://www.gravatar.com/avatar/?d=mp',
+    name: 'John Doe',
+    pronouns: 'he/him',
     isSaving: true,
   },
 };

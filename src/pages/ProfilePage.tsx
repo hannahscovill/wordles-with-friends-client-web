@@ -25,6 +25,8 @@ export const ProfilePage = (): ReactElement => {
     email: '',
     displayName: '',
     avatarUrl: '',
+    name: '',
+    pronouns: '',
   });
 
   // Sync profile data from context when it loads
@@ -33,27 +35,19 @@ export const ProfilePage = (): ReactElement => {
       return;
     }
 
-    // Get display_name from token's user_metadata
-    const tokenDisplayName: string | undefined =
-      (user as Record<string, unknown>).user_metadata &&
-      typeof (user as Record<string, unknown>).user_metadata === 'object'
-        ? ((
-            (user as Record<string, unknown>).user_metadata as Record<
-              string,
-              unknown
-            >
-          ).display_name as string | undefined)
-        : undefined;
-
     setProfileData({
-      email: user.email ?? '',
-      displayName: tokenDisplayName ?? profile?.displayName ?? '',
-      avatarUrl: profile?.avatarUrl ?? user.picture ?? '',
+      email: profile?.email ?? user.email ?? '',
+      displayName: profile?.displayName ?? '',
+      avatarUrl: profile?.avatarUrl ?? 'https://www.gravatar.com/avatar/?d=mp',
+      name: profile?.name ?? '',
+      pronouns: profile?.pronouns ?? '',
     });
   }, [isLoadingProfile, user, profile]);
 
   const handleSubmit = async (data: {
     displayName: string;
+    name: string;
+    pronouns: string;
     avatarUrl: string;
     avatarFile?: File;
   }): Promise<void> => {
@@ -70,22 +64,34 @@ export const ProfilePage = (): ReactElement => {
         // Upload endpoint stores the key server-side; no need to send avatarUrl
         await updateUserProfile(token, {
           displayName: data.displayName,
+          name: data.name,
+          pronouns: data.pronouns,
         });
 
         // Update local form state with the new presigned URL
         setProfileData({
           ...profileData,
           displayName: data.displayName,
+          name: data.name,
+          pronouns: data.pronouns,
           avatarUrl: uploadResponse.avatarUrl,
         });
       } else {
+        // Include avatarUrl if it changed (e.g. staged revert to Gravatar)
+        const avatarChanged: boolean = data.avatarUrl !== profileData.avatarUrl;
         await updateUserProfile(token, {
           displayName: data.displayName,
+          name: data.name,
+          pronouns: data.pronouns,
+          ...(avatarChanged ? { avatarUrl: data.avatarUrl } : {}),
         });
 
         setProfileData({
           ...profileData,
           displayName: data.displayName,
+          name: data.name,
+          pronouns: data.pronouns,
+          ...(avatarChanged ? { avatarUrl: data.avatarUrl } : {}),
         });
       }
 
@@ -104,6 +110,7 @@ export const ProfilePage = (): ReactElement => {
       <ProfileForm
         initialData={profileData}
         onSubmit={handleSubmit}
+        revertPreviewUrl={user?.picture}
         isLoading={isLoadingProfile}
         isSaving={isSaving}
       />

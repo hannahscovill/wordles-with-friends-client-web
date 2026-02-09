@@ -19,10 +19,14 @@ const sampleData: {
   email: string;
   displayName: string;
   avatarUrl: string;
+  name: string;
+  pronouns: string;
 } = {
   email: 'user@example.com',
   displayName: 'John Doe',
   avatarUrl: 'https://www.gravatar.com/avatar/?d=mp',
+  name: 'John Doe',
+  pronouns: 'he/him',
 };
 
 export const Default: Story = {
