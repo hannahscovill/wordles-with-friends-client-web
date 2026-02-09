@@ -12,9 +12,9 @@
 #
 # Required AWS Secrets Manager secrets (us-west-2):
 # ---------------------------------------------------------------------------------
-# wordles/frontend/auth0        → { domain, clientId, audience }
-# wordles/frontend/api-url      → { api-base-url, otel-collector-url }
-# wordles/frontend/posthog      → { key, host }
+# wordles/frontend/<tenant>/auth0     → { domain, clientId, audience }
+# wordles/frontend/api-url            → { api-base-url, otel-collector-url }
+# wordles/frontend/posthog            → { key, host }
 # wordles/frontend/turnstile-site-key → { site-key }
 #
 # AWS OIDC Setup:
@@ -75,6 +75,7 @@ concurrency:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
+  AUTH0_TENANT: drivewire
 
 jobs:
   deploy:
@@ -110,7 +111,7 @@ jobs:
           sm() { aws secretsmanager get-secret-value --secret-id "$1" --query SecretString --output text; }
           field() { echo "$1" | python3 -c "import sys,json; print(json.load(sys.stdin)['$2'])"; }
 
-          AUTH0=$(sm wordles/frontend/auth0)
+          AUTH0=$(sm wordles/frontend/${{ env.AUTH0_TENANT }}/auth0)
           echo "PUBLIC_AUTH0_DOMAIN=$(field "$AUTH0" domain)" >> "$GITHUB_ENV"
           echo "PUBLIC_AUTH0_CLIENT_ID=$(field "$AUTH0" clientId)" >> "$GITHUB_ENV"
           echo "PUBLIC_AUTH0_AUDIENCE=$(field "$AUTH0" audience)" >> "$GITHUB_ENV"
