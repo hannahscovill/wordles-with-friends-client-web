@@ -1,8 +1,9 @@
 import { useState, useRef, type ReactElement, type DragEvent } from 'react';
 import { Spinner } from '../../ui/Spinner';
+import { compressImage } from './compressImage';
 import './AvatarUploader.scss';
 
-const MAX_FILE_SIZE: number = 2 * 1024 * 1024; // 2MB
+const MAX_FILE_SIZE: number = 4 * 1024 * 1024; // 4MB
 const MIN_DIMENSION: number = 500;
 const ALLOWED_TYPES: string[] = ['image/jpeg', 'image/png'];
 const FALLBACK_IMAGE: string = 'https://www.gravatar.com/avatar/?d=mp';
@@ -36,7 +37,7 @@ const validateFile = (file: File): Promise<ValidationError | null> => {
     if (file.size > MAX_FILE_SIZE) {
       resolve({
         type: 'size',
-        message: 'Image must be less than 2MB.',
+        message: 'Image must be less than 4MB.',
       });
       return;
     }
@@ -74,6 +75,7 @@ export const AvatarUploader = ({
   const [imgError, setImgError] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isCompressing, setIsCompressing] = useState<boolean>(false);
   const inputRef: React.RefObject<HTMLInputElement | null> =
     useRef<HTMLInputElement>(null);
 
@@ -89,15 +91,31 @@ export const AvatarUploader = ({
       return;
     }
 
+    // Compress if needed (resizes large images and reduces JPEG quality)
+    let processedFile: File = file;
+    setIsCompressing(true);
+    try {
+      processedFile = await compressImage(file);
+    } catch (err: unknown) {
+      const message: string =
+        err instanceof Error
+          ? err.message
+          : 'Image compression failed. Please try a smaller image.';
+      setError(message);
+      setIsCompressing(false);
+      return;
+    }
+    setIsCompressing(false);
+
     // Clean up old preview URL
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
 
     // Create preview URL
-    const url: string = URL.createObjectURL(file);
+    const url: string = URL.createObjectURL(processedFile);
     setPreviewUrl(url);
-    onImageSelect(file);
+    onImageSelect(processedFile);
   };
 
   const handleInputChange = (
@@ -168,9 +186,12 @@ export const AvatarUploader = ({
           }
         }}
       >
-        {isUploading ? (
+        {isUploading || isCompressing ? (
           <div className="avatar-uploader__loading">
-            <Spinner size="medium" label="Uploading avatar" />
+            <Spinner
+              size="medium"
+              label={isCompressing ? 'Compressing image' : 'Uploading avatar'}
+            />
           </div>
         ) : displaySrc ? (
           <>
