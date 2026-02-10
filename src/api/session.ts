@@ -12,9 +12,9 @@ export function getSessionCookie(): string | null {
 }
 
 function setSessionCookie(sessionId: string): void {
-  // Set cookie to expire in 24 hours
+  // Set cookie to expire in 7 days (matches DynamoDB TTL for anonymous records)
   const expires: Date = new Date();
-  expires.setTime(expires.getTime() + 24 * 60 * 60 * 1000);
+  expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
   // Use SameSite=None; Secure for cross-origin API requests, and Domain for subdomain access
   const isSecure: boolean = window.location.protocol === 'https:';
   const sameSite: string = isSecure ? 'None' : 'Lax';

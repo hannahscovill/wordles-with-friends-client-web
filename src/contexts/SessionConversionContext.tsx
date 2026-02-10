@@ -60,7 +60,8 @@ export const SessionConversionProvider = ({
     };
 
     doConversion();
-  }, [isAuthenticated, getAccessTokenSilently]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   return (
     <SessionConversionContext.Provider value={{ isConverting }}>
