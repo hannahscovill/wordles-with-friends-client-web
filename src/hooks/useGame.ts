@@ -9,6 +9,7 @@ import {
   type GradedMove,
 } from '../api';
 import { analytics } from '../lib/analytics';
+import { useSessionConversion } from '../contexts/SessionConversionContext';
 
 type GradedGuess = [
   GuessLetterProps,
@@ -214,6 +215,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     isAuthenticated,
     isLoading: authLoading,
   } = useAuth0();
+  const { isConverting } = useSessionConversion();
 
   // Compute the effective puzzle date (prop or today)
   const effectivePuzzleDate: string = options.puzzleDate ?? getTodayLocalDate();
@@ -229,8 +231,8 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
   // Load game progress on startup
   // Wait for auth state to resolve to ensure consistent user identification
   useEffect(() => {
-    // Don't load until auth state is resolved to avoid user identity mismatch
-    if (authLoading) {
+    // Don't load until auth state is resolved and session conversion is complete
+    if (authLoading || isConverting) {
       return;
     }
 
@@ -270,7 +272,13 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     return (): void => {
       isMounted = false;
     };
-  }, [authLoading, isAuthenticated, getAccessTokenSilently, state.puzzleDate]);
+  }, [
+    authLoading,
+    isConverting,
+    isAuthenticated,
+    getAccessTokenSilently,
+    state.puzzleDate,
+  ]);
 
   // Clear invalidWord after animation duration
   useEffect(() => {

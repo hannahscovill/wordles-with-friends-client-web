@@ -11,6 +11,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { router } from './router';
 import { AuthProvider } from './AuthProvider';
 import { UserProfileProvider } from './contexts/UserProfileContext';
+import { SessionConversionProvider } from './contexts/SessionConversionContext';
 import { initTelemetry } from './lib/telemetry';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -80,9 +81,11 @@ if (rootEl) {
             }}
           >
             <AuthProvider>
-              <UserProfileProvider>
-                <App />
-              </UserProfileProvider>
+              <SessionConversionProvider>
+                <UserProfileProvider>
+                  <App />
+                </UserProfileProvider>
+              </SessionConversionProvider>
             </AuthProvider>
           </Auth0Provider>
         </PostHogProvider>

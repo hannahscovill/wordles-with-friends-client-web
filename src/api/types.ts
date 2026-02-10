@@ -113,3 +113,11 @@ export interface GetPuzzlesParams {
   startDate?: string;
   endDate?: string;
 }
+
+// ── Session conversion types ────────────────────────────────────────
+
+export interface ConvertSessionResponse {
+  converted: number;
+  conflicts_resolved: number;
+  puzzle_dates_affected: string[];
+}
