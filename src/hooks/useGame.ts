@@ -81,7 +81,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
 
     case 'SUBMIT_GUESS_START':
-      if (state.status !== 'playing' || state.currentGuess.length !== 5) {
+      if (
+        state.status !== 'playing' ||
+        state.currentGuess.length !== 5 ||
+        state.isSubmitting
+      ) {
         return state;
       }
       return {
@@ -304,7 +308,11 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
 
   const submitGuess: () => Promise<void> =
     useCallback(async (): Promise<void> => {
-      if (state.status !== 'playing' || state.currentGuess.length !== 5) {
+      if (
+        state.status !== 'playing' ||
+        state.currentGuess.length !== 5 ||
+        state.isSubmitting
+      ) {
         return;
       }
 
@@ -353,6 +361,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       state.status,
       state.currentGuess,
       state.puzzleDate,
+      state.isSubmitting,
       isAuthenticated,
       getAccessTokenSilently,
     ]);
