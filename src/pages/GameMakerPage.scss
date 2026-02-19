@@ -40,6 +40,15 @@
     }
   }
 
+  &__date-link {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   &__empty {
     text-align: center;
     color: #666;

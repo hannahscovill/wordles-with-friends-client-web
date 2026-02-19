@@ -1,6 +1,7 @@
 import { useState, useCallback, type ReactElement } from 'react';
 import { useNavigate, type NavigateFn } from '@tanstack/react-router';
 import type { GuessLetterProps } from './GuessLetter';
+import type { LetterGrade } from '../api/types';
 import { Toast } from './Toast';
 import { Button, Modal } from './ui';
 import { generateShareText, shareResult } from '../utils/share';
@@ -15,6 +16,12 @@ export interface GameStatusModalProps {
   guesses: GuessLetterProps[][];
   /** The active puzzle date string, e.g. "2026-02-18" */
   puzzleDate: string;
+}
+
+function toGrade(tile: GuessLetterProps): LetterGrade {
+  if (tile.correct_letter_and_position) return 'correct';
+  if (tile.letter_contained_in_answer) return 'contained';
+  return 'wrong';
 }
 
 export const GameStatusModal = ({
@@ -32,7 +39,10 @@ export const GameStatusModal = ({
 
   const handleShare: () => Promise<void> =
     useCallback(async (): Promise<void> => {
-      const text: string = generateShareText(guesses, puzzleDate, won);
+      const grades: LetterGrade[][] = guesses.map(
+        (row: GuessLetterProps[]): LetterGrade[] => row.map(toGrade),
+      );
+      const text: string = generateShareText(grades, puzzleDate, won);
       const { method } = await shareResult(text);
       if (method === 'copied') {
         setShowCopiedToast(true);

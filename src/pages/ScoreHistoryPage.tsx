@@ -6,14 +6,19 @@ import {
   type ReactElement,
 } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
+import { Link } from '@tanstack/react-router';
 import {
   getHistory,
   getPuzzles,
+  type GradedLetter,
+  type GradedMove,
   type HistoryEntry,
   type HistoryResponse,
+  type LetterGrade,
   type Puzzle,
 } from '../api';
 import { MiniGameBoard } from '../components/MiniGameBoard';
+import { Toast } from '../components/Toast';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
 import { DateFilter } from '../components/DateFilter';
@@ -25,6 +30,7 @@ import {
   getDateRange,
   navigateDateRange,
 } from '../utils/dates';
+import { generateShareText, shareResult } from '../utils/share';
 import './ScoreHistoryPage.scss';
 
 export const ScoreHistoryPage = (): ReactElement => {
@@ -142,6 +148,32 @@ export const ScoreHistoryPage = (): ReactElement => {
 
   const today: string = getTodayLocalDate();
 
+  const [showCopiedToast, setShowCopiedToast] = useState<boolean>(false);
+
+  const handleShare: (entry: HistoryEntry) => Promise<void> = useCallback(
+    async (entry: HistoryEntry): Promise<void> => {
+      if (!entry.guesses) return;
+      const grades: LetterGrade[][] = entry.guesses.map(
+        (move: GradedMove): LetterGrade[] =>
+          move.map((l: GradedLetter): LetterGrade => l.grade),
+      );
+      const text: string = generateShareText(
+        grades,
+        entry.puzzle_date,
+        entry.won ?? false,
+      );
+      const { method } = await shareResult(text);
+      if (method === 'copied') {
+        setShowCopiedToast(true);
+      }
+    },
+    [],
+  );
+
+  const hideCopiedToast: () => void = useCallback((): void => {
+    setShowCopiedToast(false);
+  }, []);
+
   if (isLoadingHistory) {
     return (
       <div className="score-history-page">
@@ -228,11 +260,22 @@ export const ScoreHistoryPage = (): ReactElement => {
             displayRows.map((entry: HistoryEntry) => (
               <tr key={entry.puzzle_date}>
                 <td className="score-history-page__date-cell">
-                  {formatDateForDisplay(entry.puzzle_date)}
+                  <Link
+                    to="/$puzzleDate"
+                    params={{ puzzleDate: entry.puzzle_date }}
+                    className="score-history-page__date-link"
+                  >
+                    {formatDateForDisplay(entry.puzzle_date)}
+                  </Link>
                 </td>
                 <td className="score-history-page__game-cell">
                   {entry.played && entry.guesses ? (
-                    <MiniGameBoard guesses={entry.guesses} />
+                    <div className="score-history-page__completed">
+                      <MiniGameBoard guesses={entry.guesses} />
+                      <Button variant="flat" onClick={() => handleShare(entry)}>
+                        Share
+                      </Button>
+                    </div>
                   ) : entry.in_progress && entry.guesses ? (
                     <div className="score-history-page__in-progress">
                       <MiniGameBoard guesses={entry.guesses} />
@@ -267,6 +310,11 @@ export const ScoreHistoryPage = (): ReactElement => {
           )}
         </tbody>
       </table>
+      <Toast
+        message="Copied to clipboard!"
+        visible={showCopiedToast}
+        onHide={hideCopiedToast}
+      />
     </div>
   );
 };

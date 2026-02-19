@@ -1,27 +1,27 @@
-import type { GuessLetterProps } from '../components/GuessLetter';
+import type { LetterGrade } from '../api/types';
 
 /**
  * Build a Wordle-style share string with emoji grid and puzzle link.
  *
- * @param guesses  - Array of completed guess rows (each row is an array of GuessLetterProps)
+ * @param grades   - Array of completed guess rows (each row is an array of LetterGrade)
  * @param puzzleDate - The puzzle date string, e.g. "2026-02-18"
  * @param won - Whether the player won
  */
 export function generateShareText(
-  guesses: GuessLetterProps[][],
+  grades: LetterGrade[][],
   puzzleDate: string,
   won: boolean,
 ): string {
-  const attempts: string = won ? String(guesses.length) : 'X';
+  const attempts: string = won ? String(grades.length) : 'X';
   const header: string = `Wordles with Friends ${puzzleDate} ${attempts}/6`;
 
-  const grid: string = guesses
-    .map((row: GuessLetterProps[]): string =>
+  const grid: string = grades
+    .map((row: LetterGrade[]): string =>
       row
-        .map((tile: GuessLetterProps): string => {
-          if (tile.correct_letter_and_position) return '🟩';
-          if (tile.letter_contained_in_answer) return '🟨';
-          return '⬜';
+        .map((grade: LetterGrade): string => {
+          if (grade === 'correct') return '🟩';
+          if (grade === 'contained') return '🟨';
+          return '⬛';
         })
         .join(''),
     )
