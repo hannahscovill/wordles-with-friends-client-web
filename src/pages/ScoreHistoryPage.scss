@@ -52,7 +52,6 @@
 
   &__date-cell {
     font-weight: 600;
-    white-space: nowrap;
     vertical-align: middle;
   }
 
@@ -65,14 +64,6 @@
     }
   }
 
-  &__completed {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
   &__today-button {
     .button__frame {
       background-color: var(--color-button-shadow);
@@ -81,6 +72,22 @@
 
   &__game-cell {
     vertical-align: middle;
+  }
+
+  &__share-icon {
+    display: block;
+    margin: 16px auto 0;
+    padding: 6px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--color-text);
+    opacity: 0.5;
+    transition: opacity 200ms ease;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   &__in-progress {
