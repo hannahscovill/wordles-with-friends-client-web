@@ -71,7 +71,12 @@ export const HomePage = (): ReactElement => {
   return (
     <div className="home-page">
       {completedDuringSession && (
-        <GameStatusModal won={status === 'won'} answer={answer} />
+        <GameStatusModal
+          won={status === 'won'}
+          answer={answer}
+          guesses={guesses.map((g) => g.boxes)}
+          puzzleDate={activePuzzleDate}
+        />
       )}
       <div className="home-page__game-container">
         <div className="home-page__date-title">

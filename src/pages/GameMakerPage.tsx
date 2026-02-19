@@ -7,6 +7,7 @@ import {
   type FormEvent,
 } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
+import { Link } from '@tanstack/react-router';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
@@ -322,7 +323,15 @@ export const GameMakerPage = (): ReactElement => {
               ) : (
                 displayRows.map((puzzle) => (
                   <tr key={puzzle.date}>
-                    <td>{puzzle.date}</td>
+                    <td>
+                      <Link
+                        to="/$puzzleDate"
+                        params={{ puzzleDate: puzzle.date }}
+                        className="gamemaker-page__date-link"
+                      >
+                        {puzzle.date}
+                      </Link>
+                    </td>
                     <td>
                       {puzzle.word ? (
                         <button

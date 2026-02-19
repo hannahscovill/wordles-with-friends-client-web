@@ -56,6 +56,23 @@
     vertical-align: middle;
   }
 
+  &__date-link {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__completed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
   &__today-button {
     .button__frame {
       background-color: var(--color-button-shadow);
