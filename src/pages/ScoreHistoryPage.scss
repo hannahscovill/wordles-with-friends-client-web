@@ -74,20 +74,8 @@
     vertical-align: middle;
   }
 
-  &__share-icon {
-    display: block;
+  &__date-cell .share-icon-button {
     margin: 16px auto 0;
-    padding: 6px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: var(--color-text);
-    opacity: 0.5;
-    transition: opacity 200ms ease;
-
-    &:hover {
-      opacity: 1;
-    }
   }
 
   &__in-progress {

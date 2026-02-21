@@ -2,6 +2,7 @@ import { useState, useCallback, type ReactElement } from 'react';
 import { useNavigate, type NavigateFn } from '@tanstack/react-router';
 import type { GuessLetterProps } from './GuessLetter';
 import type { LetterGrade } from '../api/types';
+import { ShareIconButton } from './ShareIconButton';
 import { Toast } from './Toast';
 import { Button, Modal } from './ui';
 import { generateShareText, shareResult } from '../utils/share';
@@ -58,9 +59,10 @@ export const GameStatusModal = ({
       <p className="game-status-modal__message">
         {won ? 'You won!' : answer ? `The word was: ${answer}` : 'Game over'}
       </p>
-      <Button size="s" variant="onLight" onClick={handleShare}>
-        Share
-      </Button>
+      <ShareIconButton
+        onClick={handleShare}
+        aria-label={`Share result for ${puzzleDate}`}
+      />
       <Button size="s" variant="onLight" onClick={handlePlayOtherGames}>
         Play Other Games
       </Button>
