@@ -5,6 +5,7 @@ import {
   useNavigate,
   type UseNavigateResult,
 } from '@tanstack/react-router';
+import { useFeatureFlagEnabled } from 'posthog-js/react';
 import { AvatarMenu } from './AvatarMenu';
 import { IssueReportModal } from './IssueReportModal';
 import { useLocalStorage } from '../hooks/useLocalStorage';
@@ -46,6 +47,7 @@ export const AppHeader = ({
     profile?.avatarUrl ?? 'https://www.gravatar.com/avatar/?d=mp';
   const avatarAlt: string = user?.email ?? user?.name ?? 'User avatar';
   const isGameAdmin: boolean = appMetadata?.game_admin === true;
+  const showTeams: boolean = useFeatureFlagEnabled('teams') === true;
 
   return (
     <>
@@ -59,8 +61,10 @@ export const AppHeader = ({
             avatarAlt={avatarAlt}
             isLoggedIn={isLoggedIn}
             isGameAdmin={isGameAdmin}
+            showTeams={showTeams}
             onLogInClick={() => loginWithRedirect()}
             onProfileClick={() => navigate({ to: '/profile' })}
+            onTeamsClick={() => navigate({ to: '/teams' })}
             onScoreHistoryClick={() => navigate({ to: '/history' })}
             onGameMakerClick={() => navigate({ to: '/gamemaker' })}
             onLogOutClick={() =>
