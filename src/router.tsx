@@ -9,10 +9,12 @@ import { profileRoute } from './routes/profile';
 import { historyRoute } from './routes/history';
 import { puzzleRoute } from './routes/puzzle';
 import { gamemakerRoute } from './routes/gamemaker';
+import { teamsRoute } from './routes/teams';
 
 const routeTree: AnyRoute = rootRoute.addChildren([
   indexRoute,
   profileRoute,
+  teamsRoute,
   historyRoute,
   puzzleRoute,
   gamemakerRoute,

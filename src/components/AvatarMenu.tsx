@@ -12,10 +12,14 @@ export interface AvatarMenuProps {
   isLoggedIn?: boolean;
   /** Whether the user is a game admin */
   isGameAdmin?: boolean;
+  /** Whether to show the Teams option */
+  showTeams?: boolean;
   /** Handler for log in option click */
   onLogInClick?: () => void;
   /** Handler for profile option click */
   onProfileClick?: () => void;
+  /** Handler for teams option click */
+  onTeamsClick?: () => void;
   /** Handler for score history option click */
   onScoreHistoryClick?: () => void;
   /** Handler for game maker option click */
@@ -31,8 +35,10 @@ export const AvatarMenu = ({
   avatarAlt = 'User avatar',
   isLoggedIn = false,
   isGameAdmin = false,
+  showTeams = false,
   onLogInClick,
   onProfileClick,
+  onTeamsClick,
   onScoreHistoryClick,
   onGameMakerClick,
   onLogOutClick,
@@ -97,6 +103,18 @@ export const AvatarMenu = ({
                 Profile
               </button>
             </li>
+            {showTeams && (
+              <li role="none">
+                <button
+                  type="button"
+                  className="avatar-menu__item"
+                  role="menuitem"
+                  onClick={onTeamsClick}
+                >
+                  Teams
+                </button>
+              </li>
+            )}
             {isGameAdmin && (
               <li role="none">
                 <button
