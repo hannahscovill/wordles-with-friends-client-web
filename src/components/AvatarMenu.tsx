@@ -12,6 +12,8 @@ export interface AvatarMenuProps {
   isLoggedIn?: boolean;
   /** Whether the user is a game admin */
   isGameAdmin?: boolean;
+  /** Whether there are unread "What's New" entries */
+  hasUnreadWhatsNew?: boolean;
   /** Handler for log in option click */
   onLogInClick?: () => void;
   /** Handler for profile option click */
@@ -24,6 +26,8 @@ export interface AvatarMenuProps {
   onLogOutClick?: () => void;
   /** Handler for report issue option click */
   onReportIssueClick?: () => void;
+  /** Handler for "What's New" option click */
+  onWhatsNewClick?: () => void;
 }
 
 export const AvatarMenu = ({
@@ -31,12 +35,14 @@ export const AvatarMenu = ({
   avatarAlt = 'User avatar',
   isLoggedIn = false,
   isGameAdmin = false,
+  hasUnreadWhatsNew = false,
   onLogInClick,
   onProfileClick,
   onScoreHistoryClick,
   onGameMakerClick,
   onLogOutClick,
   onReportIssueClick,
+  onWhatsNewClick,
 }: AvatarMenuProps): ReactElement => {
   const menuRef: RefObject<HTMLUListElement | null> =
     useRef<HTMLUListElement>(null);
@@ -74,6 +80,9 @@ export const AvatarMenu = ({
       aria-haspopup="menu"
     >
       <Avatar src={avatarSrc} alt={avatarAlt} size="s" />
+      {hasUnreadWhatsNew && (
+        <span className="avatar-menu__badge" aria-hidden="true" />
+      )}
     </button>
   );
 
@@ -134,6 +143,22 @@ export const AvatarMenu = ({
                 type="button"
                 className="avatar-menu__item"
                 role="menuitem"
+                onClick={onWhatsNewClick}
+              >
+                What&apos;s New
+                {hasUnreadWhatsNew && (
+                  <span
+                    className="avatar-menu__item-badge"
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+            </li>
+            <li role="none">
+              <button
+                type="button"
+                className="avatar-menu__item"
+                role="menuitem"
                 onClick={onLogOutClick}
               >
                 Log out
@@ -141,16 +166,34 @@ export const AvatarMenu = ({
             </li>
           </>
         ) : (
-          <li role="none">
-            <button
-              type="button"
-              className="avatar-menu__item"
-              role="menuitem"
-              onClick={onLogInClick}
-            >
-              Log in
-            </button>
-          </li>
+          <>
+            <li role="none">
+              <button
+                type="button"
+                className="avatar-menu__item"
+                role="menuitem"
+                onClick={onWhatsNewClick}
+              >
+                What&apos;s New
+                {hasUnreadWhatsNew && (
+                  <span
+                    className="avatar-menu__item-badge"
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+            </li>
+            <li role="none">
+              <button
+                type="button"
+                className="avatar-menu__item"
+                role="menuitem"
+                onClick={onLogInClick}
+              >
+                Log in
+              </button>
+            </li>
+          </>
         )}
       </ul>
     </Popover>

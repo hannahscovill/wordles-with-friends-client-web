@@ -5,8 +5,12 @@ import type { LetterGrade } from '../api/types';
 import { ShareIconButton } from './ShareIconButton';
 import { Toast } from './Toast';
 import { Button, Modal } from './ui';
+import { MobileAppSignup } from './MobileAppSignup';
 import { generateShareText, shareResult } from '../utils/share';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import './GameStatusModal.scss';
+
+const MOBILE_PROMO_DISMISSED_KEY: string = 'mobile_app_promo_dismissed';
 
 export interface GameStatusModalProps {
   /** Whether the player won */
@@ -33,6 +37,10 @@ export const GameStatusModal = ({
 }: GameStatusModalProps): ReactElement => {
   const navigate: NavigateFn = useNavigate();
   const [showCopiedToast, setShowCopiedToast] = useState<boolean>(false);
+  const [isPromoDismissed, setIsPromoDismissed] = useLocalStorage<boolean>(
+    MOBILE_PROMO_DISMISSED_KEY,
+    false,
+  );
 
   const handlePlayOtherGames = (): void => {
     navigate({ to: '/history' });
@@ -66,6 +74,13 @@ export const GameStatusModal = ({
       <Button size="s" variant="onLight" onClick={handlePlayOtherGames}>
         Play Other Games
       </Button>
+      {!isPromoDismissed && (
+        <MobileAppSignup
+          source="game_status_modal"
+          onDismiss={() => setIsPromoDismissed(true)}
+          onSuccess={() => setIsPromoDismissed(true)}
+        />
+      )}
       <Toast
         message="Copied to clipboard!"
         visible={showCopiedToast}

@@ -8,6 +8,7 @@ import {
 import { AvatarMenu } from './AvatarMenu';
 import { IssueReportModal } from './IssueReportModal';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useWhatsNewUnread } from '../hooks/useWhatsNewUnread';
 import { useUserProfile } from '../contexts/UserProfileContext';
 import './AppHeader.scss';
 
@@ -30,6 +31,7 @@ export const AppHeader = ({
   const navigate: UseNavigateResult<string> = useNavigate();
   const [isIssueModalOpen, setIsIssueModalOpen] = useState<boolean>(false);
   const [authTokens] = useLocalStorage<AuthTokens>('auth_tokens');
+  const { hasUnread: hasUnreadWhatsNew } = useWhatsNewUnread();
 
   // Check if we have stored tokens - used to show logged-in UI while Auth0 validates
   const hasStoredTokens: boolean =
@@ -59,6 +61,7 @@ export const AppHeader = ({
             avatarAlt={avatarAlt}
             isLoggedIn={isLoggedIn}
             isGameAdmin={isGameAdmin}
+            hasUnreadWhatsNew={hasUnreadWhatsNew}
             onLogInClick={() => loginWithRedirect()}
             onProfileClick={() => navigate({ to: '/profile' })}
             onScoreHistoryClick={() => navigate({ to: '/history' })}
@@ -67,6 +70,7 @@ export const AppHeader = ({
               logout({ logoutParams: { returnTo: window.location.origin } })
             }
             onReportIssueClick={() => setIsIssueModalOpen(true)}
+            onWhatsNewClick={() => navigate({ to: '/whats-new' })}
           />
         </div>
       </header>

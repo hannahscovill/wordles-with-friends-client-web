@@ -67,6 +67,8 @@ const SPAN_NAMES: [string, RegExp, string][] = [
   ['POST', /^\/profile\/avatar$/, 'uploadAvatar'],
   ['GET', /^\/puzzles$/, 'getPuzzles'],
   ['PUT', /^\/puzzles$/, 'setPuzzle'],
+  ['POST', /^\/profile\/mobile-test-track-signup$/, 'mobileTestTrackSignup'],
+  ['POST', /^\/mobile-test-track-signup$/, 'anonymousMobileTestTrackSignup'],
 ];
 
 function getSpanName(method: string, path: string): string {
