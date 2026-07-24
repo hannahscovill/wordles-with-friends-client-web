@@ -9,6 +9,7 @@ import { profileRoute } from './routes/profile';
 import { historyRoute } from './routes/history';
 import { puzzleRoute } from './routes/puzzle';
 import { gamemakerRoute } from './routes/gamemaker';
+import { whatsNewRoute } from './routes/whats-new';
 
 const routeTree: AnyRoute = rootRoute.addChildren([
   indexRoute,
@@ -16,6 +17,7 @@ const routeTree: AnyRoute = rootRoute.addChildren([
   historyRoute,
   puzzleRoute,
   gamemakerRoute,
+  whatsNewRoute,
 ]);
 
 export const router: Router<AnyRoute, 'never', boolean> = createRouter({

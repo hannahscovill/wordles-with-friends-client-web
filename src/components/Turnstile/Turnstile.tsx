@@ -27,6 +27,7 @@ export interface TurnstileProps {
   onVerify: (token: string) => void;
   onError?: () => void;
   onExpire?: () => void;
+  theme?: 'light' | 'dark' | 'auto';
 }
 
 export const Turnstile = ({
@@ -34,6 +35,7 @@ export const Turnstile = ({
   onVerify,
   onError,
   onExpire,
+  theme = 'auto',
 }: TurnstileProps): ReactElement => {
   const containerRef: React.RefObject<HTMLDivElement | null> =
     useRef<HTMLDivElement>(null);
@@ -63,8 +65,9 @@ export const Turnstile = ({
       callback: (token: string) => onVerifyRef.current(token),
       'error-callback': () => onErrorRef.current?.(),
       'expired-callback': () => onExpireRef.current?.(),
+      theme,
     });
-  }, [siteKey]);
+  }, [siteKey, theme]);
 
   useEffect((): (() => void) => {
     // If script is already loaded, render immediately

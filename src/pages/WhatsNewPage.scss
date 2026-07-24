@@ -1,0 +1,48 @@
+.whats-new-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px;
+
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a1b;
+    margin: 0 0 16px 0;
+    text-align: center;
+  }
+
+  &__list {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__entry {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    padding: 16px 0;
+
+    &:not(:last-child) {
+      border-bottom: 2px solid #000;
+    }
+  }
+
+  &__entry-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #000;
+  }
+
+  &__entry-body {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: #000;
+  }
+}

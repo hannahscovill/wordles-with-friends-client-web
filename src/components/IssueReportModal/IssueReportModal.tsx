@@ -1,7 +1,16 @@
 import { useState, useEffect, type ReactElement, type FormEvent } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import posthog from 'posthog-js';
-import { Modal, Button, Input, Textarea, Spinner } from '../ui';
+import {
+  Modal,
+  Button,
+  Input,
+  Textarea,
+  Spinner,
+  HoneypotField,
+  OptionToggle,
+  OptionToggleGroup,
+} from '../ui';
 import { Turnstile } from '../Turnstile';
 import { submitIssueReport, type IssueReportResponse } from '../../api/issues';
 import './IssueReportModal.scss';
@@ -191,30 +200,18 @@ export const IssueReportModal = ({
             <p className="issue-report-modal__error">{submission.message}</p>
           )}
 
-          <div className="issue-report-modal__type-selector">
-            <div className="issue-report-modal__type-options">
-              {ISSUE_TYPES.map((type) => (
-                <button
-                  key={type.value}
-                  type="button"
-                  className={`issue-report-modal__type-option ${
-                    issueType === type.value
-                      ? 'issue-report-modal__type-option--selected'
-                      : ''
-                  }`}
-                  onClick={() => setIssueType(type.value)}
-                  aria-pressed={issueType === type.value}
-                >
-                  {type.emoji && (
-                    <span className="issue-report-modal__type-emoji">
-                      {type.emoji}
-                    </span>
-                  )}
-                  {type.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <OptionToggleGroup aria-label="Issue type">
+            {ISSUE_TYPES.map((type) => (
+              <OptionToggle
+                key={type.value}
+                selected={issueType === type.value}
+                onClick={() => setIssueType(type.value)}
+                emoji={type.emoji || undefined}
+              >
+                {type.label}
+              </OptionToggle>
+            ))}
+          </OptionToggleGroup>
 
           <Input
             label="Title"
@@ -249,22 +246,13 @@ export const IssueReportModal = ({
             fullWidth
           />
 
-          {/* Honeypot field — hidden from real users, bots will fill it */}
-          <div className="issue-report-modal__honeypot" aria-hidden="true">
-            <label htmlFor="website">Website</label>
-            <input
-              type="text"
-              id="website"
-              name="website"
-              tabIndex={-1}
-              autoComplete="off"
-            />
-          </div>
+          <HoneypotField />
 
           <div className="issue-report-modal__turnstile">
             <Turnstile
               siteKey={TURNSTILE_SITE_KEY}
               onVerify={setTurnstileToken}
+              theme="light"
             />
           </div>
 
