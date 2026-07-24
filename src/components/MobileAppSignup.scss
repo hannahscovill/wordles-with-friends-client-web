@@ -7,10 +7,6 @@
   text-align: left;
   box-sizing: border-box;
 
-  &--success {
-    text-align: center;
-  }
-
   &__dismiss {
     position: absolute;
     top: 4px;
@@ -32,7 +28,7 @@
   }
 
   &__message {
-    margin: 0 0 20px 0;
+    margin: 16px 0;
     font-size: 0.875rem;
     color: #000;
   }

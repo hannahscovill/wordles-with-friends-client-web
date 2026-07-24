@@ -1,4 +1,9 @@
-import { useState, type ReactElement, type FormEvent } from 'react';
+import {
+  useState,
+  type ReactElement,
+  type ReactNode,
+  type FormEvent,
+} from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import {
   Button,
@@ -37,6 +42,40 @@ const TURNSTILE_SITE_KEY: string = import.meta.env
 
 const EMAIL_PATTERN: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+interface MobileAppSignupCardProps {
+  /** Called when the user dismisses the card. Omit to hide the dismiss control. */
+  onDismiss?: () => void;
+  /** Body copy shown under the shared title */
+  body: ReactNode;
+  /** Optional form/content rendered below the body copy */
+  children?: ReactNode;
+}
+
+/** Shared card shell: dismiss control, title, and body copy, used by every state this form can be in. */
+const MobileAppSignupCard = ({
+  onDismiss,
+  body,
+  children,
+}: MobileAppSignupCardProps): ReactElement => (
+  <div className="mobile-app-signup">
+    {onDismiss && (
+      <button
+        type="button"
+        className="mobile-app-signup__dismiss"
+        aria-label="Dismiss"
+        onClick={onDismiss}
+      >
+        &times;
+      </button>
+    )}
+    <h2 className="mobile-app-signup__title">
+      Wordles with Friends is coming to mobile
+    </h2>
+    <p className="mobile-app-signup__message">{body}</p>
+    {children}
+  </div>
+);
+
 export const MobileAppSignup = ({
   source,
   onDismiss,
@@ -45,7 +84,7 @@ export const MobileAppSignup = ({
   const { isAuthenticated, getAccessTokenSilently, user } = useAuth0();
   const userMetadata: Record<string, unknown> | undefined = (
     user as Record<string, unknown> | undefined
-  )?.['wordles.dev/user_metadata'] as Record<string, unknown> | undefined;
+  )?.['user_metadata'] as Record<string, unknown> | undefined;
   const hasOptedIntoBothPlatforms: boolean =
     userMetadata?.mobile_test_track_opt_in_ios === true &&
     userMetadata?.mobile_test_track_opt_in_android === true;
@@ -135,57 +174,24 @@ export const MobileAppSignup = ({
 
   if (submission.status === 'success') {
     return (
-      <div className="mobile-app-signup mobile-app-signup--success">
-        <p className="mobile-app-signup__message">
-          Thanks! We&apos;ll email you when the app is ready.
-        </p>
-      </div>
+      <MobileAppSignupCard body="Thanks! We'll email you when the app is ready." />
     );
   }
 
   if (hasOptedIntoBothPlatforms) {
     return (
-      <div className="mobile-app-signup">
-        {onDismiss && (
-          <button
-            type="button"
-            className="mobile-app-signup__dismiss"
-            aria-label="Dismiss"
-            onClick={onDismiss}
-          >
-            &times;
-          </button>
-        )}
-        <h2 className="mobile-app-signup__title">
-          Wordles with Friends is coming to mobile
-        </h2>
-        <p className="mobile-app-signup__message">
-          You&apos;ve requested to join both internal test tracks. We&apos;ll
-          let you know the moment it&apos;s ready.
-        </p>
-      </div>
+      <MobileAppSignupCard
+        onDismiss={onDismiss}
+        body="You've requested to join both internal test tracks. We'll let you know the moment it's ready."
+      />
     );
   }
 
   return (
-    <div className="mobile-app-signup">
-      {onDismiss && (
-        <button
-          type="button"
-          className="mobile-app-signup__dismiss"
-          aria-label="Dismiss"
-          onClick={onDismiss}
-        >
-          &times;
-        </button>
-      )}
-      <h2 className="mobile-app-signup__title">
-        Wordles with Friends is coming to mobile
-      </h2>
-      <p className="mobile-app-signup__message">
-        We&apos;re building a native mobile app. Drop your email and we&apos;ll
-        let you know the moment it&apos;s ready.
-      </p>
+    <MobileAppSignupCard
+      onDismiss={onDismiss}
+      body="We're building a native mobile app. Drop your email and we'll let you know the moment it's ready."
+    >
       <form className="mobile-app-signup__form" onSubmit={handleSubmit}>
         <div className="mobile-app-signup__platforms">
           <span className="mobile-app-signup__platforms-label">
@@ -227,16 +233,16 @@ export const MobileAppSignup = ({
             />
 
             <HoneypotField id="mobile-app-signup-website" />
-
-            <div className="mobile-app-signup__turnstile">
-              <Turnstile
-                siteKey={TURNSTILE_SITE_KEY}
-                onVerify={setTurnstileToken}
-                theme="light"
-              />
-            </div>
           </>
         )}
+
+        <div className="mobile-app-signup__turnstile">
+          <Turnstile
+            siteKey={TURNSTILE_SITE_KEY}
+            onVerify={setTurnstileToken}
+            theme="light"
+          />
+        </div>
 
         {submission.status === 'error' && (
           <p className="mobile-app-signup__error">{submission.message}</p>
@@ -255,6 +261,6 @@ export const MobileAppSignup = ({
           )}
         </Button>
       </form>
-    </div>
+    </MobileAppSignupCard>
   );
 };
