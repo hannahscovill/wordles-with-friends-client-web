@@ -82,9 +82,20 @@ export const MobileAppSignup = ({
   onSuccess,
 }: MobileAppSignupProps): ReactElement => {
   const { isAuthenticated, getAccessTokenSilently, user } = useAuth0();
-  const userMetadata: Record<string, unknown> | undefined = (
-    user as Record<string, unknown> | undefined
-  )?.['user_metadata'] as Record<string, unknown> | undefined;
+  const userRecord: Record<string, unknown> | undefined = user as
+    | Record<string, unknown>
+    | undefined;
+  // Auth0 (OIDC-conformant) strips unnamespaced custom claims from the ID
+  // token, so prefer the namespaced claim (matches wordles.dev/app_metadata
+  // used elsewhere), falling back to the bare key in case the token isn't
+  // namespaced in this tenant.
+  const userMetadata: Record<string, unknown> | undefined =
+    (userRecord?.['wordles.dev/user_metadata'] as
+      | Record<string, unknown>
+      | undefined) ??
+    (userRecord?.['user_metadata'] as Record<string, unknown> | undefined);
+  // TEMP DEBUG: remove once the id token claim shape is confirmed in prod
+  console.debug('[MobileAppSignup] id token user claims', user);
   const hasOptedIntoBothPlatforms: boolean =
     userMetadata?.mobile_test_track_opt_in_ios === true &&
     userMetadata?.mobile_test_track_opt_in_android === true;
